@@ -58,4 +58,22 @@ class MangaWorldApi {
       throw Exception('Error getting pages: $e');
     }
   }
+
+  Future<List<Map<String, dynamic>>> getAllManga() async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/all_manga'),
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (response.statusCode == 200) {
+        List<dynamic> data = json.decode(response.body);
+        return data.cast<Map<String, dynamic>>();
+      } else {
+        throw Exception('Failed to get all manga: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Error getting all manga: $e');
+    }
+  }
 }
