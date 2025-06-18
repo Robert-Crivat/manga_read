@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:manga_read/model/dataMangager.dart';
 
 class MangaWorldApi {
-  static const String baseUrl = 'http://192.168.68.13:5000';
+  static const String baseUrl = 'http://python-api-manga.onrender.com';
   
   Future<DataManager> searchManga(String keyword) async {
     DataManager dataManager = DataManager();
