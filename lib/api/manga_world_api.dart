@@ -1,10 +1,12 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:manga_read/model/dataMangager.dart';
 
 class MangaWorldApi {
-  static const String baseUrl = 'http://192.168.86.25:5000';
+  static const String baseUrl = 'http://192.168.68.13:5000';
   
-  Future<List<Map<String, dynamic>>> searchManga(String keyword) async {
+  Future<DataManager> searchManga(String keyword) async {
+    DataManager dataManager = DataManager();
     Uri uri = Uri.parse('$baseUrl/search_manga?keyword=$keyword');
     try {
       final response = await http.get(
@@ -13,17 +15,19 @@ class MangaWorldApi {
       );
 
       if (response.statusCode == 200) {
-        List<dynamic> data = json.decode(response.body);
-        return data.cast<Map<String, dynamic>>();
+        Map<String, dynamic> data = json.decode(response.body);
+        dataManager = DataManager.fromJson(data);
       } else {
         throw Exception('Failed to search manga: ${response.statusCode}');
       }
     } catch (e) {
       throw Exception('Error searching manga: $e');
     }
+    return dataManager;
   }
 
-  Future<List<Map<String, dynamic>>> getMangaChapters(String link) async {
+  Future<DataManager> getMangaChapters(String link) async {
+    DataManager dataManager = DataManager();
     try {
       final response = await http.get(
         Uri.parse('$baseUrl/manga_chapters?link=$link'),
@@ -31,8 +35,9 @@ class MangaWorldApi {
       );
 
       if (response.statusCode == 200) {
-        List<dynamic> data = json.decode(response.body);
-        return data.cast<Map<String, dynamic>>();
+        Map<String, dynamic> data = json.decode(response.body);
+        dataManager = DataManager.fromJson(data);
+        return dataManager;
       } else {
         throw Exception('Failed to get chapters: ${response.statusCode}');
       }
@@ -41,16 +46,17 @@ class MangaWorldApi {
     }
   }
 
-  Future<List<String>> getChapterPages(String link) async {
+  Future<DataManager> getChapterPages(String link) async {
+    DataManager dataManager = DataManager();
     try {
       final response = await http.get(
         Uri.parse('$baseUrl/chapter_pages?link=$link'),
         headers: {'Content-Type': 'application/json'},
       );
-
       if (response.statusCode == 200) {
-        List<dynamic> data = json.decode(response.body);
-        return data.cast<String>();
+        Map<String, dynamic> data = json.decode(response.body);
+        dataManager = DataManager.fromJson(data);
+        return dataManager;
       } else {
         throw Exception('Failed to get pages: ${response.statusCode}');
       }
@@ -59,7 +65,8 @@ class MangaWorldApi {
     }
   }
 
-  Future<List<Map<String, dynamic>>> getAllManga() async {
+  Future<DataManager> getAllManga() async {
+    DataManager dataManager = DataManager();
     try {
       final response = await http.get(
         Uri.parse('$baseUrl/all_manga'),
@@ -67,8 +74,9 @@ class MangaWorldApi {
       );
 
       if (response.statusCode == 200) {
-        List<dynamic> data = json.decode(response.body);
-        return data.cast<Map<String, dynamic>>();
+        Map<String, dynamic> data = json.decode(response.body);
+        dataManager = DataManager.fromJson(data);
+        return dataManager;
       } else {
         throw Exception('Failed to get all manga: ${response.statusCode}');
       }

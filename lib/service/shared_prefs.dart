@@ -9,17 +9,17 @@ class SharedPrefs {
     _sharedPrefs = await SharedPreferences.getInstance();
   }
 
-  List<Manga> get mangaPref {
+  List<MangaSearchModel> get mangaPref {
     final List<String>? storedList = _sharedPrefs?.getStringList('mangaPref');
     if (storedList == null) return [];
     return storedList
         .map(
-          (item) => Manga.fromJson(json.decode(item) as Map<String, dynamic>),
+          (item) => MangaSearchModel.fromJson(json.decode(item) as Map<String, dynamic>),
         )
         .toList();
   }
 
-  set mangaPref(List<Manga> value) {
+  set mangaPref(List<MangaSearchModel> value) {
     final List<String> stringList = value
         .map((item) => json.encode(item))
         .toList();

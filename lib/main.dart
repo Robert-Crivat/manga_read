@@ -1,9 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:manga_read/api/manga_world_api.dart';
-import 'package:manga_read/model/manga_search_model.dart';
-
 import 'package:manga_read/screen/homepage.dart';
-
 import 'package:manga_read/service/shared_prefs.dart';
 
 

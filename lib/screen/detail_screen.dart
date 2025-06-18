@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:manga_read/api/manga_world_api.dart';
+import 'package:manga_read/model/capitoli_model.dart';
 import 'package:manga_read/model/manga_search_model.dart';
 import 'package:manga_read/screen/lettura_screen.dart';
 
 class DetailScreen extends StatefulWidget {
-  final Manga manga;
+  final MangaSearchModel manga;
 
   const DetailScreen({Key? key, required this.manga}) : super(key: key);
 
@@ -14,7 +15,7 @@ class DetailScreen extends StatefulWidget {
 
 class _DetailScreenState extends State<DetailScreen> {
   final MangaWorldApi mangaWorldApi = MangaWorldApi();
-  List<Map<String, dynamic>> capitoliList = [];
+  List<ChapterModel> capitoliList = [];
   @override
   void initState() {
     // TODO: implement initState
@@ -24,9 +25,12 @@ class _DetailScreenState extends State<DetailScreen> {
 
   getMangaChapters() async {
     try {
-      var results = await mangaWorldApi.getMangaChapters(widget.manga.link);
+      var results = await mangaWorldApi.getMangaChapters(widget.manga.url);
       setState(() {
-        capitoliList = results;
+        for (var capitolo in results.parametri) {
+          capitoliList.add(ChapterModel.fromJson(capitolo));
+        }
+
       });
     } catch (e) {
       print("Error searching manga: $e");
@@ -39,7 +43,7 @@ class _DetailScreenState extends State<DetailScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(widget.manga.alt)),
+      appBar: AppBar(title: Text(widget.manga.title)),
       body: Column(
         children: [
           // Manga image and title section
@@ -67,7 +71,7 @@ class _DetailScreenState extends State<DetailScreen> {
                 const SizedBox(height: 16),
                 // Manga title
                 Text(
-                  widget.manga.alt,
+                  widget.manga.title,
                   style: Theme.of(context).textTheme.headlineSmall,
                   textAlign: TextAlign.center,
                 ),
@@ -94,15 +98,16 @@ class _DetailScreenState extends State<DetailScreen> {
                     var cap = capitoliList[index];
                     return ListTile(
                       leading: CircleAvatar(child: Text('${index + 1}')),
-                      title: Text(cap['title'] ?? 'Capitolo ${index + 1}'),
+                      title: Text('Capitolo ${index + 1}'),
                       onTap: () {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
                             builder: (context) => LetturaScreen(
-                              url: cap['link'],
-                              mangaTitle:
-                                  cap['alt'] ?? 'Titolo non disponibile',
+                              url: cap.url,
+                              mangaTitle: cap.mangaTitle,
+                              chaptherIndex: index,
+                              capitoliList: [],
                             ),
                           ),
                         );

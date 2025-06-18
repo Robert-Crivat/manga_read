@@ -7,7 +7,7 @@ class MangaPreferitiScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    List<Manga> mangaWorldList = sharedPrefs.mangaPref;
+    List<MangaSearchModel> mangaWorldList = sharedPrefs.mangaPref;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Manga Preferiti')),
@@ -23,7 +23,7 @@ class MangaPreferitiScreen extends StatelessWidget {
               itemBuilder: (context, index) {
                 return ListTile(
                   leading: const Icon(Icons.bookmark),
-                  title: Text(mangaWorldList[index].alt),
+                  title: Text(mangaWorldList[index].title),
                 );
               },
             ),

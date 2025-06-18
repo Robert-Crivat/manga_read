@@ -22,6 +22,43 @@ def remove_words_before_keyword(s, keyword):
         return s[index + len(keyword):]
     return s
 
+def extract_manga_info_from_entry(entry):
+    manga = {}
+    # Thumbnail
+    thumb_element = entry.select_one('a.thumb img')
+    if thumb_element and 'src' in thumb_element.attrs:
+        manga['thumbnail'] = thumb_element['src']
+    # Titolo e link
+    title_element = entry.select_one('a.manga-title')
+    if title_element:
+        manga['title'] = title_element.text.strip()
+        manga['url'] = title_element.get('href', '')
+    # Genere principale
+    genre_element = entry.select_one('div.genre')
+    if genre_element:
+        manga['main_genre'] = genre_element.text.strip()
+    # Status
+    status_element = entry.select_one('div.status')
+    if status_element:
+        manga['status'] = status_element.text.strip()
+    # Autore
+    author_element = entry.select_one('div.author')
+    if author_element:
+        manga['author'] = author_element.text.strip()
+    # Artista
+    artist_element = entry.select_one('div.artist')
+    if artist_element:
+        manga['artist'] = artist_element.text.strip()
+    # Generi aggiuntivi
+    genres_element = entry.select_one('div.genres')
+    if genres_element:
+        manga['genres'] = genres_element.text.strip()
+    # Trama
+    story_element = entry.select_one('div.story')
+    if story_element:
+        manga['story'] = story_element.text.strip()
+    return manga
+
 @app.route('/search_manga')
 def search_manga():
     keyword = request.args.get('keyword', '')
@@ -29,13 +66,16 @@ def search_manga():
     result_list = []
     if response.status_code == 200:
         soup = BeautifulSoup(response.content, 'html.parser')
-        Manga = soup.find_all('div', {'class': 'entry'})
-        for item in Manga:
-            link = re.search('href="(.+?)"', str(item)).group(1)
-            src = re.search('src="(.+?)"', str(item)).group(1)
-            alt = re.search('alt="(.+?)"', str(item)).group(1)
-            result_list.append({'link': link, 'src': src, 'alt': alt})
-    return jsonify(result_list)
+        manga_entries = soup.find_all('div', {'class': 'entry'})
+        for entry in manga_entries:
+            manga_info = extract_manga_info_from_entry(entry)
+            result_list.append(manga_info)
+    response_data = {
+        "status": "ok",
+        "messaggio": f"chiamata eseguita correttamente - search_manga(keyword={keyword})",
+        "data": result_list
+    }
+    return jsonify(response_data)
 
 @app.route('/manga_chapters')
 def manga_chapters():
@@ -51,7 +91,13 @@ def manga_chapters():
             if "read" in link:
                 result_list.append({'link': link, 'alt': alt})
     result_list.reverse()
-    return jsonify(result_list)
+    response_data = {
+        "status": "ok",
+        "messaggio": f"chiamata eseguita correttamente - manga_chapters(link={url})",
+        "data": result_list
+    }
+    
+    return jsonify(response_data)
 
 @app.route('/chapter_pages')
 def chapter_pages():
@@ -67,14 +113,18 @@ def chapter_pages():
             if match:
                 src = match.group(1)
                 linkLetturaCapitolo.append(src)
-    return jsonify(linkLetturaCapitolo)
+    response_data = {
+        "status": "ok",
+        "messaggio": f"chiamata eseguita correttamente - chapter_pages",
+        "data": linkLetturaCapitolo
+    }
+    
+    return jsonify(response_data)
 
 @app.route('/all_manga')
 def all_manga():
     response = requests.get('https://www.mangaworld.nz/archive')
-    # Find the pagination element to get the total number of pages
-    last_page = 1  # Default to 1 in case we can't find pagination
-    
+    last_page = 1
     if response.status_code == 200:
         soup = BeautifulSoup(response.content, 'html.parser')
         pagination = soup.find('li', {'class': 'page-item last'})
@@ -84,22 +134,7 @@ def all_manga():
                 try:
                     last_page = int(page_link.text)
                 except ValueError:
-                    pass  # If conversion fails, keep default value
-                    
-        linkLetturaCapitolo = []
-        comics_grid = soup.find('div', {'class': 'comics-grid'})
-        if comics_grid:
-            Manga = comics_grid.find_all('div', {'class': 'entry'})
-            for item in Manga:
-                lettura = item.find('a', {'class': 'chap'})
-                if lettura:
-                    src = lettura.get('href')
-                    if src:
-                        src = remove_words_before_keyword(src, '/read/')
-                        src = 'https://www.mangaworld.nz' + src
-                        linkLetturaCapitolo.append(src)
-    
-    # Get all manga from all pages
+                    pass
     all_manga = []
     for page_num in range(1, last_page + 1):
         page_url = f'https://www.mangaworld.nz/archive?page={page_num}'
@@ -107,54 +142,18 @@ def all_manga():
         if page_response.status_code == 200:
             page_soup = BeautifulSoup(page_response.content, 'html.parser')
             comics_grid = page_soup.find('div', {'class': 'comics-grid'})
-            manga_entries = []
             if comics_grid:
                 manga_entries = comics_grid.find_all('div', {'class': 'entry'})
-            
-            for manga in manga_entries:
-                manga_info = {}
-                
-                # Extract name
-                name_elem = manga.find('h3', {'class': 'name m-0'})
-                if name_elem:
-                    manga_info['name'] = name_elem.text.strip()
-                
-                # Extract image
-                thumb = manga.find('div', {'class': 'thumb position-relative'})
-                if thumb:
-                    img = thumb.find('img')
-                    if img and img.get('src'):
-                        manga_info['image'] = img.get('src')
-                
-                # Extract metadata
-                genre_elem = manga.find('span', {'class': 'genre'})
-                if genre_elem:
-                    manga_info['genre'] = genre_elem.text.strip()
-                
-                status_elem = manga.find('span', {'class': 'status'})
-                if status_elem:
-                    manga_info['status'] = status_elem.text.strip()
-                
-                author_elem = manga.find('span', {'class': 'author'})
-                if author_elem:
-                    manga_info['author'] = author_elem.text.strip()
-                
-                artist_elem = manga.find('span', {'class': 'artist'})
-                if artist_elem:
-                    manga_info['artist'] = artist_elem.text.strip()
-                
-                genres_elem = manga.find('span', {'class': 'genres'})
-                if genres_elem:
-                    manga_info['genres'] = genres_elem.text.strip()
-                
-                story_elem = manga.find('div', {'class': 'd-none'})
-                if story_elem:
-                    manga_info['story'] = story_elem.text.strip()
-                
-                # Add to results
-                all_manga.append(manga_info)
-    
-    return jsonify(all_manga)
+                for entry in manga_entries:
+                    manga_info = extract_manga_info_from_entry(entry)
+                    all_manga.append(manga_info)
+    response_data = {
+        "status": "ok",
+        "messaggio": f"chiamata eseguita correttamente - all manga",
+        "pagina": last_page,
+        "data": all_manga,
+    }
+    return jsonify(response_data)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
