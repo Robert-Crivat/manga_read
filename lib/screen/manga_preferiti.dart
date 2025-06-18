@@ -1,17 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:manga_read/main.dart';
 
 class MangaPreferitiScreen extends StatelessWidget {
-  final  List<Map<String, dynamic>> mangaPreferiti;
-  const MangaPreferitiScreen({Key? key, required this.mangaPreferiti}) : super(key: key);
+  const MangaPreferitiScreen({Key? key,}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+
+  List<Map<String, dynamic>> mangaWorldList = sharedPrefs.mangaPref;
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Manga Preferiti'),
       ),
-      body: mangaPreferiti.isEmpty
+      body: mangaWorldList.isEmpty
           ? const Center(
               child: Text(
                 'Nessun manga tra i preferiti.',
@@ -19,11 +21,11 @@ class MangaPreferitiScreen extends StatelessWidget {
               ),
             )
           : ListView.builder(
-              itemCount: mangaPreferiti.length,
+              itemCount: mangaWorldList.length,
               itemBuilder: (context, index) {
                 return ListTile(
                   leading: const Icon(Icons.bookmark),
-                  title: Text(mangaPreferiti[index]['title'] ?? 'Titolo non disponibile'),
+                  title: Text(mangaWorldList[index]['alt']),
                 );
               },
             ),
