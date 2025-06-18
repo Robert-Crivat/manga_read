@@ -2,8 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:manga_read/api/manga_world_api.dart';
 import 'package:manga_read/model/manga_search_model.dart';
 import 'package:manga_read/screen/detail_screen.dart';
+import 'package:manga_read/screen/manga_preferiti.dart';
+import 'package:manga_read/service/sharedPrefs.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-void main() {
+final sharedPrefs = SharedPrefs();
+
+void main() async {
+  await sharedPrefs.init();
   runApp(const MyApp());
 }
 
@@ -71,6 +77,8 @@ class _MyHomePageState extends State<MyHomePage> {
               children: [
                 Expanded(
                   child: TextField(
+                    focusNode: FocusNode(),
+                    onTapOutside: (_) => FocusScope.of(context).unfocus(),
                     controller: searchController,
                     decoration: const InputDecoration(
                       hintText: 'Cerca manga...',
@@ -131,6 +139,20 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
           ),
         ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          searchController.clear();
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) =>
+                  MangaPreferitiScreen(mangaPreferiti: mangaWorldList),
+            ),
+          );
+        },
+        tooltip: 'Preferiti',
+        child: const Icon(Icons.favorite_border),
       ),
     );
   }
