@@ -1,6 +1,7 @@
 import "package:flutter/material.dart";
 import "package:manga_read/api/manga_world_api.dart";
 import "package:manga_read/main.dart";
+import "package:manga_read/model/manga_search_model.dart";
 import "package:manga_read/screen/detail_screen.dart";
 import "package:manga_read/screen/manga_preferiti.dart";
 
@@ -12,7 +13,7 @@ class Homepage extends StatefulWidget {
 }
 
 class _HomepageState extends State<Homepage> {
-  List<Map<String, dynamic>> mangaWorldList = [];
+  List<Manga> mangaWorldList = [];
   final MangaWorldApi mangaWorldApi = MangaWorldApi();
   final TextEditingController searchController = TextEditingController();
 
@@ -26,7 +27,9 @@ class _HomepageState extends State<Homepage> {
     try {
       var results = await mangaWorldApi.searchManga(keyword);
       setState(() {
-        mangaWorldList = results;
+        for (var manga in results) {
+          mangaWorldList.add(Manga.fromJson(manga));
+        }
       });
     } catch (e) {
       print("Error searching manga: $e");
@@ -40,8 +43,8 @@ class _HomepageState extends State<Homepage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: Text("Home"),
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        title: Text("Home", style: TextStyle(color: Colors.white)),
       ),
       body: Column(
         children: [
@@ -77,13 +80,12 @@ class _HomepageState extends State<Homepage> {
               setState(() {
                 sharedPrefs.mangaPref.clear();
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Preferiti cancellati!'),
-                  ),
+                  const SnackBar(content: Text('Preferiti cancellati!')),
                 );
               });
             },
-            child: Container(child: Text("clear shared"),)),
+            child: Container(child: Text("clear shared")),
+          ),
           Expanded(
             child: ListView.builder(
               itemCount: mangaWorldList.length,
@@ -98,17 +100,13 @@ class _HomepageState extends State<Homepage> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => DetailScreen(
-                              url: manga['link'],
-                              mangaTitle:
-                                  manga['alt'] ?? 'Titolo non disponibile',
-                            ),
+                            builder: (context) => DetailScreen(manga: manga),
                           ),
                         );
                       },
-                      leading: manga['src'] != null
+                      leading: manga.img.isNotEmpty
                           ? Image.network(
-                              manga['src'],
+                              manga.img,
                               width: 50,
                               height: 70,
                               fit: BoxFit.cover,
@@ -117,32 +115,36 @@ class _HomepageState extends State<Homepage> {
                               },
                             )
                           : const Icon(Icons.book),
-                      title: Text(manga['alt'] ?? 'Titolo non disponibile'),
+                      title: Text(manga.alt ?? 'Titolo non disponibile'),
                       trailing: IconButton(
-                        icon: sharedPrefs.mangaPref.contains(manga)
+                        icon:
+                            sharedPrefs.mangaPref.any(
+                              (fav) => fav.link == manga.link,
+                            )
                             ? Icon(Icons.favorite)
                             : Icon(Icons.favorite_border),
                         color: Colors.red,
                         onPressed: () {
                           setState(() {
-                            if (sharedPrefs.mangaPref.contains(manga)) {
-                              sharedPrefs.mangaPref.remove(manga);
+                            final isFavorite = sharedPrefs.mangaPref.any(
+                              (fav) => fav.link == manga.link,
+                            );
+                            if (isFavorite) {
+                              sharedPrefs.mangaPref.removeWhere(
+                                (fav) => fav.link == manga.link,
+                              );
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
                                   content: Text('Rimosso dai preferiti!'),
                                 ),
                               );
-                              return;
                             } else {
                               sharedPrefs.mangaPref.add(manga);
-                              sharedPrefs.mangaPref;
-                              print("mario");
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
                                   content: Text('Aggiunto ai preferiti!'),
                                 ),
                               );
-                              
                             }
                           });
                         },
@@ -160,10 +162,7 @@ class _HomepageState extends State<Homepage> {
           searchController.clear();
           Navigator.push(
             context,
-            MaterialPageRoute(
-              builder: (context) =>
-                  MangaPreferitiScreen(),
-            ),
+            MaterialPageRoute(builder: (context) => MangaPreferitiScreen()),
           );
         },
         tooltip: 'Preferiti',

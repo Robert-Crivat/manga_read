@@ -1,18 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:manga_read/main.dart';
+import 'package:manga_read/model/manga_search_model.dart';
 
 class MangaPreferitiScreen extends StatelessWidget {
-  const MangaPreferitiScreen({Key? key,}) : super(key: key);
+  const MangaPreferitiScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-
-  List<Map<String, dynamic>> mangaWorldList = sharedPrefs.mangaPref;
+    List<Manga> mangaWorldList = sharedPrefs.mangaPref;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Manga Preferiti'),
-      ),
+      appBar: AppBar(title: const Text('Manga Preferiti')),
       body: mangaWorldList.isEmpty
           ? const Center(
               child: Text(
@@ -25,7 +23,7 @@ class MangaPreferitiScreen extends StatelessWidget {
               itemBuilder: (context, index) {
                 return ListTile(
                   leading: const Icon(Icons.bookmark),
-                  title: Text(mangaWorldList[index]['alt']),
+                  title: Text(mangaWorldList[index].alt),
                 );
               },
             ),

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:manga_read/model/manga_search_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SharedPrefs {
@@ -8,17 +9,20 @@ class SharedPrefs {
     _sharedPrefs = await SharedPreferences.getInstance();
   }
 
-  List<Map<String, dynamic>> get mangaPref {
+  List<Manga> get mangaPref {
     final List<String>? storedList = _sharedPrefs?.getStringList('mangaPref');
     if (storedList == null) return [];
     return storedList
-        .map((item) => Map<String, dynamic>.from(json.decode(item)))
+        .map(
+          (item) => Manga.fromJson(json.decode(item) as Map<String, dynamic>),
+        )
         .toList();
   }
 
-  set mangaPref(List<Map<String, dynamic>> value) {
-    final List<String> stringList =
-        value.map((item) => json.encode(item)).toList();
+  set mangaPref(List<Manga> value) {
+    final List<String> stringList = value
+        .map((item) => json.encode(item))
+        .toList();
     _sharedPrefs?.setStringList('mangaPref', stringList);
   }
 }
