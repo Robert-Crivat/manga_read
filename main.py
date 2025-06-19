@@ -286,7 +286,7 @@ def get_all_webnovels():
     return jsonify(response_data)
 
 
-#TODO: da camiare web di fireimento e fare su 
+#TODO: da camiare web di fireimento e fare su https://novelfire.net
 
 
 @app.route('/get_webnovel_chapters')
