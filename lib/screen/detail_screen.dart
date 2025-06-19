@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:manga_read/api/manga_world_api.dart';
-import 'package:manga_read/model/capitoli_model.dart';
-import 'package:manga_read/model/manga_search_model.dart';
+import 'package:manga_read/model/manga/capitoli_model.dart';
+import 'package:manga_read/model/manga/manga_search_model.dart';
 import 'package:manga_read/screen/lettura_screen.dart';
 
 class DetailScreen extends StatefulWidget {
@@ -107,7 +107,7 @@ class _DetailScreenState extends State<DetailScreen> {
                               url: cap.url,
                               mangaTitle: cap.mangaTitle,
                               chaptherIndex: index,
-                              capitoliList: [],
+                              capitoliList: capitoliList,
                             ),
                           ),
                         );

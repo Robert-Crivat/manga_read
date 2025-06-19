@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:manga_read/model/dataMangager.dart';
+import 'package:manga_read/model/manga/dataMangager.dart';
 
 class MangaWorldApi {
   static const String baseUrl = 'http://python-api-manga.onrender.com';
@@ -84,4 +84,6 @@ class MangaWorldApi {
       throw Exception('Error getting all manga: $e');
     }
   }
+
+  Future getAllNovels() async {}
 }

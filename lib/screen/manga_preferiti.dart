@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:manga_read/main.dart';
-import 'package:manga_read/model/manga_search_model.dart';
+import 'package:manga_read/model/manga/manga_search_model.dart';
 
 class MangaPreferitiScreen extends StatelessWidget {
   const MangaPreferitiScreen({Key? key}) : super(key: key);
