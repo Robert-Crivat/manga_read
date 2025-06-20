@@ -80,16 +80,27 @@ class _LetturaScreenState extends State<LetturaScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Rileva automaticamente se è in modalità scura
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final primaryColor = Theme.of(context).colorScheme.primary;
+    final scaffoldBackgroundColor = Theme.of(context).scaffoldBackgroundColor;
+    
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.mangaTitle),
+        title: Text(
+          widget.mangaTitle,
+          style: TextStyle(
+            color: isDarkMode ? Colors.white : Colors.white,
+          ),
+        ),
+        backgroundColor: isDarkMode ? Colors.grey[900] : Colors.deepPurple,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () async {
             // TODO: da implementare il salvataggio dell'ultimo capitolo letto
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setInt('${widget.mangaTitle}_lastChapterIndex', widget.chaptherIndex);
-        Navigator.of(context).pop();
+            final prefs = await SharedPreferences.getInstance();
+            await prefs.setInt('${widget.mangaTitle}_lastChapterIndex', widget.chaptherIndex);
+            Navigator.of(context).pop();
           },
         ),
       ),
@@ -100,18 +111,25 @@ class _LetturaScreenState extends State<LetturaScreen> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.menu_book, size: 80, color: Colors.grey[700]),
+                      Icon(
+                        Icons.menu_book, 
+                        size: 80, 
+                        color: isDarkMode ? Colors.grey[400] : Colors.grey[700]
+                      ),
                       const SizedBox(height: 24),
-                      const Text(
+                      Text(
                         'Benvenuto nella schermata di lettura!',
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
+                          color: isDarkMode ? Colors.white : Colors.black,
                         ),
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 16),
-                      CircularProgressIndicator(),
+                      CircularProgressIndicator(
+                        color: primaryColor,
+                      ),
                     ],
                   ),
                 )
@@ -120,16 +138,38 @@ class _LetturaScreenState extends State<LetturaScreen> {
                   child: ListView.builder(
                     itemCount: capitoliList.length,
                     itemBuilder: (context, index) {
-                      return WidgetZoom(
-                        heroAnimationTag: 'zoom_$index',
-                        zoomWidget: Image.network(
-                          capitoliList[index],
-                          fit: BoxFit.cover,
-                          loadingBuilder: (context, child, loadingProgress) {
-                            if (loadingProgress == null) return child;
-                            return Center(child: CircularProgressIndicator());
-                          },
-                        ),
+                      return Column(
+                        children: [
+                          WidgetZoom(
+                            heroAnimationTag: 'zoom_$index',
+                            zoomWidget: Image.network(
+                              capitoliList[index],
+                              fit: BoxFit.cover,
+                              loadingBuilder: (context, child, loadingProgress) {
+                                if (loadingProgress == null) return child;
+                                return Center(
+                                  child: CircularProgressIndicator(
+                                    color: primaryColor,
+                                  ),
+                                );
+                              },
+                              errorBuilder: (context, error, stackTrace) {
+                                return Container(
+                                  height: 300,
+                                  color: isDarkMode ? Colors.grey[800] : Colors.grey[200],
+                                  child: Center(
+                                    child: Icon(
+                                      Icons.error_outline,
+                                      color: isDarkMode ? Colors.red[300] : Colors.red,
+                                      size: 50,
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                          SizedBox(height: 10),
+                        ],
                       );
                     },
                   ),
@@ -141,6 +181,16 @@ class _LetturaScreenState extends State<LetturaScreen> {
             child: Container(
               height: 90,
               padding: const EdgeInsets.symmetric(vertical: 12.0),
+              decoration: BoxDecoration(
+                color: isDarkMode ? Colors.grey[900] : Colors.white,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.2),
+                    blurRadius: 8,
+                    offset: Offset(0, -2),
+                  ),
+                ],
+              ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 mainAxisAlignment: MainAxisAlignment.center,

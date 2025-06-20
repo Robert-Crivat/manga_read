@@ -1,5 +1,3 @@
-import 'dart:convert';
-import 'package:manga_read/model/manga/manga_search_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SharedPrefs {
@@ -9,20 +7,38 @@ class SharedPrefs {
     _sharedPrefs = await SharedPreferences.getInstance();
   }
 
-  List<MangaSearchModel> get mangaPref {
-    final List<String>? storedList = _sharedPrefs?.getStringList('mangaPref');
-    if (storedList == null) return [];
-    return storedList
-        .map(
-          (item) => MangaSearchModel.fromJson(json.decode(item) as Map<String, dynamic>),
-        )
-        .toList();
+  List<String> get mangaPref {
+    return _sharedPrefs?.getStringList('mangaPref') ?? [];
   }
 
-  set mangaPref(List<MangaSearchModel> value) {
-    final List<String> stringList = value
-        .map((item) => json.encode(item))
-        .toList();
-    _sharedPrefs?.setStringList('mangaPref', stringList);
+  set mangaPref(List<String> value) {
+    _sharedPrefs?.setStringList('mangaPref', value);
+  }
+
+  List<String> get mangaPrefurlImg {
+    return _sharedPrefs?.getStringList('mangaPrefurlImg') ?? [];
+  }
+
+  set mangaPrefurlImg(List<String> value) {
+    _sharedPrefs?.setStringList('mangaPrefurlImg', value);
+  }
+
+  List<String> get mangaPrefurl {
+    return _sharedPrefs?.getStringList('mangaPrefurl') ?? [];
+  }
+
+  set mangaPrefurl(List<String> value) {
+    _sharedPrefs?.setStringList('mangaPrefurl', value);
+  }
+
+  // Metodo per ottenere la preferenza del tema scuro
+  Future<bool> getDarkMode() async {
+    return _sharedPrefs?.getBool('darkMode') ??
+        true; // Predefinito a true per tema scuro
+  }
+
+  // Metodo per impostare la preferenza del tema scuro
+  Future<void> setDarkMode(bool isDarkMode) async {
+    await _sharedPrefs?.setBool('darkMode', isDarkMode);
   }
 }
