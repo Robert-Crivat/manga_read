@@ -12,7 +12,12 @@ class Homepage extends StatefulWidget {
   final bool? isDarkMode;
   final List<MangaSearchModel> mangalist;
 
-  const Homepage({super.key, this.toggleTheme, this.isDarkMode, required this.mangalist});
+  const Homepage({
+    super.key,
+    this.toggleTheme,
+    this.isDarkMode,
+    required this.mangalist,
+  });
 
   @override
   State<Homepage> createState() => _HomepageState();
@@ -235,36 +240,37 @@ class _HomepageState extends State<Homepage>
                                             )
                                           : const Icon(Icons.book),
                                       title: Text(manga.title),
-                                      /*trailing: IconButton(
+                                      trailing: IconButton(
                                         icon: Icon(
                                           Icons.favorite,
                                           color:
-                                              mangaPreferiti.any(
-                                                (item) => item.url == manga.url,
+                                              sharedPrefs.isMangaInFavorites(
+                                                manga.url,
                                               )
                                               ? Colors.red
                                               : Colors.grey,
                                         ),
-                                        onPressed: () {
+                                        onPressed: () async {
                                           final bool isAlreadyFavorite =
-                                              mangaPreferiti.any(
-                                                (item) => item.url == manga.url,
-                                              );
-
-                                          setState(() {
-                                            if (isAlreadyFavorite) {
-                                              // Remove from favorites
-                                              mangaPreferiti.removeWhere(
-                                                (item) => item.url == manga.url,
-                                              );
-                                              sharedPrefs.mangaPref.remove(
-                                                manga.title,
-                                              );
-                                              sharedPrefs.mangaPrefurl.remove(
+                                              sharedPrefs.isMangaInFavorites(
                                                 manga.url,
                                               );
-                                              sharedPrefs.mangaPrefurlImg
-                                                  .remove(manga.img);
+
+                                          if (isAlreadyFavorite) {
+                                            // Rimuovi dai preferiti
+                                            final success = await sharedPrefs
+                                                .removeMangaFromFavorites(
+                                                  url: manga.url,
+                                                );
+
+                                            if (success) {
+                                              // Aggiorna anche la lista locale se necessario
+                                              setState(() {
+                                                mangaPreferiti.removeWhere(
+                                                  (item) =>
+                                                      item.url == manga.url,
+                                                );
+                                              });
 
                                               ScaffoldMessenger.of(
                                                 context,
@@ -273,34 +279,51 @@ class _HomepageState extends State<Homepage>
                                                   content: Text(
                                                     '${manga.title} rimosso dai preferiti',
                                                   ),
+                                                  backgroundColor:
+                                                      Colors.orange,
                                                 ),
                                               );
                                             } else {
-                                              // Add to favorites
-                                              MangaSearchModel mangaPreferito =
-                                                  MangaSearchModel(
-                                                    title: manga.title,
-                                                    img: manga.img,
-                                                    url: manga.url,
-                                                    story: "",
-                                                    status: "",
-                                                    type: "",
-                                                    genres: "",
-                                                    author: "",
-                                                    artist: "",
-                                                  );
-                                              mangaPreferiti.add(
-                                                mangaPreferito,
+                                              ScaffoldMessenger.of(
+                                                context,
+                                              ).showSnackBar(
+                                                const SnackBar(
+                                                  content: Text(
+                                                    'Errore nel rimuovere dai preferiti',
+                                                  ),
+                                                  backgroundColor: Colors.red,
+                                                ),
                                               );
-                                              sharedPrefs.mangaPref.add(
-                                                manga.title,
-                                              );
-                                              sharedPrefs.mangaPrefurl.add(
-                                                manga.url,
-                                              );
-                                              sharedPrefs.mangaPrefurlImg.add(
-                                                manga.img,
-                                              );
+                                            }
+                                          } else {
+                                            // Aggiungi ai preferiti
+                                            final success = await sharedPrefs
+                                                .addMangaToFavorites(
+                                                  title: manga.title,
+                                                  url: manga.url,
+                                                  imgUrl: manga.img,
+                                                );
+
+                                            if (success) {
+                                              // Aggiorna anche la lista locale se necessario
+                                              setState(() {
+                                                MangaSearchModel
+                                                mangaPreferito =
+                                                    MangaSearchModel(
+                                                      title: manga.title,
+                                                      img: manga.img,
+                                                      url: manga.url,
+                                                      story: "",
+                                                      status: "",
+                                                      type: "",
+                                                      genres: "",
+                                                      author: "",
+                                                      artist: "",
+                                                    );
+                                                mangaPreferiti.add(
+                                                  mangaPreferito,
+                                                );
+                                              });
 
                                               ScaffoldMessenger.of(
                                                 context,
@@ -309,12 +332,28 @@ class _HomepageState extends State<Homepage>
                                                   content: Text(
                                                     '${manga.title} aggiunto ai preferiti',
                                                   ),
+                                                  backgroundColor: Colors.green,
+                                                ),
+                                              );
+                                            } else {
+                                              ScaffoldMessenger.of(
+                                                context,
+                                              ).showSnackBar(
+                                                const SnackBar(
+                                                  content: Text(
+                                                    'Manga già presente nei preferiti',
+                                                  ),
+                                                  backgroundColor:
+                                                      Colors.orange,
                                                 ),
                                               );
                                             }
-                                          });
+                                          }
+
+                                          // Aggiorna l'UI
+                                          setState(() {});
                                         },
-                                      ),*/
+                                      ),
                                     ),
                                   ),
                                 );
@@ -468,7 +507,7 @@ class _HomepageState extends State<Homepage>
                                             ),
                                           ],
                                         ),
-                                        /*Positioned(
+                                        Positioned(
                                           top: 5,
                                           right: 5,
                                           child: Container(
@@ -480,36 +519,38 @@ class _HomepageState extends State<Homepage>
                                             ),
                                             child: IconButton(
                                               icon: Icon(
-                                                mangaPreferiti.any(
-                                                      (item) =>
-                                                          item.url == manga.url,
-                                                    )
-                                                    ? Icons.favorite
-                                                    : Icons.favorite_border,
-                                                color: Colors.red,
+                                                Icons.favorite,
+                                                color:
+                                                    sharedPrefs
+                                                        .isMangaInFavorites(
+                                                          manga.url,
+                                                        )
+                                                    ? Colors.red
+                                                    : Colors.grey,
                                               ),
-                                              onPressed: () {
+                                              onPressed: () async {
                                                 final bool isAlreadyFavorite =
-                                                    mangaPreferiti.any(
-                                                      (item) =>
-                                                          item.url == manga.url,
-                                                    );
+                                                    sharedPrefs
+                                                        .isMangaInFavorites(
+                                                          manga.url,
+                                                        );
 
-                                                setState(() {
-                                                  if (isAlreadyFavorite) {
-                                                    // Remove from favorites
-                                                    mangaPreferiti.removeWhere(
-                                                      (item) =>
-                                                          item.url == manga.url,
-                                                    );
+                                                if (isAlreadyFavorite) {
+                                                  // Rimuovi dai preferiti
+                                                  final success = await sharedPrefs
+                                                      .removeMangaFromFavorites(
+                                                        url: manga.url,
+                                                      );
+
+                                                  if (success) {
+                                                    // Aggiorna anche la lista locale se necessario
                                                     setState(() {
-                                                      sharedPrefs.mangaPref
-                                                          .remove(manga.title);
-                                                      sharedPrefs.mangaPrefurl
-                                                          .remove(manga.url);
-                                                      sharedPrefs
-                                                          .mangaPrefurlImg
-                                                          .remove(manga.img);
+                                                      mangaPreferiti
+                                                          .removeWhere(
+                                                            (item) =>
+                                                                item.url ==
+                                                                manga.url,
+                                                          );
                                                     });
 
                                                     ScaffoldMessenger.of(
@@ -519,35 +560,52 @@ class _HomepageState extends State<Homepage>
                                                         content: Text(
                                                           '${manga.title} rimosso dai preferiti',
                                                         ),
+                                                        backgroundColor:
+                                                            Colors.orange,
                                                       ),
                                                     );
                                                   } else {
-                                                    // Add to favorites
-                                                    MangaSearchModel
-                                                    mangaPreferito =
-                                                        MangaSearchModel(
-                                                          title: manga.title,
-                                                          img: manga.img,
-                                                          url: manga.url,
-                                                          story: "",
-                                                          status: "",
-                                                          type: "",
-                                                          genres: "",
-                                                          author: "",
-                                                          artist: "",
-                                                        );
+                                                    ScaffoldMessenger.of(
+                                                      context,
+                                                    ).showSnackBar(
+                                                      const SnackBar(
+                                                        content: Text(
+                                                          'Errore nel rimuovere dai preferiti',
+                                                        ),
+                                                        backgroundColor:
+                                                            Colors.red,
+                                                      ),
+                                                    );
+                                                  }
+                                                } else {
+                                                  // Aggiungi ai preferiti
+                                                  final success =
+                                                      await sharedPrefs
+                                                          .addMangaToFavorites(
+                                                            title: manga.title,
+                                                            url: manga.url,
+                                                            imgUrl: manga.img,
+                                                          );
+
+                                                  if (success) {
+                                                    // Aggiorna anche la lista locale se necessario
                                                     setState(() {
+                                                      MangaSearchModel
+                                                      mangaPreferito =
+                                                          MangaSearchModel(
+                                                            title: manga.title,
+                                                            img: manga.img,
+                                                            url: manga.url,
+                                                            story: "",
+                                                            status: "",
+                                                            type: "",
+                                                            genres: "",
+                                                            author: "",
+                                                            artist: "",
+                                                          );
                                                       mangaPreferiti.add(
                                                         mangaPreferito,
                                                       );
-                                                      sharedPrefs.mangaPref.add(
-                                                        manga.title,
-                                                      );
-                                                      sharedPrefs.mangaPrefurl
-                                                          .add(manga.url);
-                                                      sharedPrefs
-                                                          .mangaPrefurlImg
-                                                          .add(manga.img);
                                                     });
 
                                                     ScaffoldMessenger.of(
@@ -557,14 +615,31 @@ class _HomepageState extends State<Homepage>
                                                         content: Text(
                                                           '${manga.title} aggiunto ai preferiti',
                                                         ),
+                                                        backgroundColor:
+                                                            Colors.green,
+                                                      ),
+                                                    );
+                                                  } else {
+                                                    ScaffoldMessenger.of(
+                                                      context,
+                                                    ).showSnackBar(
+                                                      const SnackBar(
+                                                        content: Text(
+                                                          'Manga già presente nei preferiti',
+                                                        ),
+                                                        backgroundColor:
+                                                            Colors.orange,
                                                       ),
                                                     );
                                                   }
-                                                });
+                                                }
+
+                                                // Aggiorna l'UI
+                                                setState(() {});
                                               },
                                             ),
                                           ),
-                                        ),*/
+                                        ),
                                       ],
                                     ),
                                   ),
@@ -672,15 +747,15 @@ class _HomepageState extends State<Homepage>
                     ),
                   ],
                 ),*/
-                Center(
-                  child: Text(
-                    'La sezione Novel è in fase di sviluppo...',
-                    style: TextStyle(
-                      fontSize: 20,
-                      color: Theme.of(context).textTheme.bodyLarge?.color,
-                    ),
-                  ),
-                ),
+          Center(
+            child: Text(
+              'La sezione Novel è in fase di sviluppo...',
+              style: TextStyle(
+                fontSize: 20,
+                color: Theme.of(context).textTheme.bodyLarge?.color,
+              ),
+            ),
+          ),
         ],
       ),
       //floatingActionButton: FloatingActionButton(
