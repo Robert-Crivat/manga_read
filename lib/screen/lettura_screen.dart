@@ -83,15 +83,12 @@ class _LetturaScreenState extends State<LetturaScreen> {
     // Rileva automaticamente se è in modalità scura
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final primaryColor = Theme.of(context).colorScheme.primary;
-    final scaffoldBackgroundColor = Theme.of(context).scaffoldBackgroundColor;
-    
+
     return Scaffold(
       appBar: AppBar(
         title: Text(
           widget.mangaTitle,
-          style: TextStyle(
-            color: isDarkMode ? Colors.white : Colors.white,
-          ),
+          style: TextStyle(color: isDarkMode ? Colors.white : Colors.white),
         ),
         backgroundColor: isDarkMode ? Colors.grey[900] : Colors.deepPurple,
         leading: IconButton(
@@ -99,7 +96,10 @@ class _LetturaScreenState extends State<LetturaScreen> {
           onPressed: () async {
             // TODO: da implementare il salvataggio dell'ultimo capitolo letto
             final prefs = await SharedPreferences.getInstance();
-            await prefs.setInt('${widget.mangaTitle}_lastChapterIndex', widget.chaptherIndex);
+            await prefs.setInt(
+              '${widget.mangaTitle}_lastChapterIndex',
+              widget.chaptherIndex,
+            );
             Navigator.of(context).pop();
           },
         ),
@@ -112,9 +112,9 @@ class _LetturaScreenState extends State<LetturaScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Icon(
-                        Icons.menu_book, 
-                        size: 80, 
-                        color: isDarkMode ? Colors.grey[400] : Colors.grey[700]
+                        Icons.menu_book,
+                        size: 80,
+                        color: isDarkMode ? Colors.grey[400] : Colors.grey[700],
                       ),
                       const SizedBox(height: 24),
                       Text(
@@ -127,9 +127,7 @@ class _LetturaScreenState extends State<LetturaScreen> {
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 16),
-                      CircularProgressIndicator(
-                        color: primaryColor,
-                      ),
+                      CircularProgressIndicator(color: primaryColor),
                     ],
                   ),
                 )
@@ -142,30 +140,59 @@ class _LetturaScreenState extends State<LetturaScreen> {
                         children: [
                           WidgetZoom(
                             heroAnimationTag: 'zoom_$index',
-                            zoomWidget: Image.network(
-                              capitoliList[index],
-                              fit: BoxFit.cover,
-                              loadingBuilder: (context, child, loadingProgress) {
-                                if (loadingProgress == null) return child;
-                                return Center(
-                                  child: CircularProgressIndicator(
-                                    color: primaryColor,
-                                  ),
-                                );
+                            zoomWidget: GestureDetector(
+                              onHorizontalDragUpdate: (DragUpdateDetails details) {
+                                // You can use details.delta.dx to determine swipe direction
+                                // Negative dx means swipe left, positive dx means swipe right
+                                // if (details.delta.dx < -20 &&
+                                //     index < capitoliList.length - 1) {
+                                //   // Swipe left to go to next chapter
+                                //   getImgonRun(
+                                //     widget.capitoliList[index + 1].url,
+                                //   );
+                                //   setState(() {
+                                //     widget.chaptherIndex = index + 1;
+                                //   });
+                                // } else if (details.delta.dx > 20 && index > 0) {
+                                //   // Swipe right to go to previous chapter
+                                //   getImgonRun(
+                                //     widget.capitoliList[index - 1].url,
+                                //   );
+                                //   setState(() {
+                                //     widget.chaptherIndex = index - 1;
+                                //   });
+                                // }
                               },
-                              errorBuilder: (context, error, stackTrace) {
-                                return Container(
-                                  height: 300,
-                                  color: isDarkMode ? Colors.grey[800] : Colors.grey[200],
-                                  child: Center(
-                                    child: Icon(
-                                      Icons.error_outline,
-                                      color: isDarkMode ? Colors.red[300] : Colors.red,
-                                      size: 50,
+                              child: Image.network(
+                                capitoliList[index],
+                                fit: BoxFit.cover,
+                                loadingBuilder:
+                                    (context, child, loadingProgress) {
+                                      if (loadingProgress == null) return child;
+                                      return Center(
+                                        child: CircularProgressIndicator(
+                                          color: primaryColor,
+                                        ),
+                                      );
+                                    },
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Container(
+                                    height: 300,
+                                    color: isDarkMode
+                                        ? Colors.grey[800]
+                                        : Colors.grey[200],
+                                    child: Center(
+                                      child: Icon(
+                                        Icons.error_outline,
+                                        color: isDarkMode
+                                            ? Colors.red[300]
+                                            : Colors.red,
+                                        size: 50,
+                                      ),
                                     ),
-                                  ),
-                                );
-                              },
+                                  );
+                                },
+                              ),
                             ),
                           ),
                           SizedBox(height: 10),

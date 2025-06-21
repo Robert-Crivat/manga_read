@@ -10,8 +10,9 @@ import "package:manga_read/screen/manga_preferiti.dart";
 class Homepage extends StatefulWidget {
   final Function? toggleTheme;
   final bool? isDarkMode;
+  final List<MangaSearchModel> mangalist;
 
-  const Homepage({super.key, this.toggleTheme, this.isDarkMode});
+  const Homepage({super.key, this.toggleTheme, this.isDarkMode, required this.mangalist});
 
   @override
   State<Homepage> createState() => _HomepageState();
@@ -40,10 +41,10 @@ class _HomepageState extends State<Homepage>
   @override
   void initState() {
     super.initState();
+    mangaList.addAll(widget.mangalist);
     _tabController = TabController(length: 2, vsync: this);
     sharedPrefs.init();
-    allManga();
-    allNoverls();
+    //allNoverls();
   }
 
   searchMangaWorld(String keyword) async {
@@ -60,38 +61,6 @@ class _HomepageState extends State<Homepage>
         context,
       ).showSnackBar(SnackBar(content: Text("Errore nella ricerca: $e")));
     }
-  }
-
-  allManga() async {
-    setState(() {
-      isLoading = true;
-    });
-    try {
-      setState(() {
-        mangaList.clear(); // Clear previous results
-      });
-
-      var results = await mangaWorldApi.getAllManga();
-      if (results.status == "ok") {
-        setState(() {
-          for (var manga in results.parametri) {
-            mangaList.add(MangaSearchModel.fromJson(manga));
-          }
-        });
-      } else {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text("Nessun manga trovato")));
-      }
-    } catch (e) {
-      print("Error fetching all manga: $e");
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("Errore nel caricamento: $e")));
-    }
-    setState(() {
-      isLoading = false;
-    });
   }
 
   allNoverls() async {
@@ -605,7 +574,7 @@ class _HomepageState extends State<Homepage>
                           ),
                   ],
                 ),
-          isLoading == true
+          /*isLoadingNovel == true
               ? const Center(child: CircularProgressIndicator())
               : Column(
                   children: [
@@ -702,6 +671,15 @@ class _HomepageState extends State<Homepage>
                       ),
                     ),
                   ],
+                ),*/
+                Center(
+                  child: Text(
+                    'La sezione Novel è in fase di sviluppo...',
+                    style: TextStyle(
+                      fontSize: 20,
+                      color: Theme.of(context).textTheme.bodyLarge?.color,
+                    ),
+                  ),
                 ),
         ],
       ),
