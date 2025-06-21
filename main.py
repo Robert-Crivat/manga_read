@@ -180,254 +180,262 @@ def all_manga():
         "data": all_manga,
     }
     return jsonify(response_data)
+#TODO: da camiare web di fireimento e fare su https://novelfire.net
 
-@app.route('/get_all_webnovels')
-def get_all_webnovels():
-    # URL fisso come da richiesta
-    url = "https://www.webnovel.com/search?keywords=light+novels&type=novel"
+@app.route('/getnovels')
+def getnovels():
+    """
+    Estrae l'elenco dei romanzi da wuxiaworld.com basandosi sulla struttura HTML fornita.
+    La funzione analizza i div principali e le rispettive sottocategorie per estrarre tutte le informazioni.
+    Supporta anche la paginazione per recuperare tutti i romanzi disponibili.
+    """
+    # Parametri configurabili
+    base_url = 'https://www.wuxiaworld.com'
+    novels_path = '/novels'
+    
+    # Ottenere opzionalmente il numero massimo di pagine da processare
+    max_pages = request.args.get('max_pages', default=10, type=int)
+    start_page = request.args.get('start_page', default=1, type=int)
     
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
     }
     
-    try:
-        response = requests.get(url, headers=headers)
-        novels = []
-        
-        if response.status_code == 200:
-            soup = BeautifulSoup(response.content, 'html.parser')
-            
-            # Cerca gli elementi con la classe 'g_thumb _xs pa l0 oh' come specificato
-            thumb_elements = soup.select('div.g_thumb._xs.pa.l0.oh, a.g_thumb._xs.pa.l0.oh')
-            
-            for thumb_element in thumb_elements:
-                novel = {}
-                
-                # Verifica se l'elemento è già un link o se dobbiamo cercare il parent
-                if thumb_element.name == 'a':
-                    a_element = thumb_element
-                else:
-                    a_element = thumb_element.find_parent('a') or thumb_element.select_one('a')
-                
-                if a_element:
-                    # Estrai l'href
-                    href = a_element.get('href')
-                    if href:
-                        novel['url'] = f"https://www.webnovel.com{href}" if not href.startswith('http') else href
-                    
-                    # Estrai il titolo dall'attributo title
-                    title = a_element.get('title')
-                    if title:
-                        novel['title'] = title
-                
-                # Estrazione dell'immagine all'interno dell'elemento thumb
-                img_element = thumb_element.select_one('img')
-                if img_element:
-                    src = img_element.get('src')
-                    if src:
-                        novel['cover_image'] = f"https:{src}" if src.startswith('//') else src
-                
-                # Cerca anche di estrarre l'ID del libro se disponibile
-                if a_element:
-                    book_id = a_element.get('data-bid')
-                    if book_id:
-                        novel['book_id'] = book_id
-                
-                # Se non abbiamo trovato il titolo nell'elemento a, cerchiamo altri elementi
-                if not novel.get('title'):
-                    # Cerchiamo titoli nelle vicinanze
-                    parent = thumb_element.find_parent('li') or thumb_element.find_parent()
-                    if parent:
-                        title_element = parent.select_one('h3') or parent.select_one('.c_000')
-                        if title_element:
-                            novel['title'] = title_element.get_text().strip()
-                
-                # Estrazione dei tag se disponibili
-                parent_li = thumb_element.find_parent('li')
-                if parent_li:
-                    tags = []
-                    tag_elements = parent_li.select('p.mb8_g_tags a')
-                    for tag_element in tag_elements:
-                        tag = {
-                            'name': tag_element.get_text().strip(),
-                            'url': tag_element.get('href'),
-                            'title': tag_element.get('title')
-                        }
-                        tags.append(tag)
-                    
-                    if tags:
-                        novel['tags'] = tags
-                    
-                    # Valutazione (p.g_star_num)
-                    rating_element = parent_li.select_one('p.g_star_num')
-                    if rating_element:
-                        novel['rating'] = rating_element.get_text().strip()
-                
-                # Verifica che abbiamo almeno URL e copertina (il titolo potrebbe mancare)
-                if novel.get('url') and novel.get('cover_image'):
-                    novels.append(novel)
-            
-            response_data = {
-                "status": "ok",
-                "data": novels
-            }
-        else:
-            response_data = {
-                "status": "error",
-                "messaggio": f"Errore nella richiesta: {response.status_code}"
-            }
+    # URL diretto all'API GraphQL di WuxiaWorld (identificata ispezionando il sito)
+    graphql_url = f"{base_url}/api/graphql"
     
-    except Exception as e:
-        response_data = {
-            "status": "error",
-            "messaggio": f"Errore: {str(e)}"
+    novels_list = []
+    
+    # Prima prova con l'approccio GraphQL (molti siti moderni usano questo)
+    query = """
+    {
+      novels(orderBy: "name", first: 100) {
+        edges {
+          node {
+            id
+            name
+            slug
+            status
+            coverImage
+            description
+            genres
+            totalChapters
+          }
         }
+      }
+    }
+    """
     
-    return jsonify(response_data)
-
-
-#TODO: da camiare web di fireimento e fare su https://novelfire.net
-
-
-@app.route('/get_webnovel_chapters')
-def get_webnovel_chapters():
-    link = request.args.get('url', '')
-    if not link or not link.startswith(('http://', 'https://')):
-        return jsonify({
-            "status": "error",
-            "messaggio": "URL mancante o non valido",
-            "data": []
-        })
+    try:
+        graphql_response = requests.post(
+            graphql_url, 
+            json={'query': query}, 
+            headers=headers
+        )
+        
+        if graphql_response.status_code == 200:
+            data = graphql_response.json()
+            if 'data' in data and 'novels' in data['data'] and 'edges' in data['data']['novels']:
+                edges = data['data']['novels']['edges']
+                for edge in edges:
+                    node = edge['node']
+                    novel_info = {
+                        'title': node.get('name', ''),
+                        'url': f"{base_url}/novel/{node.get('slug', '')}",
+                        'cover_image': node.get('coverImage', ''),
+                        'status': node.get('status', ''),
+                        'description': node.get('description', ''),
+                        'genres': node.get('genres', []),
+                        'total_chapters': node.get('totalChapters', 0)
+                    }
+                    novels_list.append(novel_info)
+                
+                # Se abbiamo ottenuto dati dall'API GraphQL, non c'è bisogno di fare scraping HTML
+                if novels_list:
+                    print(f"Ottenuti {len(novels_list)} romanzi dall'API GraphQL")
+                    response_data = {
+                        "status": "ok",
+                        "messaggio": f"chiamata eseguita correttamente - getnovels (GraphQL API)",
+                        "totale": len(novels_list),
+                        "data": novels_list
+                    }
+                    return jsonify(response_data)
+    except Exception as e:
+        print(f"Errore nell'approccio GraphQL: {str(e)}")
     
-    headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-        'Accept': 'text/html,application/xhtml+xml,application/xml',
-        'Accept-Language': 'en-US,en;q=0.9',
-        'Referer': 'https://www.webnovel.com/'
+    # Se l'approccio GraphQL fallisce, procediamo con il normale scraping HTML
+    # con supporto alla paginazione
+    novels_list = []
+    
+    # Itera attraverso le pagine
+    for page_num in range(start_page, start_page + max_pages):
+        # Per la prima pagina, usa l'URL di base, per le altre aggiungi ?page=X o &page=X
+        if page_num == 1:
+            url = f"{base_url}{novels_path}"
+        else:
+            url = f"{base_url}{novels_path}?page={page_num}"
+        
+        print(f"Elaborazione pagina {page_num}: {url}")
+        response = requests.get(url, headers=headers)
+    
+    if response.status_code == 200:
+        soup = BeautifulSoup(response.content, 'html.parser')
+        
+        # Stampa HTML per debug
+        print("Risposta ricevuta, lunghezza HTML:", len(response.text))
+        
+        # Trova tutti i contenitori principali che contengono i romanzi
+        # Basato sulla struttura HTML fornita esattamente nella foto
+        novel_containers = soup.select('div.h-full.min-h-full.w-full.justify-center.overflow-hidden')
+        print(f"Trovati {len(novel_containers)} contenitori principali")
+        
+        if not novel_containers:
+            # Approccio alternativo più ampio se i selettori specifici non funzionano
+            novel_containers = soup.select('div.h-full')
+            print(f"Secondo tentativo trovati {len(novel_containers)} contenitori h-full")
+        
+        for container in novel_containers:
+            # Trova tutti gli elementi grid che contengono i singoli romanzi
+            grid_elements = container.select('div.grid')
+            print(f"Trovati {len(grid_elements)} elementi grid")
+            
+            for grid in grid_elements:
+                # Trova tutti i link a romanzi nel grid
+                novel_links = grid.select('a[href*="/novel/"]')
+                print(f"Trovati {len(novel_links)} link a novel")
+                
+                for novel_link in novel_links:
+                    novel_info = {}
+                    
+                    # Estrai l'URL del romanzo
+                    novel_info['url'] = novel_link.get('href', '')
+                    if novel_info['url'] and not novel_info['url'].startswith('http'):
+                        novel_info['url'] = 'https://www.wuxiaworld.com' + novel_info['url']
+                    
+                    # Trova il div relativo che contiene l'immagine e altre informazioni
+                    # Usando selettori esatti dalla tua immagine
+                    relative_div = novel_link.select_one('div.relative.h-180.w-125')
+                    if not relative_div:
+                        relative_div = novel_link.select_one('div.relative')
+                    
+                    if relative_div:
+                        # Estrai l'immagine di copertina
+                        cover_img = relative_div.select_one('img.absolute')
+                        if cover_img:
+                            novel_info['cover_image'] = cover_img.get('src', '')
+                            novel_info['title'] = cover_img.get('alt', '')
+                        
+                        # Estrai lo stato del romanzo (Ongoing, Completed, ecc.)
+                        status_div = relative_div.select_one('div.font-set-b9')
+                        if status_div:
+                            novel_info['status'] = status_div.text.strip()
+                    
+                    # Cerca informazioni aggiuntive nei div flex
+                    flex_elements = grid.select('div.relative.flex')
+                    if not flex_elements:
+                        flex_elements = grid.select('div.flex')
+                    
+                    for flex in flex_elements:
+                        # Cerca il titolo nei vari elementi di testo
+                        if 'title' not in novel_info or not novel_info['title']:
+                            title_elem = flex.select_one('p.MuiTypography-root, p.text-left, h4, .text-black')
+                            if title_elem:
+                                novel_info['title'] = title_elem.text.strip()
+                        
+                        # Cerca link hover:underline che possono contenere il titolo
+                        title_link = flex.select_one('a.hover\\:underline')
+                        if title_link and ('title' not in novel_info or not novel_info['title']):
+                            novel_info['title'] = title_link.text.strip()
+                    
+                    # Aggiungi alla lista solo se abbiamo informazioni sufficienti
+                    if novel_info.get('url'):
+                        # Estrai il titolo dall'URL se non l'abbiamo trovato altrimenti
+                        if 'title' not in novel_info or not novel_info['title']:
+                            url_path = novel_info['url'].split('/')[-1]
+                            novel_info['title'] = url_path.replace('-', ' ').title()
+                        
+                        novels_list.append(novel_info)
+    
+    # Rimuovi duplicati se necessario (basati sull'URL)
+    seen_urls = set()
+    unique_novels = []
+    for novel in novels_list:
+        if novel['url'] not in seen_urls:
+            seen_urls.add(novel['url'])
+            unique_novels.append(novel)
+    
+    # Informazioni di debug
+    debug_info = {
+        "pages_processed": max_pages,
+        "total_links_found": len(novels_list),
+        "unique_novels": len(unique_novels)
     }
     
-    try:
-        # Add timeout to prevent hanging requests
-        response = requests.get(link, headers=headers, timeout=10)
-        chapters = []
-        
-        if response.status_code == 200:
-            soup = BeautifulSoup(response.content, 'html.parser')
-            
-            # Expanded selector list to cover more website structures
-            chapter_selectors = [
-                'li.g_col_6', 
-                'ul.content-list li', 
-                'div.volume-item ol li',
-                'div.chapter-list li',
-                'ol.chapter-list li',
-                'div.chapter-item',
-                'a.chapter-link',
-                'div.catalog-content-wrap a',
-                'table.chapter-table tr'
-            ]
-            
-            chapter_elements = soup.select(', '.join(chapter_selectors))
-            
-            print(f"Found {len(chapter_elements)} potential chapter elements")
-            
-            # If no chapters found with specific selectors, try a more generic approach
-            if len(chapter_elements) == 0:
-                # Look for any links that might contain 'chapter' in their text or attributes
-                chapter_elements = soup.find_all('a', href=lambda href: href and ('chapter' in href.lower() or 'read' in href.lower()))
-                print(f"Fallback search found {len(chapter_elements)} potential chapter links")
-            
-            for chapter_element in chapter_elements:
-                # If the element is already an 'a' tag, use it directly
-                if chapter_element.name == 'a':
-                    a_element = chapter_element
-                else:
-                    # Try different ways to find the link element
-                    a_element = (chapter_element.select_one('a.c_000') or 
-                                chapter_element.select_one('a.chapter-item') or 
-                                chapter_element.select_one('a[href*=chapter]') or
-                                chapter_element.select_one('a'))
-                
-                if a_element:
-                    # Get title from multiple possible sources
-                    title = a_element.get('title') or a_element.get_text().strip()
-                    
-                    # Get href if it exists
-                    href = a_element.get('href')
-                    if href:
-                        # Process href to ensure it's a complete URL
-                        if href.startswith(('http://', 'https://')):
-                            full_url = href
-                        elif href.startswith('//'):
-                            full_url = f"https:{href}"
-                        elif href.startswith('/'):
-                            # Extract domain from original link
-                            from urllib.parse import urlparse
-                            parsed_uri = urlparse(link)
-                            domain = f'{parsed_uri.scheme}://{parsed_uri.netloc}'
-                            full_url = f"{domain}{href}"
-                        else:
-                            full_url = f"https://www.webnovel.com/{href}"
-                    else:
-                        continue  # Skip if no href found
-                    
-                    # Try to get chapter ID
-                    chapter_id = (chapter_element.get('data-report-cid') or 
-                                a_element.get('data-report-cid') or 
-                                a_element.get('data-cid') or
-                                a_element.get('id') or
-                                '')
-                    
-                    # Extract chapter number from URL or title if possible
-                    import re
-                    chapter_num_match = re.search(r'chapter[_\-\s]*(\d+)', full_url.lower() + ' ' + title.lower())
-                    chapter_num = chapter_num_match.group(1) if chapter_num_match else None
-                    
-                    # Only add if we have at least a title and URL
-                    if title and href:
-                        chapter_info = {
-                            'title': title,
-                            'url': full_url,
-                            'id': chapter_id,
-                            'chapter_num': chapter_num
-                        }
-                        chapters.append(chapter_info)
-            
-            # Sort chapters by chapter number if available
-            if chapters and all(ch.get('chapter_num') is not None for ch in chapters):
-                chapters.sort(key=lambda x: int(x['chapter_num']) if x['chapter_num'] else 0)
-            
-            response_data = {
-                "status": "ok" if chapters else "warning",
-                "messaggio": f"Trovati {len(chapters)} capitoli da {link}",
-                "data": chapters
-            }
-        else:
-            response_data = {
-                "status": "error",
-                "messaggio": f"Errore nella richiesta: status code {response.status_code}",
-                "data": []
-            }
-    
-    except requests.exceptions.Timeout:
-        response_data = {
-            "status": "error",
-            "messaggio": "Timeout durante la richiesta alla pagina web",
-            "data": []
-        }
-    except requests.exceptions.RequestException as e:
-        response_data = {
-            "status": "error",
-            "messaggio": f"Errore di rete: {str(e)}",
-            "data": []
-        }
-    except Exception as e:
-        response_data = {
-            "status": "error",
-            "messaggio": f"Errore generico: {str(e)}",
-            "data": []
-        }
+    response_data = {
+        "status": "ok",
+        "messaggio": f"chiamata eseguita correttamente - getnovels (HTML scraping)",
+        "totale": len(unique_novels),
+        "data": unique_novels,
+        "debug": debug_info
+    }
     
     return jsonify(response_data)
+
+@app.route('/getnovel/<slug>')
+def getnovel(slug):
+    url = f'https://www.wuxiaworld.com/novel/{slug}'
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+    }
+    response = requests.get(url, headers=headers)
+    novel_info = {}
+    
+    if response.status_code == 200:
+        soup = BeautifulSoup(response.content, 'html.parser')
+        
+        # Estrai titolo principale
+        title_elem = soup.select_one('h1, .novel-title, .novel-name')
+        if title_elem:
+            novel_info['title'] = title_elem.text.strip()
+        
+        # Estrai immagine di copertina
+        cover_img = soup.select_one('img.novel-cover, img.cover-image')
+        if cover_img:
+            novel_info['cover_image'] = cover_img.get('src', '')
+        
+        # Estrai descrizione
+        desc_elem = soup.select_one('div.novel-description, div.synopsis')
+        if desc_elem:
+            novel_info['description'] = desc_elem.text.strip()
+        
+        # Estrai capitoli
+        chapters = []
+        chapter_elements = soup.select('li.chapter, li.chapter-item')
+        for chapter in chapter_elements:
+            chapter_info = {}
+            link = chapter.select_one('a')
+            if link:
+                chapter_info['title'] = link.text.strip()
+                chapter_info['url'] = 'https://www.wuxiaworld.com' + link.get('href', '')
+                chapters.append(chapter_info)
+        
+        novel_info['chapters'] = chapters
+        novel_info['total_chapters'] = len(chapters)
+        novel_info['url'] = url
+        
+        response_data = {
+            "status": "ok",
+            "messaggio": f"chiamata eseguita correttamente - getnovel({slug})",
+            "data": novel_info
+        }
+        
+        return jsonify(response_data)
+    else:
+        return jsonify({
+            "status": "error",
+            "messaggio": f"Errore nella richiesta: {response.status_code}",
+            "data": None
+        })
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
