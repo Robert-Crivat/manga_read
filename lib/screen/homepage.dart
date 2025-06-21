@@ -5,9 +5,19 @@ import "package:manga_read/main.dart";
 import "package:manga_read/model/manga/manga_search_model.dart";
 import "package:manga_read/model/novels/novel_models.dart";
 import "package:manga_read/screen/detail_screen.dart";
+import "package:manga_read/screen/manga_preferiti.dart";
 
 class Homepage extends StatefulWidget {
-  const Homepage({super.key});
+  final Function? toggleTheme;
+  final bool? isDarkMode;
+  final List<MangaSearchModel> mangalist;
+
+  const Homepage({
+    super.key,
+    this.toggleTheme,
+    this.isDarkMode,
+    required this.mangalist,
+  });
 
   @override
   State<Homepage> createState() => _HomepageState();
@@ -23,6 +33,7 @@ class _HomepageState extends State<Homepage>
   final TextEditingController searchController = TextEditingController();
   bool isLoading = false;
   bool isLoadingNovel = false;
+  List<MangaSearchModel> mangaPreferiti = [];
 
   late final TabController _tabController;
 
@@ -35,10 +46,10 @@ class _HomepageState extends State<Homepage>
   @override
   void initState() {
     super.initState();
+    mangaList.addAll(widget.mangalist);
     _tabController = TabController(length: 2, vsync: this);
     sharedPrefs.init();
-    allManga();
-    allNoverls();
+    //allNoverls();
   }
 
   searchMangaWorld(String keyword) async {
@@ -55,38 +66,6 @@ class _HomepageState extends State<Homepage>
         context,
       ).showSnackBar(SnackBar(content: Text("Errore nella ricerca: $e")));
     }
-  }
-
-  allManga() async {
-    setState(() {
-      isLoading = true;
-    });
-    try {
-      setState(() {
-        mangaList.clear(); // Clear previous results
-      });
-
-      var results = await mangaWorldApi.getAllManga();
-      if (results.status == "ok") {
-        setState(() {
-          for (var manga in results.parametri) {
-            mangaList.add(MangaSearchModel.fromJson(manga));
-          }
-        });
-      } else {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text("Nessun manga trovato")));
-      }
-    } catch (e) {
-      print("Error fetching all manga: $e");
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("Errore nel caricamento: $e")));
-    }
-    setState(() {
-      isLoading = false;
-    });
   }
 
   allNoverls() async {
@@ -125,17 +104,47 @@ class _HomepageState extends State<Homepage>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.primary,
-        title: Text("Home", style: TextStyle(color: Colors.white)),
+        title: const Text(
+          'Manga Reader',
+          style: TextStyle(color: Colors.white),
+        ),
+        actions: [
+          // Aggiungi pulsante per cambiare tema
+          if (widget.toggleTheme != null)
+            IconButton(
+              icon: Icon(
+                widget.isDarkMode ?? true ? Icons.light_mode : Icons.dark_mode,
+                color: Colors.white,
+              ),
+              onPressed: () {
+                if (widget.toggleTheme != null) {
+                  widget.toggleTheme!();
+                }
+              },
+              tooltip: widget.isDarkMode ?? true
+                  ? 'Passa al tema chiaro'
+                  : 'Passa al tema scuro',
+            ),
+          IconButton(
+            icon: const Icon(Icons.favorite, color: Colors.white),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const MangaPreferitiScreen(),
+                ),
+              );
+            },
+          ),
+        ],
         bottom: TabBar(
           controller: _tabController,
-          tabs: const <Widget>[
-            Tab(
-              child: Text("Manga", style: TextStyle(color: Colors.white)),
-            ),
-            Tab(
-              child: Text("Novels", style: TextStyle(color: Colors.white)),
-            ),
+          labelColor: Colors.white,
+          unselectedLabelColor: Colors.white70,
+          indicatorColor: Colors.white,
+          tabs: const [
+            Tab(text: 'Manga'),
+            Tab(text: 'Novel'),
           ],
         ),
       ),
@@ -231,6 +240,120 @@ class _HomepageState extends State<Homepage>
                                             )
                                           : const Icon(Icons.book),
                                       title: Text(manga.title),
+                                      trailing: IconButton(
+                                        icon: Icon(
+                                          Icons.favorite,
+                                          color:
+                                              sharedPrefs.isMangaInFavorites(
+                                                manga.url,
+                                              )
+                                              ? Colors.red
+                                              : Colors.grey,
+                                        ),
+                                        onPressed: () async {
+                                          final bool isAlreadyFavorite =
+                                              sharedPrefs.isMangaInFavorites(
+                                                manga.url,
+                                              );
+
+                                          if (isAlreadyFavorite) {
+                                            // Rimuovi dai preferiti
+                                            final success = await sharedPrefs
+                                                .removeMangaFromFavorites(
+                                                  url: manga.url,
+                                                );
+
+                                            if (success) {
+                                              // Aggiorna anche la lista locale se necessario
+                                              setState(() {
+                                                mangaPreferiti.removeWhere(
+                                                  (item) =>
+                                                      item.url == manga.url,
+                                                );
+                                              });
+
+                                              ScaffoldMessenger.of(
+                                                context,
+                                              ).showSnackBar(
+                                                SnackBar(
+                                                  content: Text(
+                                                    '${manga.title} rimosso dai preferiti',
+                                                  ),
+                                                  backgroundColor:
+                                                      Colors.orange,
+                                                ),
+                                              );
+                                            } else {
+                                              ScaffoldMessenger.of(
+                                                context,
+                                              ).showSnackBar(
+                                                const SnackBar(
+                                                  content: Text(
+                                                    'Errore nel rimuovere dai preferiti',
+                                                  ),
+                                                  backgroundColor: Colors.red,
+                                                ),
+                                              );
+                                            }
+                                          } else {
+                                            // Aggiungi ai preferiti
+                                            final success = await sharedPrefs
+                                                .addMangaToFavorites(
+                                                  title: manga.title,
+                                                  url: manga.url,
+                                                  imgUrl: manga.img,
+                                                );
+
+                                            if (success) {
+                                              // Aggiorna anche la lista locale se necessario
+                                              setState(() {
+                                                MangaSearchModel
+                                                mangaPreferito =
+                                                    MangaSearchModel(
+                                                      title: manga.title,
+                                                      img: manga.img,
+                                                      url: manga.url,
+                                                      story: "",
+                                                      status: "",
+                                                      type: "",
+                                                      genres: "",
+                                                      author: "",
+                                                      artist: "",
+                                                    );
+                                                mangaPreferiti.add(
+                                                  mangaPreferito,
+                                                );
+                                              });
+
+                                              ScaffoldMessenger.of(
+                                                context,
+                                              ).showSnackBar(
+                                                SnackBar(
+                                                  content: Text(
+                                                    '${manga.title} aggiunto ai preferiti',
+                                                  ),
+                                                  backgroundColor: Colors.green,
+                                                ),
+                                              );
+                                            } else {
+                                              ScaffoldMessenger.of(
+                                                context,
+                                              ).showSnackBar(
+                                                const SnackBar(
+                                                  content: Text(
+                                                    'Manga già presente nei preferiti',
+                                                  ),
+                                                  backgroundColor:
+                                                      Colors.orange,
+                                                ),
+                                              );
+                                            }
+                                          }
+
+                                          // Aggiorna l'UI
+                                          setState(() {});
+                                        },
+                                      ),
                                     ),
                                   ),
                                 );
@@ -266,102 +389,254 @@ class _HomepageState extends State<Homepage>
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(12),
                                     ),
-                                    child: Column(
-                                      mainAxisSize:
-                                          MainAxisSize.min, // Fix overflow
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.stretch,
+                                    child: Stack(
                                       children: [
-                                        ClipRRect(
-                                          borderRadius:
-                                              const BorderRadius.vertical(
-                                                top: Radius.circular(12),
+                                        Column(
+                                          mainAxisSize:
+                                              MainAxisSize.min, // Fix overflow
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.stretch,
+                                          children: [
+                                            ClipRRect(
+                                              borderRadius:
+                                                  const BorderRadius.vertical(
+                                                    top: Radius.circular(12),
+                                                  ),
+                                              child: manga.img.isNotEmpty
+                                                  ? Image.network(
+                                                      manga.img,
+                                                      height: 160,
+                                                      fit: BoxFit.cover,
+                                                      errorBuilder:
+                                                          (
+                                                            context,
+                                                            error,
+                                                            stackTrace,
+                                                          ) {
+                                                            return const SizedBox(
+                                                              height: 160,
+                                                              child: Icon(
+                                                                Icons.book,
+                                                                size: 48,
+                                                              ),
+                                                            );
+                                                          },
+                                                    )
+                                                  : const SizedBox(
+                                                      height: 160,
+                                                      child: Icon(
+                                                        Icons.book,
+                                                        size: 48,
+                                                      ),
+                                                    ),
+                                            ),
+                                            Padding(
+                                              padding: const EdgeInsets.all(
+                                                8.0,
                                               ),
-                                          child: manga.img.isNotEmpty
-                                              ? Image.network(
-                                                  manga.img,
-                                                  height: 160,
-                                                  fit: BoxFit.cover,
-                                                  errorBuilder:
-                                                      (
-                                                        context,
-                                                        error,
-                                                        stackTrace,
-                                                      ) {
-                                                        return const SizedBox(
-                                                          height: 160,
-                                                          child: Icon(
-                                                            Icons.book,
-                                                            size: 48,
-                                                          ),
-                                                        );
-                                                      },
-                                                )
-                                              : const SizedBox(
-                                                  height: 160,
-                                                  child: Icon(
-                                                    Icons.book,
-                                                    size: 48,
+                                              child: Container(
+                                                height:
+                                                    90, // Altezza fissa per questa sezione
+                                                child: SingleChildScrollView(
+                                                  child: Column(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    children: [
+                                                      Text(
+                                                        manga.title,
+                                                        maxLines: 2,
+                                                        overflow: TextOverflow
+                                                            .ellipsis,
+                                                        style: const TextStyle(
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                          fontSize: 16,
+                                                        ),
+                                                      ),
+                                                      const SizedBox(height: 4),
+                                                      if (manga
+                                                          .author
+                                                          .isNotEmpty)
+                                                        Text(
+                                                          "Autore: ${manga.author}",
+                                                          maxLines: 1,
+                                                          overflow: TextOverflow
+                                                              .ellipsis,
+                                                          style:
+                                                              const TextStyle(
+                                                                fontSize: 13,
+                                                                color:
+                                                                    Colors.grey,
+                                                              ),
+                                                        ),
+                                                      if (manga
+                                                          .genres
+                                                          .isNotEmpty)
+                                                        Text(
+                                                          "Genere: ${manga.genres}",
+                                                          maxLines: 1,
+                                                          overflow: TextOverflow
+                                                              .ellipsis,
+                                                          style:
+                                                              const TextStyle(
+                                                                fontSize: 13,
+                                                                color:
+                                                                    Colors.grey,
+                                                              ),
+                                                        ),
+                                                      if (manga
+                                                          .status
+                                                          .isNotEmpty)
+                                                        Text(
+                                                          "Stato: ${manga.status}",
+                                                          maxLines: 1,
+                                                          overflow: TextOverflow
+                                                              .ellipsis,
+                                                          style:
+                                                              const TextStyle(
+                                                                fontSize: 13,
+                                                                color:
+                                                                    Colors.grey,
+                                                              ),
+                                                        ),
+                                                    ],
                                                   ),
                                                 ),
-                                        ),
-                                        Padding(
-                                          padding: const EdgeInsets.all(8.0),
-                                          child: Container(
-                                            height:
-                                                90, // Altezza fissa per questa sezione
-                                            child: SingleChildScrollView(
-                                              child: Column(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                children: [
-                                                  Text(
-                                                    manga.title,
-                                                    maxLines: 2,
-                                                    overflow:
-                                                        TextOverflow.ellipsis,
-                                                    style: const TextStyle(
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      fontSize: 16,
-                                                    ),
-                                                  ),
-                                                  const SizedBox(height: 4),
-                                                  if (manga.author.isNotEmpty)
-                                                    Text(
-                                                      "Autore: ${manga.author}",
-                                                      maxLines: 1,
-                                                      overflow:
-                                                          TextOverflow.ellipsis,
-                                                      style: const TextStyle(
-                                                        fontSize: 13,
-                                                        color: Colors.grey,
-                                                      ),
-                                                    ),
-                                                  if (manga.genres.isNotEmpty)
-                                                    Text(
-                                                      "Genere: ${manga.genres}",
-                                                      maxLines: 1,
-                                                      overflow:
-                                                          TextOverflow.ellipsis,
-                                                      style: const TextStyle(
-                                                        fontSize: 13,
-                                                        color: Colors.grey,
-                                                      ),
-                                                    ),
-                                                  if (manga.status.isNotEmpty)
-                                                    Text(
-                                                      "Stato: ${manga.status}",
-                                                      maxLines: 1,
-                                                      overflow:
-                                                          TextOverflow.ellipsis,
-                                                      style: const TextStyle(
-                                                        fontSize: 13,
-                                                        color: Colors.grey,
-                                                      ),
-                                                    ),
-                                                ],
                                               ),
+                                            ),
+                                          ],
+                                        ),
+                                        Positioned(
+                                          top: 5,
+                                          right: 5,
+                                          child: Container(
+                                            decoration: BoxDecoration(
+                                              color: Colors.white.withOpacity(
+                                                0.8,
+                                              ),
+                                              shape: BoxShape.circle,
+                                            ),
+                                            child: IconButton(
+                                              icon: Icon(
+                                                Icons.favorite,
+                                                color:
+                                                    sharedPrefs
+                                                        .isMangaInFavorites(
+                                                          manga.url,
+                                                        )
+                                                    ? Colors.red
+                                                    : Colors.grey,
+                                              ),
+                                              onPressed: () async {
+                                                final bool isAlreadyFavorite =
+                                                    sharedPrefs
+                                                        .isMangaInFavorites(
+                                                          manga.url,
+                                                        );
+
+                                                if (isAlreadyFavorite) {
+                                                  // Rimuovi dai preferiti
+                                                  final success = await sharedPrefs
+                                                      .removeMangaFromFavorites(
+                                                        url: manga.url,
+                                                      );
+
+                                                  if (success) {
+                                                    // Aggiorna anche la lista locale se necessario
+                                                    setState(() {
+                                                      mangaPreferiti
+                                                          .removeWhere(
+                                                            (item) =>
+                                                                item.url ==
+                                                                manga.url,
+                                                          );
+                                                    });
+
+                                                    ScaffoldMessenger.of(
+                                                      context,
+                                                    ).showSnackBar(
+                                                      SnackBar(
+                                                        content: Text(
+                                                          '${manga.title} rimosso dai preferiti',
+                                                        ),
+                                                        backgroundColor:
+                                                            Colors.orange,
+                                                      ),
+                                                    );
+                                                  } else {
+                                                    ScaffoldMessenger.of(
+                                                      context,
+                                                    ).showSnackBar(
+                                                      const SnackBar(
+                                                        content: Text(
+                                                          'Errore nel rimuovere dai preferiti',
+                                                        ),
+                                                        backgroundColor:
+                                                            Colors.red,
+                                                      ),
+                                                    );
+                                                  }
+                                                } else {
+                                                  // Aggiungi ai preferiti
+                                                  final success =
+                                                      await sharedPrefs
+                                                          .addMangaToFavorites(
+                                                            title: manga.title,
+                                                            url: manga.url,
+                                                            imgUrl: manga.img,
+                                                          );
+
+                                                  if (success) {
+                                                    // Aggiorna anche la lista locale se necessario
+                                                    setState(() {
+                                                      MangaSearchModel
+                                                      mangaPreferito =
+                                                          MangaSearchModel(
+                                                            title: manga.title,
+                                                            img: manga.img,
+                                                            url: manga.url,
+                                                            story: "",
+                                                            status: "",
+                                                            type: "",
+                                                            genres: "",
+                                                            author: "",
+                                                            artist: "",
+                                                          );
+                                                      mangaPreferiti.add(
+                                                        mangaPreferito,
+                                                      );
+                                                    });
+
+                                                    ScaffoldMessenger.of(
+                                                      context,
+                                                    ).showSnackBar(
+                                                      SnackBar(
+                                                        content: Text(
+                                                          '${manga.title} aggiunto ai preferiti',
+                                                        ),
+                                                        backgroundColor:
+                                                            Colors.green,
+                                                      ),
+                                                    );
+                                                  } else {
+                                                    ScaffoldMessenger.of(
+                                                      context,
+                                                    ).showSnackBar(
+                                                      const SnackBar(
+                                                        content: Text(
+                                                          'Manga già presente nei preferiti',
+                                                        ),
+                                                        backgroundColor:
+                                                            Colors.orange,
+                                                      ),
+                                                    );
+                                                  }
+                                                }
+
+                                                // Aggiorna l'UI
+                                                setState(() {});
+                                              },
                                             ),
                                           ),
                                         ),
@@ -374,7 +649,7 @@ class _HomepageState extends State<Homepage>
                           ),
                   ],
                 ),
-          isLoading == true
+          /*isLoadingNovel == true
               ? const Center(child: CircularProgressIndicator())
               : Column(
                   children: [
@@ -471,7 +746,16 @@ class _HomepageState extends State<Homepage>
                       ),
                     ),
                   ],
-                ),
+                ),*/
+          Center(
+            child: Text(
+              'La sezione Novel è in fase di sviluppo...',
+              style: TextStyle(
+                fontSize: 20,
+                color: Theme.of(context).textTheme.bodyLarge?.color,
+              ),
+            ),
+          ),
         ],
       ),
       //floatingActionButton: FloatingActionButton(

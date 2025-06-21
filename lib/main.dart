@@ -1,34 +1,153 @@
 import 'package:flutter/material.dart';
+import 'package:manga_read/api/manga_world_api.dart';
+import 'package:manga_read/model/manga/manga_search_model.dart';
 import 'package:manga_read/screen/homepage.dart';
 import 'package:manga_read/service/shared_prefs.dart';
-
 
 final sharedPrefs = SharedPrefs();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(MyApp());
+  await sharedPrefs.init(); // Assicuriamo che SharedPrefs sia inizializzato
+  runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  bool _isDarkMode = true;
+  bool isLoading = false;
+  List<MangaSearchModel> mangaList = [];
+  final MangaWorldApi mangaWorldApi = MangaWorldApi();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadThemePreference();
+    allManga();
+  }
+
+  _loadThemePreference() async {
+    bool isDark = await sharedPrefs.getDarkMode();
+    setState(() {
+      _isDarkMode = isDark;
+    });
+  }
+
+  // Aggiorna il tema
+  void _toggleTheme() async {
+    setState(() {
+      _isDarkMode = !_isDarkMode;
+    });
+    await sharedPrefs.setDarkMode(_isDarkMode);
+  }
+
+  allManga() async {
+    setState(() {
+      isLoading = true;
+    });
+    try {
+      setState(() {
+        mangaList.clear(); // Clear previous results
+      });
+
+      var results = await mangaWorldApi.getAllManga();
+      if (results.status == "ok") {
+        setState(() {
+          for (var manga in results.parametri) {
+            mangaList.add(MangaSearchModel.fromJson(manga));
+          }
+        });
+      } else {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text("Nessun manga trovato")));
+      }
+    } catch (e) {
+      print("Error fetching all manga: $e");
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Errore nel caricamento: $e")));
+    }
+    setState(() {
+      isLoading = false;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Manga Reader',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        useMaterial3: true,
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.deepPurple,
+          brightness: Brightness.light,
+        ),
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Colors.deepPurple,
+          foregroundColor: Colors.white,
+        ),
       ),
-      home: const MyHomePage(title: 'Manga Reader'),
+      darkTheme: ThemeData(
+        useMaterial3: true,
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.deepPurple,
+          brightness: Brightness.dark,
+          primary: Colors.deepPurple[300],
+          surface: const Color(0xFF121212),
+          background: const Color(0xFF121212),
+          error: Colors.redAccent,
+        ),
+        cardColor: const Color(0xFF1E1E1E),
+        canvasColor: const Color(0xFF121212),
+        appBarTheme: AppBarTheme(
+          backgroundColor: Colors.grey[900],
+          foregroundColor: Colors.white,
+        ),
+        scaffoldBackgroundColor: const Color(0xFF121212),
+      ),
+      themeMode: _isDarkMode ? ThemeMode.dark : ThemeMode.light,
+      home: 
+      isLoading == true ? 
+      Scaffold(body: Center(child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+          CircularProgressIndicator(),
+          Text("Manga in caricamente, si prega di attendere...", textAlign: TextAlign.center, style: TextStyle(fontSize: 26, fontStyle: FontStyle.italic, fontWeight: FontWeight.w400),),
+        ],),
+      )))
+      :MyHomePage(
+        mangaList : mangaList,
+        title: 'Manga Reader',
+        toggleTheme: _toggleTheme,
+        isDarkMode: _isDarkMode,
+      ),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
   final String title;
+  final Function toggleTheme;
+  final bool isDarkMode;
+  final List<MangaSearchModel>mangaList;
+
+
+  const MyHomePage({
+    super.key,
+    required this.title,
+    required this.toggleTheme,
+    required this.isDarkMode,
+    required this.mangaList
+  });
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
@@ -37,6 +156,10 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
-    return Homepage();
+    return Homepage(
+      mangalist : widget.mangaList,
+      toggleTheme: widget.toggleTheme,
+      isDarkMode: widget.isDarkMode,
+    );
   }
 }
