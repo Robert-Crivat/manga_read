@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:manga_read/api/manga_world_api.dart';
 import 'package:manga_read/model/manga/capitoli_model.dart';
 import 'package:manga_read/model/manga/manga_search_model.dart';
-import 'package:manga_read/screen/lettura_screen.dart';
+import 'package:manga_read/screen/manga/lettura_screen.dart';
 
 class DetailScreen extends StatefulWidget {
   final MangaSearchModel manga;

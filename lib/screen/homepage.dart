@@ -4,19 +4,22 @@ import "package:manga_read/api/web_novels_api.dart";
 import "package:manga_read/main.dart";
 import "package:manga_read/model/manga/manga_search_model.dart";
 import "package:manga_read/model/novels/novel_models.dart";
-import "package:manga_read/screen/detail_screen.dart";
-import "package:manga_read/screen/manga_preferiti.dart";
+import "package:manga_read/screen/manga/detail_screen.dart";
+import "package:manga_read/screen/manga/manga_preferiti.dart";
+import "package:manga_read/screen/manga/novel_detail_screen.dart";
 
 class Homepage extends StatefulWidget {
   final Function? toggleTheme;
   final bool? isDarkMode;
   final List<MangaSearchModel> mangalist;
+  final List<NovelModels> novels;
 
   const Homepage({
     super.key,
     this.toggleTheme,
     this.isDarkMode,
     required this.mangalist,
+    required this.novels,
   });
 
   @override
@@ -47,6 +50,7 @@ class _HomepageState extends State<Homepage>
   void initState() {
     super.initState();
     mangaList.addAll(widget.mangalist);
+    novelList.addAll(widget.novels);
     _tabController = TabController(length: 2, vsync: this);
     sharedPrefs.init();
     //allNoverls();
@@ -649,126 +653,101 @@ class _HomepageState extends State<Homepage>
                           ),
                   ],
                 ),
-          /*isLoadingNovel == true
-              ? const Center(child: CircularProgressIndicator())
-              : Column(
-                  children: [
-                    ElevatedButton(
-                      onPressed: () {
-                        allNoverls();
+          Column(
+            children: [
+              ElevatedButton(
+                onPressed: () {
+                  allNoverls();
+                },
+                child: const Text('Ricarica Novels'),
+              ),
+              Expanded(
+                child: GridView.builder(
+                  padding: const EdgeInsets.all(8),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    crossAxisSpacing: 12,
+                    mainAxisSpacing: 12,
+                    childAspectRatio: 0.55,
+                  ),
+                  itemCount: novelList.length,
+                  itemBuilder: (context, index) {
+                    final novel = novelList[index];
+                    return GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => NovelDetailScreen(novel: novel),
+                          ),
+                        );
                       },
-                      child: const Text('Ricarica Novels'),
-                    ),
-                    Expanded(
-                      child: GridView.builder(
-                        padding: const EdgeInsets.all(8),
-                        gridDelegate:
-                            const SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 2,
-                              crossAxisSpacing: 12,
-                              mainAxisSpacing: 12,
-                              childAspectRatio: 0.55,
-                            ),
-                        itemCount: novelList.length,
-                        itemBuilder: (context, index) {
-                          final novel = novelList[index];
-                          return GestureDetector(
-                            onTap: () {
-                              // Navigate to novel detail page
-                              // Will need to create a NovelDetailScreen or adapt DetailScreen
-                            },
-                            child: Card(
-                              elevation: 4,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
+                      child: Card(
+                        elevation: 4,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            ClipRRect(
+                              borderRadius: const BorderRadius.vertical(
+                                top: Radius.circular(12),
                               ),
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                crossAxisAlignment: CrossAxisAlignment.stretch,
-                                children: [
-                                  ClipRRect(
-                                    borderRadius: const BorderRadius.vertical(
-                                      top: Radius.circular(12),
+                              child: novel.img!.isNotEmpty
+                                  ? Image.network(
+                                      novel.img!,
+                                      height: 160,
+                                      fit: BoxFit.cover,
+                                      errorBuilder:
+                                          (context, error, stackTrace) {
+                                            return const SizedBox(
+                                              height: 160,
+                                              child: Icon(Icons.book, size: 48),
+                                            );
+                                          },
+                                    )
+                                  : const SizedBox(
+                                      height: 160,
+                                      child: Icon(Icons.menu_book, size: 48),
                                     ),
-                                    child: novel.img!.isNotEmpty
-                                        ? Image.network(
-                                            novel.img!,
-                                            height: 160,
-                                            fit: BoxFit.cover,
-                                            errorBuilder:
-                                                (context, error, stackTrace) {
-                                                  return const SizedBox(
-                                                    height: 160,
-                                                    child: Icon(
-                                                      Icons.book,
-                                                      size: 48,
-                                                    ),
-                                                  );
-                                                },
-                                          )
-                                        : const SizedBox(
-                                            height: 160,
-                                            child: Icon(
-                                              Icons.menu_book,
-                                              size: 48,
-                                            ),
-                                          ),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Container(
-                                      height: 90,
-                                      child: SingleChildScrollView(
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              novel.title!,
-                                              maxLines: 2,
-                                              overflow: TextOverflow.ellipsis,
-                                              style: const TextStyle(
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 16,
-                                              ),
-                                            ),
-                                            const SizedBox(height: 4),
-                                          ],
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Container(
+                                height: 90,
+                                child: SingleChildScrollView(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        novel.title!,
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 16,
                                         ),
                                       ),
-                                    ),
+                                      const SizedBox(height: 4),
+                                    ],
                                   ),
-                                ],
+                                ),
                               ),
                             ),
-                          );
-                        },
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
-                ),*/
-          Center(
-            child: Text(
-              'La sezione Novel è in fase di sviluppo...',
-              style: TextStyle(
-                fontSize: 20,
-                color: Theme.of(context).textTheme.bodyLarge?.color,
+                    );
+                  },
+                ),
               ),
-            ),
-          ),
-        ],
-      ),
-      //floatingActionButton: FloatingActionButton(
-      //  onPressed: () {
-      //    searchController.clear();
-      //    Navigator.push(
-      //      context,
-      //      MaterialPageRoute(builder: (context) => MangaPreferitiScreen()),
-      //    );
-      //  },
-      //  tooltip: 'Preferiti',
-      //  child: const Icon(Icons.favorite_border),
-      //),
-    );
-  }
-}
+                        ],
+                      ),
+                    ],
+                  ),
+                );
+              }
+            }

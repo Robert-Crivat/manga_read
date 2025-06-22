@@ -437,5 +437,368 @@ def getnovel(slug):
             "data": None
         })
 
+@app.route('/getchapter/<slug>/<chapter_id>')
+def getchapter(slug, chapter_id):
+    """
+    Estrae il contenuto di un capitolo specifico di una novel da wuxiaworld.com.
+    
+    Parameters:
+    - slug: L'identificativo della novel (es. 'reborn-apocalypse')
+    - chapter_id: L'identificativo del capitolo (es. 'chapter-3')
+    
+    Returns:
+    - JSON con il contenuto del capitolo formattato
+    """
+    base_url = 'https://www.wuxiaworld.com'
+    url = f'{base_url}/novel/{slug}/{chapter_id}'
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+    }
+    
+    # Prima prova con l'API GraphQL
+    graphql_url = f"{base_url}/api/graphql"
+    
+    # Query GraphQL per ottenere il contenuto di un capitolo specifico
+    graphql_query = """
+    query ChapterContent($slug: String!, $chapterSlug: String!) {
+      chapter(novelSlug: $slug, chapterSlug: $chapterSlug) {
+        id
+        name
+        number
+        content
+        novel {
+          name
+          slug
+        }
+      }
+    }
+    """
+    
+    variables = {
+        "slug": slug,
+        "chapterSlug": chapter_id
+    }
+    
+    chapter_info = {
+        'title': '',
+        'content': [],
+        'novel_slug': slug,
+        'chapter_id': chapter_id,
+        'url': url
+    }
+    
+    try:
+        # Chiamata API GraphQL
+        response = requests.post(
+            graphql_url,
+            json={'query': graphql_query, 'variables': variables},
+            headers=headers
+        )
+        
+        if response.status_code == 200:
+            data = response.json()
+            
+            # Verifichiamo se abbiamo ricevuto dati validi
+            if 'data' in data and 'chapter' in data['data'] and data['data']['chapter']:
+                chapter_data = data['data']['chapter']
+                
+                # Estrai il titolo
+                chapter_info['title'] = chapter_data.get('name', f"Chapter {chapter_data.get('number', '')}")
+                
+                # Estrai il contenuto
+                content = chapter_data.get('content', '')
+                if content:
+                    # Dividi il contenuto in paragrafi
+                    soup = BeautifulSoup(content, 'html.parser')
+                    paragraphs = soup.find_all('p')
+                    
+                    if paragraphs:
+                        for p in paragraphs:
+                            text = p.text.strip()
+                            if text:
+                                chapter_info['content'].append(text)
+                    else:
+                        # Se non trova paragrafi, divide per \n o <br>
+                        lines = content.split('\n')
+                        for line in lines:
+                            text = line.strip()
+                            if text:
+                                chapter_info['content'].append(text)
+                
+                # Se abbiamo ottenuto contenuto, restituisci subito la risposta
+                if chapter_info['content']:
+                    response_data = {
+                        "status": "ok",
+                        "messaggio": f"chiamata eseguita correttamente - getchapter({slug}/{chapter_id})",
+                        "data": chapter_info
+                    }
+                    return jsonify(response_data)
+    except Exception as e:
+        print(f"Errore nella chiamata GraphQL per il capitolo: {str(e)}")
+    
+    # Se l'approccio GraphQL fallisce o non restituisce contenuto, usa l'approccio HTML
+    try:
+        response = requests.get(url, headers={
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        })
+        
+        if response.status_code == 200:
+            html = response.text
+            
+            # Cerchiamo un pattern JSON nell'HTML che contenga i dati del capitolo
+            import re
+            json_pattern = r'__REACT_QUERY_STATE__\s*=\s*({.*?});'
+            matches = re.search(json_pattern, html, re.DOTALL)
+            
+            if matches:
+                json_str = matches.group(1)
+                try:
+                    # Puliamo e analizziamo il JSON
+                    import json
+                    data = json.loads(json_str)
+                    
+                    # Estraiamo i dati dal JSON se presente
+                    if 'queries' in data:
+                        for query in data['queries']:
+                            if 'state' in query and 'data' in query['state']:
+                                chapter_data = query['state']['data']
+                                if chapter_data:
+                                    # Cerca il titolo
+                                    if 'name' in chapter_data:
+                                        chapter_info['title'] = chapter_data['name']
+                                    
+                                    # Cerca il contenuto
+                                    if 'content' in chapter_data:
+                                        content = chapter_data['content']
+                                        soup = BeautifulSoup(content, 'html.parser')
+                                        paragraphs = soup.find_all('p')
+                                        
+                                        if paragraphs:
+                                            for p in paragraphs:
+                                                text = p.text.strip()
+                                                if text:
+                                                    chapter_info['content'].append(text)
+                                        else:
+                                            # Se non trova paragrafi, divide per \n o <br>
+                                            lines = content.split('\n')
+                                            for line in lines:
+                                                text = line.strip()
+                                                if text:
+                                                    chapter_info['content'].append(text)
+                except Exception as json_err:
+                    print(f"Errore nell'analisi JSON per il capitolo: {str(json_err)}")
+            
+            # Se ancora non abbiamo contenuto, cerca nel DOM
+            if not chapter_info['content']:
+                soup = BeautifulSoup(response.content, 'html.parser')
+                
+                # Estrai il titolo del capitolo
+                title_elem = soup.select_one('h4.chapter-title, h1.chapter-title, .novel-content h1, .chapter-header')
+                if title_elem:
+                    chapter_info['title'] = title_elem.text.strip()
+                
+                # Estrai il contenuto del capitolo
+                content_elem = soup.select_one('div.chapter-content, div.fr-view, div.reader-content, .novel-content')
+                
+                if content_elem:
+                    # Estrai tutti i paragrafi
+                    paragraphs = content_elem.select('p')
+                    for p in paragraphs:
+                        text = p.text.strip()
+                        if text:
+                            chapter_info['content'].append(text)
+                    
+                    # Se non abbiamo paragrafi, prova a estrarre il testo direttamente
+                    if not chapter_info['content']:
+                        text = content_elem.get_text(separator='\n').strip()
+                        lines = text.split('\n')
+                        for line in lines:
+                            clean_line = line.strip()
+                            if clean_line:
+                                chapter_info['content'].append(clean_line)
+    except Exception as e:
+        print(f"Errore nell'approccio HTML per il capitolo: {str(e)}")
+    
+    response_data = {
+        "status": "ok",
+        "messaggio": f"chiamata eseguita correttamente - getchapter({slug}/{chapter_id})",
+        "data": chapter_info
+    }
+    
+    return jsonify(response_data)
+
+@app.route('/getchapters/<slug>')
+def getchapters(slug):
+    """
+    Estrae tutti i capitoli disponibili per una novel specifica da wuxiaworld.com.
+    
+    Parameters:
+    - slug: L'identificativo della novel (es. 'reborn-apocalypse')
+    
+    Returns:
+    - JSON con l'elenco dei capitoli disponibili
+    """
+    # URL di base e headers
+    base_url = 'https://www.wuxiaworld.com'
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+    }
+    
+    # Dato che il sito usa GraphQL, utilizziamo una query per ottenere i capitoli
+    graphql_url = f"{base_url}/api/graphql"
+    
+    # Query GraphQL per ottenere i capitoli di una novel specifica
+    graphql_query = """
+    query NovelChapters($slug: String!) {
+      novel(slug: $slug) {
+        id
+        name
+        slug
+        chaptersCount
+        chapters {
+          id
+          name
+          slug
+          number
+          publishDate
+          chapterUrl
+        }
+      }
+    }
+    """
+    
+    variables = {
+        "slug": slug
+    }
+    
+    chapters_list = []
+    
+    try:
+        # Chiamata API GraphQL
+        response = requests.post(
+            graphql_url,
+            json={'query': graphql_query, 'variables': variables},
+            headers=headers
+        )
+        
+        print(f"Risposta GraphQL status: {response.status_code}")
+        
+        if response.status_code == 200:
+            data = response.json()
+            
+            # Verifichiamo se abbiamo ricevuto dati validi
+            if 'data' in data and 'novel' in data['data'] and data['data']['novel']:
+                novel_data = data['data']['novel']
+                chapters = novel_data.get('chapters', [])
+                
+                for chapter in chapters:
+                    chapter_info = {
+                        'title': chapter.get('name', f'Chapter {chapter.get("number", "")}'),
+                        'chapter_id': chapter.get('slug', ''),
+                        'url': chapter.get('chapterUrl', f"/novel/{slug}/{chapter.get('slug', '')}"),
+                        'number': chapter.get('number', ''),
+                        'date': chapter.get('publishDate', '')
+                    }
+                    
+                    # Aggiungi il protocollo e dominio se l'URL è relativo
+                    if chapter_info['url'].startswith('/'):
+                        chapter_info['url'] = f"{base_url}{chapter_info['url']}"
+                    
+                    chapters_list.append(chapter_info)
+                
+                # Ordina i capitoli per numero/posizione se disponibile
+                if chapters_list and 'number' in chapters_list[0]:
+                    chapters_list.sort(key=lambda x: x.get('number', 0))
+    except Exception as e:
+        print(f"Errore nella chiamata GraphQL: {str(e)}")
+    
+    # Se l'approccio GraphQL fallisce, proviamo con l'approccio alternativo
+    if not chapters_list:
+        print("GraphQL fallito, provo approccio alternativo...")
+        
+        # Approccio alternativo: cercare di estrarre l'elenco dei capitoli dalla pagina HTML
+        # Questa è una soluzione di fallback nel caso in cui l'API GraphQL cambi o non sia disponibile
+        try:
+            # URL della pagina della novel
+            novel_url = f"{base_url}/novel/{slug}"
+            response = requests.get(novel_url, headers={
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+            })
+            
+            if response.status_code == 200:
+                html = response.text
+                
+                # Cerchiamo un pattern JSON nell'HTML che contenga i dati dei capitoli
+                # Molti siti moderni caricano i dati iniziali come JSON nel codice HTML
+                import re
+                json_pattern = r'__REACT_QUERY_STATE__\s*=\s*({.*?});'
+                matches = re.search(json_pattern, html, re.DOTALL)
+                
+                if matches:
+                    json_str = matches.group(1)
+                    try:
+                        # Puliamo e analizziamo il JSON
+                        import json
+                        data = json.loads(json_str)
+                        
+                        # Estraiamo i dati dal JSON se presente
+                        if 'queries' in data:
+                            for query in data['queries']:
+                                if 'state' in query and 'data' in query['state']:
+                                    novel_data = query['state']['data']
+                                    if novel_data and 'chapters' in novel_data:
+                                        for chapter in novel_data['chapters']:
+                                            chapter_info = {
+                                                'title': chapter.get('name', f"Chapter {chapter.get('number', '')}"),
+                                                'chapter_id': chapter.get('slug', ''),
+                                                'url': f"{base_url}/novel/{slug}/{chapter.get('slug', '')}",
+                                                'number': chapter.get('number', ''),
+                                                'date': chapter.get('publishDate', '')
+                                            }
+                                            chapters_list.append(chapter_info)
+                    except Exception as json_err:
+                        print(f"Errore nell'analisi JSON: {str(json_err)}")
+                        
+                # Se ancora non abbiamo trovato capitoli, cerchiamo link nella pagina che potrebbero essere capitoli
+                if not chapters_list:
+                    soup = BeautifulSoup(response.content, 'html.parser')
+                    
+                    # Cerca i capitoli attraverso i vari possibili pattern di link
+                    chapter_links = soup.select(f'a[href*="/novel/{slug}/chapter-"], a[href*="/novel/{slug}/book-"]')
+                    
+                    for link in chapter_links:
+                        href = link.get('href', '')
+                        if href:
+                            # Estrai l'ID del capitolo dall'URL
+                            chapter_id = href.split('/')[-1]
+                            chapter_info = {
+                                'title': link.text.strip() or f"Chapter {len(chapters_list) + 1}",
+                                'chapter_id': chapter_id,
+                                'url': href if href.startswith('http') else f"{base_url}{href}",
+                            }
+                            chapters_list.append(chapter_info)
+        except Exception as e:
+            print(f"Errore nell'approccio alternativo: {str(e)}")
+    
+    # Rimuovi eventuali duplicati basati sull'URL
+    unique_chapters = []
+    seen_urls = set()
+    for chapter in chapters_list:
+        if chapter['url'] not in seen_urls:
+            seen_urls.add(chapter['url'])
+            unique_chapters.append(chapter)
+    
+    response_data = {
+        "status": "ok",
+        "messaggio": f"chiamata eseguita correttamente - getchapters({slug})",
+        "totale": len(unique_chapters),
+        "data": unique_chapters
+    }
+    
+    return jsonify(response_data)
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
