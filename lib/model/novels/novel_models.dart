@@ -1,22 +1,19 @@
 class NovelModels {
-  String? bookID;
-  String? img;
-  String? title;
-  String? url;
+  String img;
+  String title;
+  String url;
 
   NovelModels({
-    this.bookID,
-    this.img,
-    this.title,
-    this.url,
+    required this.img,
+    required this.title,
+    required this.url,
   });
 
   factory NovelModels.fromJson(Map<String, dynamic> json) {
     return NovelModels(
-      bookID: json['book_id'] as String?,
-      img: json['cover_image'] as String?,
-      title: json['title'] as String?,
-      url: json['url'] as String?,
+      img: json['cover_image'],
+      title: json['title'],
+      url: json['url'],
     );
   }
 

@@ -11,12 +11,14 @@ class Homepage extends StatefulWidget {
   final Function? toggleTheme;
   final bool? isDarkMode;
   final List<MangaSearchModel> mangalist;
+  final List<NovelModels> novels;
 
   const Homepage({
     super.key,
     this.toggleTheme,
     this.isDarkMode,
     required this.mangalist,
+    required this.novels,
   });
 
   @override
@@ -47,9 +49,9 @@ class _HomepageState extends State<Homepage>
   void initState() {
     super.initState();
     mangaList.addAll(widget.mangalist);
+    novelList.addAll(widget.novels);
     _tabController = TabController(length: 2, vsync: this);
     sharedPrefs.init();
-    //allNoverls();
   }
 
   searchMangaWorld(String keyword) async {
@@ -66,38 +68,6 @@ class _HomepageState extends State<Homepage>
         context,
       ).showSnackBar(SnackBar(content: Text("Errore nella ricerca: $e")));
     }
-  }
-
-  allNoverls() async {
-    setState(() {
-      isLoadingNovel = true;
-    });
-    try {
-      setState(() {
-        mangaWorldList.clear(); // Clear previous results
-      });
-
-      var results = await webNovelsApi.getAllNovels();
-      if (results.status == "ok") {
-        setState(() {
-          for (var novel in results.parametri) {
-            novelList.add(NovelModels.fromJson(novel));
-          }
-        });
-      } else {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text("Nessuna novel trovata")));
-      }
-    } catch (e) {
-      print("Error fetching all novels: $e");
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("Errore nel caricamento: $e")));
-    }
-    setState(() {
-      isLoadingNovel = false;
-    });
   }
 
   @override
@@ -747,14 +717,50 @@ class _HomepageState extends State<Homepage>
                     ),
                   ],
                 ),*/
-          Center(
-            child: Text(
-              'La sezione Novel è in fase di sviluppo...',
-              style: TextStyle(
-                fontSize: 20,
-                color: Theme.of(context).textTheme.bodyLarge?.color,
+          Column(
+            children: [
+              Expanded(
+                child: ListView.builder(
+                  itemCount: novelList.length,
+                  itemBuilder: (context, index) {
+                    final novel = novelList[index];
+                    return Card(
+                      margin: const EdgeInsets.all(8.0),
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: ListTile(
+                          onTap: () {
+                            // Navigator.push(
+                            //   context,
+                            //   MaterialPageRoute(
+                            //     builder: (context) =>
+                            //         DetailScreen(manga: manga),
+                            //   ),
+                            // );
+                          },
+                          leading: novel.img!.isNotEmpty
+                              ? Image.network(
+                                  novel.img!,
+                                  width: 50,
+                                  height: 70,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return const Icon(Icons.book);
+                                  },
+                                )
+                              : const Icon(Icons.book),
+                          title: Text(novel.title!),
+                          trailing: IconButton(
+                            icon: Icon(Icons.favorite),
+                            onPressed: () async {},
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
               ),
-            ),
+            ],
           ),
         ],
       ),
