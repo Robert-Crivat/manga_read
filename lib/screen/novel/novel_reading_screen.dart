@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+/*import 'package:flutter/material.dart';
 import 'package:manga_read/api/web_novels_api.dart';
 import 'package:manga_read/model/manga/dataMangager.dart';
 import 'package:manga_read/model/novels/novel_chapter.dart';
@@ -23,7 +23,7 @@ class NovelReadingScreen extends StatefulWidget {
 class _NovelReadingScreenState extends State<NovelReadingScreen> {
   final WebNovelsApi webNovelsApi = WebNovelsApi();
   final SharedPrefs _prefs = SharedPrefs();
-  NovelChapterContent? chapterContent;
+  NodelCharapters? chapterContent;
   bool isLoading = true;
   bool isDarkMode = false;
   double fontSize = 16.0;
@@ -162,3 +162,4 @@ class _NovelReadingScreenState extends State<NovelReadingScreen> {
     );
   }
 }
+*/
