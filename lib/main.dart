@@ -24,17 +24,17 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   bool _isDarkMode = true;
   bool isLoading = false;
+  bool isLoadingNovel = false;
   List<MangaSearchModel> mangaList = [];
+  List<NovelModels> novels = [];
   final MangaWorldApi mangaWorldApi = MangaWorldApi();
   final WebNovelsApi webNovelsApi = WebNovelsApi();
-  bool isLoadingNovel = false;
-  List<NovelModels> novelList = [];
 
   @override
   void initState() {
     super.initState();
     _loadThemePreference();
-    //allManga();
+    allManga();
     allNoverls();
   }
 
@@ -90,14 +90,16 @@ class _MyAppState extends State<MyApp> {
     });
     try {
       setState(() {
-        novelList.clear();
+        novels.clear(); // Clear previous results
       });
 
       var results = await webNovelsApi.getAllNovels();
+      results;
+      print("mario");
       if (results.status == "ok") {
         setState(() {
           for (var novel in results.parametri) {
-            novelList.add(NovelModels.fromJson(novel));
+            novels.add(NovelModels.fromJson(novel));
           }
         });
       } else {
@@ -150,7 +152,7 @@ class _MyAppState extends State<MyApp> {
         scaffoldBackgroundColor: const Color(0xFF121212),
       ),
       themeMode: _isDarkMode ? ThemeMode.dark : ThemeMode.light,
-      home: isLoading == true|| isLoadingNovel == true
+      home: isLoading == true || isLoadingNovel == true
           ? Scaffold(
               body: Center(
                 child: Padding(
@@ -159,6 +161,7 @@ class _MyAppState extends State<MyApp> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       CircularProgressIndicator(),
+                      SizedBox(height: 20),
                       Text(
                         "Manga in caricamente, si prega di attendere...",
                         textAlign: TextAlign.center,
@@ -174,7 +177,7 @@ class _MyAppState extends State<MyApp> {
               ),
             )
           : MyHomePage(
-              novelList: novelList,
+              novelList: novels,
               mangaList: mangaList,
               title: 'Manga Reader',
               toggleTheme: _toggleTheme,

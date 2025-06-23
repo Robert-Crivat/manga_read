@@ -85,6 +85,4 @@ class MangaWorldApi {
       throw Exception('Error getting all manga: $e');
     }
   }
-
-  Future getAllNovels() async {}
 }

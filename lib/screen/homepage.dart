@@ -53,7 +53,6 @@ class _HomepageState extends State<Homepage>
     novelList.addAll(widget.novels);
     _tabController = TabController(length: 2, vsync: this);
     sharedPrefs.init();
-    //allNoverls();
   }
 
   searchMangaWorld(String keyword) async {
@@ -70,38 +69,6 @@ class _HomepageState extends State<Homepage>
         context,
       ).showSnackBar(SnackBar(content: Text("Errore nella ricerca: $e")));
     }
-  }
-
-  allNoverls() async {
-    setState(() {
-      isLoadingNovel = true;
-    });
-    try {
-      setState(() {
-        mangaWorldList.clear(); // Clear previous results
-      });
-
-      var results = await webNovelsApi.getAllNovels();
-      if (results.status == "ok") {
-        setState(() {
-          for (var novel in results.parametri) {
-            novelList.add(NovelModels.fromJson(novel));
-          }
-        });
-      } else {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text("Nessuna novel trovata")));
-      }
-    } catch (e) {
-      print("Error fetching all novels: $e");
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("Errore nel caricamento: $e")));
-    }
-    setState(() {
-      isLoadingNovel = false;
-    });
   }
 
   @override
@@ -653,101 +620,162 @@ class _HomepageState extends State<Homepage>
                           ),
                   ],
                 ),
+          /*isLoadingNovel == true
+              ? const Center(child: CircularProgressIndicator())
+              : Column(
+                  children: [
+                    ElevatedButton(
+                      onPressed: () {
+                        allNoverls();
+                      },
+                      child: const Text('Ricarica Novels'),
+                    ),
+                    Expanded(
+                      child: GridView.builder(
+                        padding: const EdgeInsets.all(8),
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 2,
+                              crossAxisSpacing: 12,
+                              mainAxisSpacing: 12,
+                              childAspectRatio: 0.55,
+                            ),
+                        itemCount: novelList.length,
+                        itemBuilder: (context, index) {
+                          final novel = novelList[index];
+                          return GestureDetector(
+                            onTap: () {
+                              // Navigate to novel detail page
+                              // Will need to create a NovelDetailScreen or adapt DetailScreen
+                            },
+                            child: Card(
+                              elevation: 4,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  ClipRRect(
+                                    borderRadius: const BorderRadius.vertical(
+                                      top: Radius.circular(12),
+                                    ),
+                                    child: novel.img!.isNotEmpty
+                                        ? Image.network(
+                                            novel.img!,
+                                            height: 160,
+                                            fit: BoxFit.cover,
+                                            errorBuilder:
+                                                (context, error, stackTrace) {
+                                                  return const SizedBox(
+                                                    height: 160,
+                                                    child: Icon(
+                                                      Icons.book,
+                                                      size: 48,
+                                                    ),
+                                                  );
+                                                },
+                                          )
+                                        : const SizedBox(
+                                            height: 160,
+                                            child: Icon(
+                                              Icons.menu_book,
+                                              size: 48,
+                                            ),
+                                          ),
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Container(
+                                      height: 90,
+                                      child: SingleChildScrollView(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              novel.title!,
+                                              maxLines: 2,
+                                              overflow: TextOverflow.ellipsis,
+                                              style: const TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 16,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 4),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ),*/
           Column(
             children: [
-              ElevatedButton(
-                onPressed: () {
-                  allNoverls();
-                },
-                child: const Text('Ricarica Novels'),
-              ),
               Expanded(
-                child: GridView.builder(
-                  padding: const EdgeInsets.all(8),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    crossAxisSpacing: 12,
-                    mainAxisSpacing: 12,
-                    childAspectRatio: 0.55,
-                  ),
+                child: ListView.builder(
                   itemCount: novelList.length,
                   itemBuilder: (context, index) {
                     final novel = novelList[index];
-                    return GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => NovelDetailScreen(novel: novel),
+                    return Card(
+                      margin: const EdgeInsets.all(8.0),
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: ListTile(
+                          onTap: () {
+                            // Navigator.push(
+                            //   context,
+                            //   MaterialPageRoute(
+                            //     builder: (context) =>
+                            //         DetailScreen(manga: manga),
+                            //   ),
+                            // );
+                          },
+                          leading: novel.img!.isNotEmpty
+                              ? Image.network(
+                                  novel.img!,
+                                  width: 50,
+                                  height: 70,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return const Icon(Icons.book);
+                                  },
+                                )
+                              : const Icon(Icons.book),
+                          title: Text(novel.title!),
+                          trailing: IconButton(
+                            icon: Icon(Icons.favorite),
+                            onPressed: () async {},
                           ),
-                        );
-                      },
-                      child: Card(
-                        elevation: 4,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            ClipRRect(
-                              borderRadius: const BorderRadius.vertical(
-                                top: Radius.circular(12),
-                              ),
-                              child: novel.img!.isNotEmpty
-                                  ? Image.network(
-                                      novel.img!,
-                                      height: 160,
-                                      fit: BoxFit.cover,
-                                      errorBuilder:
-                                          (context, error, stackTrace) {
-                                            return const SizedBox(
-                                              height: 160,
-                                              child: Icon(Icons.book, size: 48),
-                                            );
-                                          },
-                                    )
-                                  : const SizedBox(
-                                      height: 160,
-                                      child: Icon(Icons.menu_book, size: 48),
-                                    ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Container(
-                                height: 90,
-                                child: SingleChildScrollView(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        novel.title!,
-                                        maxLines: 2,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: const TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 16,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 4),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
                         ),
                       ),
                     );
                   },
                 ),
               ),
-                        ],
-                      ),
-                    ],
-                  ),
-                );
-              }
-            }
+            ],
+          ),
+        ],
+      ),
+      //floatingActionButton: FloatingActionButton(
+      //  onPressed: () {
+      //    searchController.clear();
+      //    Navigator.push(
+      //      context,
+      //      MaterialPageRoute(builder: (context) => MangaPreferitiScreen()),
+      //    );
+      //  },
+      //  tooltip: 'Preferiti',
+      //  child: const Icon(Icons.favorite_border),
+      //),
+    );
+  }
+}
