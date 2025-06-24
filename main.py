@@ -91,8 +91,10 @@ def manga_chapters():
         soup = BeautifulSoup(response.content, 'html.parser')
         Manga = soup.find_all('a', {'class': 'chap'})
         for item in Manga:
-            result_list.append({'title': item.text.strip(), 'link': item.get('href')})
-                
+            link = re.search('href="(.+?)"', str(item)).group(1)
+            alt = re.search('title="(.+?)"', str(item)).group(1)
+            if "read" in link:
+                result_list.append({'link': link, 'alt': alt})
     result_list.reverse()
     response_data = {
         "status": "ok",
@@ -115,27 +117,28 @@ def chapter_pages():
         # Estrai il numero totale di pagine dal link "last"
         last_page_element = soup.select_one('li.page-item.last a.page-link')
         if last_page_element:
-            href = last_page_element.get('href', '')
-            match = re.search(r'/(\d+)', href)
-            if match:
-                total_pages = int(match.group(1))
+            # Estrai il numero di pagina dall'attributo href o dal testo
+            last_page_text = last_page_element.get_text().strip()
+            last_page_match = re.search(r'>(\d+)<', str(last_page_element))
+            
+            if last_page_match:
+                total_pages = int(last_page_match.group(1))
+            elif last_page_text.isdigit():
+                total_pages = int(last_page_text)
         
         # Se non riusciamo a trovare il totale, usa un valore di default
         if total_pages == 0:
-            all_page_links = soup.select('li.page-item a.page-link')
-            if all_page_links:
-                total_pages = 10  # Default
+            total_pages = 400
             
         print(f"Totale pagine rilevate: {total_pages}")
             
         # Ottieni tutte le immagini
         for i in range(1, total_pages + 1):
-            page_response = requests.get(f"{link}/{i}")
-            if page_response.status_code == 200:
-                page_soup = BeautifulSoup(page_response.content, 'html.parser')
-                img_element = page_soup.select_one('img.chapter-img')
-                if img_element and img_element.get('src'):
-                    linkLetturaCapitolo.append(img_element['src'])
+            lettura = soup.find_all('img', {'id': 'page-'+str(i)})
+            match = re.search(r'src="(.*)"', str(lettura))
+            if match:
+                src = match.group(1)
+                linkLetturaCapitolo.append(src)
     
     response_data = {
         "status": "ok",
@@ -208,11 +211,12 @@ def getnovelsfire():
     
     # Headers per simulare un browser reale
     headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-        'Accept-Language': 'en-US,en;q=0.9,it;q=0.8',
-        'Connection': 'keep-alive',
-        'Referer': 'https://novelfire.net/'
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36',
+    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
+    'Accept-Language': 'en-US,en;q=0.9,it;q=0.8',
+    'Accept-Encoding': 'gzip, deflate, br',
+    'Connection': 'keep-alive',
+    'Referer': 'https://novelfire.net/'
     }
     
     novels_list = []
@@ -337,11 +341,13 @@ def get_novelfire_chapters():
     print(f"Fetching chapters from: {url}")
     
     headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-        'Accept-Language': 'en-US,en;q=0.9,it;q=0.8',
-        'Referer': 'https://novelfire.net/'
-    }
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36',
+    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
+    'Accept-Language': 'en-US,en;q=0.9,it;q=0.8',
+    'Accept-Encoding': 'gzip, deflate, br',
+    'Connection': 'keep-alive',
+    'Referer': 'https://novelfire.net/'
+}
     
     if not url.endswith('/'):
         url = f"{url}/"
@@ -402,11 +408,13 @@ def get_novelfire_chapters():
 @app.route('/get_novelfire_chapter_content')
 def get_novelfire_chapter_content():
     """
-    Estrae il contenuto di un capitolo specifico da novelfire.net.
-    Versione completamente riscritta per massima robustezza.
+    Estrae il contenuto di un capitolo specifico da novelfire.net con robustezza migliorata.
+    Versione ottimizzata per funzionare sia in locale che in remoto.
+    Include meccanismi anti-blocco e diagnostica avanzata.
     """
     url = request.args.get('url', '')
     translation_mode = request.args.get('translation', 'default')
+    debug_mode = request.args.get('debug', 'false').lower() == 'true'
     
     if not url:
         return jsonify({
@@ -418,19 +426,37 @@ def get_novelfire_chapter_content():
     print(f"=== INIZIO ESTRAZIONE CAPITOLO ===")
     print(f"URL: {url}")
     print(f"Translation mode: {translation_mode}")
+    print(f"Debug mode: {debug_mode}")
+    
+    # Lista di User-Agent a rotazione per evitare blocchi
+    user_agents = [
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36',
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Safari/605.1.15',
+        'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.5060.53 Safari/537.36',
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/115.0',
+        'Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1'
+    ]
+    
+    # Seleziona un User-Agent casuale
+    import random
+    random_user_agent = random.choice(user_agents)
     
     headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36',
+        'User-Agent': random_user_agent,
         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
         'Accept-Language': 'en-US,en;q=0.9,it;q=0.8',
         'Accept-Encoding': 'gzip, deflate, br',
         'Connection': 'keep-alive',
-        'Upgrade-Insecure-Requests': '1',
+        'Cache-Control': 'max-age=0',
+        'Referer': 'https://novelfire.net/',
+        'sec-ch-ua': '"Chromium";v="112", "Google Chrome";v="112", "Not:A-Brand";v="99"',
+        'sec-ch-ua-mobile': '?0',
+        'sec-ch-ua-platform': '"Windows"',
         'Sec-Fetch-Dest': 'document',
         'Sec-Fetch-Mode': 'navigate',
-        'Sec-Fetch-Site': 'none',
-        'Cache-Control': 'max-age=0',
-        'Referer': 'https://novelfire.net/'
+        'Sec-Fetch-Site': 'same-origin',
+        'Upgrade-Insecure-Requests': '1',
+        'Pragma': 'no-cache'
     }
     
     # Aggiunge traduzione se richiesta
@@ -439,44 +465,143 @@ def get_novelfire_chapter_content():
         url += f'{separator}translation={translation_mode}'
         print(f"URL con traduzione: {url}")
     
+    # Informazioni di diagnostica per l'ambiente
+    import platform
+    import socket
+    
+    print(f"Sistema operativo: {platform.system()} {platform.release()}")
+    print(f"Python version: {platform.python_version()}")
     try:
-        print("Effettuando richiesta HTTP...")
-        response = requests.get(url, headers=headers, timeout=20, allow_redirects=True)
-        print(f"Status code: {response.status_code}")
-        print(f"Content length: {len(response.content)} bytes")
-        print(f"Content type: {response.headers.get('Content-Type', 'sconosciuto')}")
-        print(f"Encoding originale: {response.encoding}")
-        
-        # Forza encoding a UTF-8
-        response.encoding = 'utf-8'
-        print(f"Encoding forzato a: {response.encoding}")
-        
-        # DEBUG: Verifica se ci sono caratteri non stampabili nei primi 1000 caratteri
-        if len(response.text) > 0:
-            sample = response.text[:1000]
-            non_printable = sum(1 for c in sample if ord(c) < 32 and c not in '\n\r\t')
-            print(f"Caratteri non stampabili nei primi 1000: {non_printable} ({non_printable/len(sample)*100:.1f}%)")
-            if non_printable > 100:
-                print("ATTENZIONE: Alto numero di caratteri non stampabili!")
-        
-        if response.status_code != 200:
-            return jsonify({
-                "status": "error",
-                "messaggio": f"Errore HTTP {response.status_code}: impossibile accedere alla pagina",
-                "data": {}
-            }), response.status_code
-            
-    except requests.exceptions.RequestException as e:
-        print(f"Errore nella richiesta: {str(e)}")
+        hostname = socket.gethostname()
+        ip_address = socket.gethostbyname(hostname)
+        print(f"Hostname: {hostname}, IP: {ip_address}")
+    except Exception as e:
+        print(f"Errore nel recupero info di rete: {str(e)}")
+    
+    # Proxy configuration (disabilitato di default, attivabile per debug)
+    proxies = None
+    use_proxy = False
+    if debug_mode and use_proxy:
+        # Lista di proxy pubblici che potrebbero funzionare (da sostituire con proxy reali)
+        proxy_list = [
+            "http://proxy1.example.com:8080",
+            "http://proxy2.example.com:8080"
+        ]
+        selected_proxy = random.choice(proxy_list)
+        proxies = {
+            "http": selected_proxy,
+            "https": selected_proxy
+        }
+        print(f"Usando proxy: {selected_proxy}")
+    
+    # Estrattore di contenuto
+    def extract_with_retry(max_retries=3):
+        for attempt in range(max_retries):
+            try:
+                print(f"Tentativo {attempt+1}/{max_retries}")
+                print("Effettuando richiesta HTTP...")
+                
+                # Aumenta timeout e disabilita verifica SSL per ambienti remoti con possibili problemi di rete
+                response = requests.get(
+                    url, 
+                    headers=headers, 
+                    timeout=30, 
+                    allow_redirects=True, 
+                    verify=False,
+                    proxies=proxies
+                )
+                
+                print(f"Status code: {response.status_code}")
+                print(f"Content length: {len(response.content)} bytes")
+                print(f"Content type: {response.headers.get('Content-Type', 'sconosciuto')}")
+                print(f"Encoding originale: {response.encoding}")
+                
+                # Diagnostica headers della risposta
+                print("Headers della risposta:")
+                for key, value in response.headers.items():
+                    print(f"  {key}: {value}")
+                
+                # Verifica se c'è un possibile blocco o captcha
+                if "captcha" in response.text.lower() or "blocked" in response.text.lower() or "robot" in response.text.lower():
+                    print("⚠️ RILEVATO POSSIBILE CAPTCHA O BLOCCO ANTI-BOT!")
+                    # Se è l'ultimo tentativo, salviamo la risposta per diagnosi
+                    if attempt == max_retries - 1 and debug_mode:
+                        with open("blocked_response.html", "w", encoding="utf-8") as f:
+                            f.write(response.text)
+                        print("Risposta salvata in blocked_response.html")
+                
+                # Forza encoding a UTF-8
+                response.encoding = 'utf-8'
+                print(f"Encoding forzato a: {response.encoding}")
+                
+                if response.status_code != 200:
+                    print(f"Errore HTTP {response.status_code}")
+                    # Aggiungi backoff esponenziale
+                    if attempt < max_retries - 1:
+                        wait_time = 2 ** attempt
+                        print(f"Attendo {wait_time} secondi prima del prossimo tentativo...")
+                        time.sleep(wait_time)
+                    continue
+                
+                # Verifica minima lunghezza contenuto
+                if len(response.text) < 500:
+                    print(f"Contenuto troppo breve ({len(response.text)} bytes), potenziale blocco!")
+                    if attempt < max_retries - 1:
+                        wait_time = 2 ** attempt
+                        print(f"Attendo {wait_time} secondi prima del prossimo tentativo...")
+                        time.sleep(wait_time)
+                    continue
+                
+                return response
+                
+            except requests.exceptions.RequestException as e:
+                print(f"Errore nella richiesta: {str(e)}")
+                if attempt < max_retries - 1:
+                    wait_time = 2 ** attempt
+                    print(f"Attendo {wait_time} secondi prima del prossimo tentativo...")
+                    time.sleep(wait_time)
+                else:
+                    print("Tutti i tentativi falliti")
+                    return None
+    
+    # Esegui la richiesta con retry
+    response = extract_with_retry()
+    
+    if not response:
         return jsonify({
             "status": "error",
-            "messaggio": f"Errore nel recupero del contenuto: {str(e)}",
-            "data": {}
-        }), 500
+            "messaggio": "Impossibile recuperare il contenuto dopo diversi tentativi",
+            "data": {
+                "title": "",
+                "content": "Errore di connessione al server. Il sito potrebbe bloccare le richieste dal server.",
+                "paragraphs": ["Errore di connessione al server. Il sito potrebbe bloccare le richieste dal server."],
+                "prev_chapter": "",
+                "next_chapter": "",
+                "translation_mode": translation_mode,
+                "error": True
+            }
+        })
     
     # Usa response.text invece di response.content per garantire la decodifica corretta
-    soup = BeautifulSoup(response.text, 'html.parser')
-    print("HTML parsato con BeautifulSoup")
+    try:
+        soup = BeautifulSoup(response.text, 'html.parser')
+        print("HTML parsato con BeautifulSoup usando response.text")
+        
+        # Verifica presenza di testo nella pagina per capire se è un blocco
+        text_content = soup.get_text(strip=True)
+        if len(text_content) < 1000:
+            print(f"ATTENZIONE: La pagina contiene poco testo ({len(text_content)} caratteri). Possibile blocco.")
+            
+            # Salva il contenuto per debug
+            if debug_mode:
+                with open("low_content_response.html", "w", encoding="utf-8") as f:
+                    f.write(response.text)
+                print("Risposta a basso contenuto salvata in low_content_response.html")
+                
+    except Exception as e:
+        print(f"Errore nel parsing di response.text: {str(e)}, tentativo con response.content")
+        soup = BeautifulSoup(response.content, 'html.parser')
+        print("HTML parsato con BeautifulSoup usando response.content")
     
     # === ESTRAZIONE TITOLO ===
     chapter_title = ""
@@ -607,7 +732,7 @@ def get_novelfire_chapter_content():
         print("Strategia 4: Analisi generale della pagina...")
         
         # Rimuovi elementi sicuramente non utili
-        for unwanted in soup.find_all(['script', 'style', 'meta', 'link', 'head']):
+        for unwanted in soup.find_all(['script', 'style', 'meta', 'link', 'head', 'svg']):
             unwanted.decompose()
         
         # Cerca il body o html
@@ -618,11 +743,11 @@ def get_novelfire_chapter_content():
     
     # === ESTRAZIONE DEL TESTO DAL CONTENITORE ===
     if content_container:
-        print(f"\n--- Estrazione testo dal contenitore ---")
+        print("\n--- Estrazione testo dal contenitore ---")
         
         # Rimuovi elementi indesiderati
         print("Rimozione elementi indesiderati...")
-        unwanted_tags = ['script', 'style', 'meta', 'link', 'noscript', 'ins', 'iframe']
+        unwanted_tags = ['script', 'style', 'meta', 'link', 'noscript', 'ins', 'iframe', 'svg']
         unwanted_classes = ['ads', 'advertisement', 'adsbygoogle', 'comment', 'disqus', 'share', 'social', 'header', 'footer', 'nav', 'menu', 'sidebar']
         
         for tag in unwanted_tags:
@@ -712,21 +837,76 @@ def get_novelfire_chapter_content():
                             chapter_paragraphs.append(chunk.strip())
                     
                     print(f"Estratti {len(chapter_paragraphs)} blocchi di testo")
+                    
+            # METODO 5: Estrazione diretta dalla pagina HTML tramite regex (metodo di emergenza)
+            if len(chapter_paragraphs) < 3:
+                print("Metodo 5: Estrazione di emergenza tramite regex...")
+                
+                # Prova a trovare blocchi di testo tra tag
+                raw_html = str(content_container)
+                
+                # Cerca testo tra tag che potrebbe essere contenuto del capitolo
+                text_blocks = re.findall(r'>([^<>]{50,})<', raw_html)
+                potential_paragraphs = []
+                
+                for block in text_blocks:
+                    clean_block = block.strip()
+                    # Filtra caratteri non stampabili
+                    clean_block = ''.join(c for c in clean_block if c.isprintable() or c in '\n\r\t')
+                    if clean_block and len(clean_block) > 50:
+                        potential_paragraphs.append(clean_block)
+                
+                if potential_paragraphs:
+                    chapter_paragraphs = potential_paragraphs
+                    print(f"Estratti {len(chapter_paragraphs)} blocchi di testo tramite regex")
         except Exception as e:
             print(f"Errore durante l'estrazione del testo: {str(e)}")
             # In caso di errore, prova un approccio più semplice
-            all_text = content_container.get_text(strip=True)
-            all_text = ''.join(c for c in all_text if c.isprintable() or c in '\n\r\t')
-            chapter_paragraphs = [all_text]
-            print("Fallback a estrazione semplice dopo errore")
+            try:
+                all_text = content_container.get_text(strip=True)
+                all_text = ''.join(c for c in all_text if c.isprintable() or c in '\n\r\t')
+                chapter_paragraphs = [all_text]
+                print("Fallback a estrazione semplice dopo errore")
+            except Exception as e2:
+                print(f"Anche il fallback è fallito: {str(e2)}")
+                chapter_paragraphs = ["Impossibile estrarre il contenuto. Errore interno."]
+        
+        # Filtra paragrafi vuoti o troppo corti
+        chapter_paragraphs = [p for p in chapter_paragraphs if p and len(p) > 10]
         
         # DEBUG: Stampa i primi paragrafi trovati
         print(f"DEBUG: Paragrafi trovati: {len(chapter_paragraphs)}")
         for i, para in enumerate(chapter_paragraphs[:3]):  # Solo i primi 3
             print(f"Paragrafo {i+1}: '{para[:100]}...'")
         
-        # Filtra paragrafi vuoti o troppo corti
-        chapter_paragraphs = [p for p in chapter_paragraphs if p and len(p) > 10]
+        # Verifica finale se abbiamo paragrafi validi
+        valid_paragraphs = []
+        for p in chapter_paragraphs:
+            # Conta i caratteri validi (lettere, numeri, punteggiatura comune)
+            valid_chars = sum(1 for c in p if c.isalnum() or c in ',.!?;:"\'()- ')
+            if valid_chars > len(p) * 0.7:  # Almeno 70% caratteri validi
+                valid_paragraphs.append(p)
+            else:
+                print(f"Scartato paragrafo con troppi caratteri non validi: '{p[:30]}...'")
+        
+        chapter_paragraphs = valid_paragraphs
+        
+        # Controllo finale: rileva se il contenuto è probabilmente una pagina di errore o di login
+        error_indicators = ["error", "404", "not found", "captcha", "login", "access", "denied", "blocked", "robot"]
+        
+        is_error_page = False
+        if chapter_paragraphs:
+            combined_text = " ".join(chapter_paragraphs).lower()
+            error_keyword_count = sum(1 for keyword in error_indicators if keyword in combined_text)
+            
+            # Se ci sono molti indicatori di errore e pochi paragrafi, probabilmente è una pagina di errore
+            if error_keyword_count >= 2 and len(chapter_paragraphs) < 5:
+                print(f"ATTENZIONE: Rilevata possibile pagina di errore (indicatori: {error_keyword_count})")
+                is_error_page = True
+                
+                # Aggiungi un paragrafo esplicativo per l'utente
+                if debug_mode:
+                    chapter_paragraphs.insert(0, "NOTA: Sembra che ci sia un problema di accesso al contenuto. Il sito potrebbe bloccare le richieste dal server.")
         
         # Costruisci il contenuto finale
         if chapter_paragraphs:
@@ -735,7 +915,18 @@ def get_novelfire_chapter_content():
         else:
             chapter_content = "Contenuto non trovato o non accessibile."
             print("ERRORE: Nessun contenuto estratto!")
-            
+            # Tenta un ultimo approccio d'emergenza
+            try:
+                raw_html = str(soup)
+                matches = re.findall(r'>([^<>]{30,})<', raw_html)
+                if matches:
+                    potential_paragraphs = [m.strip() for m in matches if len(m.strip()) > 30]
+                    chapter_paragraphs = potential_paragraphs[:10]  # Primi 10 potenziali paragrafi
+                    chapter_content = '\n\n'.join(chapter_paragraphs)
+                    print(f"Recupero d'emergenza: {len(chapter_paragraphs)} paragrafi")
+            except Exception as e:
+                print(f"Anche il recupero d'emergenza è fallito: {str(e)}")
+                
         # Se abbiamo contenuto ma nessun paragrafo, forza la divisione
         if chapter_content and len(chapter_paragraphs) == 0:
             print("FIXING: Contenuto presente ma nessun paragrafo - forzando divisione...")
@@ -838,13 +1029,29 @@ def get_novelfire_chapter_content():
     print(f"Link precedente: {prev_link}")
     print(f"Link successivo: {next_link}")
     
+    # Controllo finale di qualità
+    content_status = "ok"
+    error_message = ""
+    
+    if len(chapter_paragraphs) < 3 and not is_error_page:
+        content_status = "warning"
+        error_message = "Trovati pochi paragrafi, possibile problema con l'estrazione."
+    
+    if len(chapter_content) < 200:
+        content_status = "error"
+        error_message = "Contenuto troppo breve, possibile blocco o pagina di errore."
+    
     chapter_data = {
         "title": chapter_title,
         "content": chapter_content,
         "paragraphs": chapter_paragraphs,
         "prev_chapter": prev_link,
         "next_chapter": next_link,
-        "translation_mode": translation_mode
+        "translation_mode": translation_mode,
+        "content_status": content_status,
+        "content_length": len(chapter_content),
+        "paragraphs_count": len(chapter_paragraphs),
+        "error_message": error_message
     }
     
     response_data = {

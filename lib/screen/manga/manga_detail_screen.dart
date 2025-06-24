@@ -75,10 +75,8 @@ class _MangaDetailScreenState extends State<MangaDetailScreen> {
                             context,
                             MaterialPageRoute(
                               builder: (context) => LetturaScreenManga(
-                                url: cap.url,
-                                mangaTitle: cap.mangaTitle,
-                                chaptherIndex: index,
-                                capitoliList: capitoliList,
+                                capitolo: cap,
+                                manga: widget.manga,
                               ),
                             ),
                           );

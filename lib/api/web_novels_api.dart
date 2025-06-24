@@ -9,7 +9,7 @@ class WebNovelsApi {
 
   Future<DataManager> getAllNovels() async {
     DataManager dataManager = DataManager();
-    Uri uri = Uri.parse('$baseUrl/getnovelsfire?max_pages=10');
+    Uri uri = Uri.parse('$baseUrl/getnovelsfire');
     try {
       final response = await http.get(
         uri,
