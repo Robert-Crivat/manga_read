@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:manga_read/api/manga_world_api.dart';
 import 'package:manga_read/main.dart';
 import 'package:manga_read/model/manga/manga_search_model.dart';
-import 'package:manga_read/screen/manga/detail_screen.dart';
+import 'package:manga_read/screen/manga/manga_detail_screen.dart';
 import 'package:manga_read/screen/manga/widget/manga_card.dart';
 
 class HomeManga extends StatefulWidget {
@@ -113,7 +113,7 @@ class _HomeMangaState extends State<HomeManga> {
                               context,
                               MaterialPageRoute(
                                 builder: (context) =>
-                                    DetailScreen(manga: manga),
+                                    MangaDetailScreen(manga: manga),
                               ),
                             );
                           },
@@ -246,7 +246,7 @@ class _HomeMangaState extends State<HomeManga> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => DetailScreen(manga: manga),
+                            builder: (context) => MangaDetailScreen(manga: manga),
                           ),
                         );
                       },

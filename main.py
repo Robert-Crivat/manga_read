@@ -148,24 +148,17 @@ def chapter_pages():
 
 @app.route('/all_manga')
 def all_manga():
-    response = requests.get('https://www.mangaworld.nz/archive')
-    last_page = 1
-    page_link = None
-    if response.status_code == 200:
-        soup = BeautifulSoup(response.content, 'html.parser')
-        # Cerca il numero dell'ultima pagina disponibile in modo più robusto
-        last_page = 1
-        pagination = soup.find_all('li', {'class': 'page-item last'})
-        for item in pagination:
-            page_link = item.find('a')
-            if page_link:
-                href = page_link.get('href', '')
-                match = re.search(r'page=(\d+)', href)
-                if match:
-                    last_page = int(match.group(1))
-                    
+    # Ottieni parametri opzionali dalla richiesta
+    page = request.args.get('page', default=1, type=int)
+    max_pages = request.args.get('max_pages', default=1, type=int)
+    
+    # Calcola direttamente il numero di pagine da elaborare
+    end_page = page + max_pages
     all_manga = []
-    for page_num in range(1, last_page + 1):
+    
+    # Itera sulle pagine specificate
+    for page_num in range(page, end_page):
+        print(f"Elaborazione pagina {page_num}")
         page_url = f'https://www.mangaworld.nz/archive?page={page_num}'
         page_response = requests.get(page_url)
         if page_response.status_code == 200:
@@ -178,8 +171,10 @@ def all_manga():
                     
     response_data = {
         "status": "ok",
-        "messaggio": f"chiamata eseguita correttamente - all manga",
-        "pagina": page_link,
+        "messaggio": f"chiamata eseguita correttamente - all_manga (pagine {page}-{end_page-1})",
+        "pagina_corrente": page,
+        "pagine_elaborate": max_pages,
+        "totale_manga": len(all_manga),
         "data": all_manga,
     }
     return jsonify(response_data)

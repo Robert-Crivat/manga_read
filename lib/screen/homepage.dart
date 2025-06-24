@@ -4,10 +4,10 @@ import "package:manga_read/api/web_novels_api.dart";
 import "package:manga_read/main.dart";
 import "package:manga_read/model/manga/manga_search_model.dart";
 import "package:manga_read/model/novels/novel_models.dart";
-import "package:manga_read/screen/manga/detail_screen.dart";
 import "package:manga_read/screen/manga/home_manga.dart";
 import "package:manga_read/screen/manga/manga_preferiti.dart";
 import "package:manga_read/screen/novel/novel_detail.dart";
+import "package:manga_read/screen/novel/widget/novel_card.dart";
 
 class Homepage extends StatefulWidget {
   final Function? toggleTheme;
@@ -78,10 +78,12 @@ class _HomepageState extends State<Homepage>
     });
     try {
       setState(() {
-        mangaWorldList.clear(); // Clear previous results
+        novelList.clear();
       });
 
       var results = await webNovelsApi.getAllNovels();
+      if (!mounted) return;
+
       if (results.status == "ok") {
         setState(() {
           for (var novel in results.parametri) {
@@ -89,19 +91,25 @@ class _HomepageState extends State<Homepage>
           }
         });
       } else {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text("Nessuna novel trovata")));
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Nessuna novel trovata")),
+          );
+        }
       }
     } catch (e) {
-      print("Error fetching all novels: $e");
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("Errore nel caricamento: $e")));
+      debugPrint("Error fetching all novels: $e");
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Errore nel caricamento: $e")));
+      }
     }
-    setState(() {
-      isLoadingNovel = false;
-    });
+    if (mounted) {
+      setState(() {
+        isLoadingNovel = false;
+      });
+    }
   }
 
   @override

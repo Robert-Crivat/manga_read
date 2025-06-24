@@ -68,7 +68,7 @@ class MangaWorldApi {
   Future<DataManager> getAllManga() async {
     DataManager dataManager = DataManager();
     try {
-      Uri url =  Uri.parse('$baseUrl/all_manga');
+      Uri url =  Uri.parse('$baseUrl/all_manga?max_pages=10');
       final response = await http.get(
        url,
         headers: {'Content-Type': 'application/json'},

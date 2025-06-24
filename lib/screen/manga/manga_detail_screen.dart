@@ -2,24 +2,23 @@ import 'package:flutter/material.dart';
 import 'package:manga_read/api/manga_world_api.dart';
 import 'package:manga_read/model/manga/capitoli_model.dart';
 import 'package:manga_read/model/manga/manga_search_model.dart';
-import 'package:manga_read/screen/manga/lettura_screen.dart';
+import 'package:manga_read/screen/manga/manga_lettura_screen.dart';
 import 'package:manga_read/screen/manga/widget/show_case_manga_detail.dart';
 
-class DetailScreen extends StatefulWidget {
+class MangaDetailScreen extends StatefulWidget {
   final MangaSearchModel manga;
 
-  const DetailScreen({Key? key, required this.manga}) : super(key: key);
+  const MangaDetailScreen({Key? key, required this.manga}) : super(key: key);
 
   @override
-  _DetailScreenState createState() => _DetailScreenState();
+  _MangaDetailScreenState createState() => _MangaDetailScreenState();
 }
 
-class _DetailScreenState extends State<DetailScreen> {
+class _MangaDetailScreenState extends State<MangaDetailScreen> {
   final MangaWorldApi mangaWorldApi = MangaWorldApi();
   List<ChapterModel> capitoliList = [];
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     getMangaChapters();
   }
@@ -75,7 +74,7 @@ class _DetailScreenState extends State<DetailScreen> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => LetturaScreen(
+                              builder: (context) => LetturaScreenManga(
                                 url: cap.url,
                                 mangaTitle: cap.mangaTitle,
                                 chaptherIndex: index,

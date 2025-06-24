@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:manga_read/main.dart';
 import 'package:manga_read/model/manga/manga_search_model.dart';
-import 'package:manga_read/screen/manga/detail_screen.dart';
+import 'package:manga_read/screen/manga/manga_detail_screen.dart';
 
 class MangaPreferitiScreen extends StatefulWidget {
   const MangaPreferitiScreen({Key? key}) : super(key: key);
@@ -78,7 +78,7 @@ class _MangaPreferitiScreenState extends State<MangaPreferitiScreen> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => DetailScreen(manga: manga),
+                              builder: (context) => MangaDetailScreen(manga: manga),
                             ),
                           );
                         },

@@ -6,13 +6,13 @@ import 'package:manga_read/service/shared_prefs.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:widget_zoom/widget_zoom.dart';
 
-class LetturaScreen extends StatefulWidget {
+class LetturaScreenManga extends StatefulWidget {
   final String url;
   final String mangaTitle;
   final List<ChapterModel> capitoliList;
   int chaptherIndex;
 
-  LetturaScreen({
+  LetturaScreenManga({
     Key? key,
     required this.url,
     required this.mangaTitle,
@@ -21,10 +21,10 @@ class LetturaScreen extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  State<LetturaScreen> createState() => _LetturaScreenState();
+  State<LetturaScreenManga> createState() => _LetturaScreenMangaState();
 }
 
-class _LetturaScreenState extends State<LetturaScreen> {
+class _LetturaScreenMangaState extends State<LetturaScreenManga> {
   List<MangaSearchModel> favorites = [];
   bool isLoading = true;
   final SharedPrefs pref = SharedPrefs();
