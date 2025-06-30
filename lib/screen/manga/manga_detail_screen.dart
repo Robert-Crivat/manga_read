@@ -77,6 +77,7 @@ class _MangaDetailScreenState extends State<MangaDetailScreen> {
                               builder: (context) => LetturaScreenManga(
                                 capitolo: cap,
                                 manga: widget.manga,
+                                allChapters: capitoliList,
                               ),
                             ),
                           );

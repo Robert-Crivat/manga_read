@@ -34,8 +34,8 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     super.initState();
     _loadThemePreference();
-    //allManga();
-    allNoverls();
+    allManga();
+    //allNoverls();
   }
 
   _loadThemePreference() async {

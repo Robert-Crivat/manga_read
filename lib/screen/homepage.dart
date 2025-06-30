@@ -51,7 +51,7 @@ class _HomepageState extends State<Homepage>
   void initState() {
     super.initState();
     mangaList.addAll(widget.mangalist);
-    novelList.addAll(widget.novels);
+    //novelList.addAll(widget.novels);
     _tabController = TabController(length: 2, vsync: this);
     sharedPrefs.init();
   }

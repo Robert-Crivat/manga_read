@@ -4,10 +4,11 @@ import 'package:manga_read/model/manga/capitoli_model.dart';
 import 'package:manga_read/model/manga/manga_search_model.dart';
 
 class LetturaScreenManga extends StatefulWidget {
-final MangaSearchModel manga;
-final ChapterModel capitolo;
+  final MangaSearchModel manga;
+  final ChapterModel capitolo;
+  final List<ChapterModel> allChapters;
 
-  const LetturaScreenManga({Key? key, required this.manga, required this.capitolo})
+  const LetturaScreenManga({Key? key, required this.manga, required this.capitolo, required this.allChapters})
     : super(key: key);
 
   @override
@@ -16,13 +17,16 @@ final ChapterModel capitolo;
 
 class _LetturaScreenMangaState extends State<LetturaScreenManga> {
   final MangaWorldApi mangaWorldApi = MangaWorldApi();
-    List<String> capitoliList = [];
-    bool isLoading = false;
+  List<String> capitoliList = [];
+  List<ChapterModel> allChapters = [];
+  bool isLoading = false;
+  bool isLoadingChapters = false;
+
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     getChaptersImg();
+    allChapters = widget.allChapters;
   }
 
   getChaptersImg() async {
@@ -32,51 +36,118 @@ class _LetturaScreenMangaState extends State<LetturaScreenManga> {
     try {
       var results = await mangaWorldApi.getChapterPages(widget.capitolo.url);
       setState(() {
-        for (var capitolo in results.parametri) {
-          capitoliList.add(capitolo);
-        }
+        capitoliList = results.parametri.cast<String>();
+        isLoading = false;
       });
     } catch (e) {
       print("Error searching manga: $e");
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("Errore nella ricerca: $e")));
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Errore nella ricerca: $e")));
+      setState(() {
+        isLoading = false;
+      });
     }
-    setState(() {
-      isLoading = false;
-    });
+  }
+
+  void navigateToChapter(ChapterModel chapter) {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) => LetturaScreenManga(
+          allChapters: allChapters,
+          manga: widget.manga,
+          capitolo: chapter,
+        ),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text(widget.manga.title)),
-      body: capitoliList.isEmpty? Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.menu_book, size: 80, color: Colors.grey[700]),
-            const SizedBox(height: 24),
-            const Text(
-              'Benvenuto nella schermata di lettura!',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 16),
-            CircularProgressIndicator()
-          ],
-        ),
-      ) : ListView.builder(
-        itemCount: capitoliList.length,
-        itemBuilder: (context, index) {
-          return Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Image.network(
-              capitoliList[index],
-              fit: BoxFit.cover,
-            ),
-          );
-        },
+      body: Column(
+        children: [
+          // Main content area for reading
+          Expanded(
+            child: capitoliList.isEmpty ? 
+              Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.menu_book, size: 80, color: Colors.grey[700]),
+                    const SizedBox(height: 24),
+                    const Text(
+                      'Benvenuto nella schermata di lettura!',
+                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 16),
+                    CircularProgressIndicator()
+                  ],
+                ),
+              ) : 
+              ListView.builder(
+                itemCount: capitoliList.length,
+                itemBuilder: (context, index) {
+                  return Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Image.network(
+                      capitoliList[index],
+                      fit: BoxFit.cover,
+                    ),
+                  );
+                },
+              ),
+          ),
+          
+          // Chapters list at bottom
+          Container(
+            height: 80,
+            color: Colors.grey[200],
+            child: isLoadingChapters ?
+              Center(child: CircularProgressIndicator()) :
+              ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: allChapters.length,
+                itemBuilder: (context, index) {
+                  final chapter = allChapters[index];
+                  final isCurrentChapter = chapter.url == widget.capitolo.url;
+                  return GestureDetector(
+                    onTap: () {
+                      if (!isCurrentChapter) {
+                        navigateToChapter(chapter);
+                      }
+                    },
+                    child: Container(
+                      width: 80,
+                      margin: EdgeInsets.all(5),
+                      decoration: BoxDecoration(
+                        color: isCurrentChapter ? Colors.blue : Colors.white,
+                        borderRadius: BorderRadius.circular(8),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black26,
+                            blurRadius: 3,
+                          ),
+                        ],
+                      ),
+                      child: Center(
+                        child: Text(
+                          (index+1).toString(),
+                          style: TextStyle(
+                            color: isCurrentChapter ? Colors.white : Colors.black,
+                            fontWeight: isCurrentChapter ? FontWeight.bold : FontWeight.normal,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+          ),
+        ],
       ),
     );
   }
