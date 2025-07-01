@@ -14,6 +14,7 @@ void main() async {
   runApp(const MyApp());
 }
 
+//todo controllare x mauri 
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
