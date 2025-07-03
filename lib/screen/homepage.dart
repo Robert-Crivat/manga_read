@@ -27,6 +27,7 @@ class Homepage extends StatefulWidget {
   State<Homepage> createState() => _HomepageState();
 }
 
+//todo controllare novle
 class _HomepageState extends State<Homepage>
     with SingleTickerProviderStateMixin {
   List<MangaSearchModel> mangaWorldList = [];
