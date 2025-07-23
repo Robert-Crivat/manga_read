@@ -95,7 +95,7 @@ class _MyAppState extends State<MyApp> {
 
       var results = await webNovelsApi.getAllNovels();
       if (!mounted) return;
-      
+
       if (results.status == "ok") {
         setState(() {
           for (var novel in results.parametri) {
@@ -104,15 +104,15 @@ class _MyAppState extends State<MyApp> {
         });
       } else {
         if (mounted) {
-          ScaffoldMessenger.of(context)
-              .showSnackBar(const SnackBar(content: Text("Nessuna novel trovata")));
+          ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text("Nessuna novel trovata")));
         }
       }
     } catch (e) {
       debugPrint("Error fetching all novels: $e");
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text("Errore nel caricamento: $e")));
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("Errore nel caricamento: $e")));
       }
     }
     if (mounted) {
@@ -124,6 +124,7 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
+    SharedPrefs prefs = SharedPrefs();
     return MaterialApp(
       title: 'Manga Reader',
       theme: ThemeData(
@@ -156,29 +157,73 @@ class _MyAppState extends State<MyApp> {
         scaffoldBackgroundColor: const Color(0xFF121212),
       ),
       themeMode: _isDarkMode ? ThemeMode.dark : ThemeMode.light,
-      home: isLoading == true|| isLoadingNovel == true
-          ? Scaffold(
-              body: Center(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      CircularProgressIndicator(),
-                      Text(
-                        "Manga in caricamente, si prega di attendere...",
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 26,
-                          fontStyle: FontStyle.italic,
-                          fontWeight: FontWeight.w400,
+      home: isLoading == true || isLoadingNovel == true
+          ? Builder(
+              builder: (context) => Scaffold(
+                    body: Center(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            CircularProgressIndicator(),
+                            Text(
+                              "Manga in caricamente, si prega di attendere...",
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 26,
+                                fontStyle: FontStyle.italic,
+                                fontWeight: FontWeight.w400,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                    ],
-                  ),
-                ),
-              ),
-            )
+                    ),
+                    floatingActionButton: FloatingActionButton(
+                      onPressed: () {
+                        showDialog(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            title: Text('Edit API URLs'),
+                            content: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                TextField(
+                                  decoration: InputDecoration(
+                                    labelText: 'Manga API URL',
+                                    hintText: 'Enter manga API URL',
+                                  ),
+                                  controller: TextEditingController(),
+                                  onChanged: (value) {
+                                    prefs.url = value;
+                                  },
+                                ),
+                              ],
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(context),
+                                child: Text('Cancel'),
+                              ),
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.pop(context);
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                          content: Text(
+                                              'API URLs updated. Restart app to apply changes.')));
+                                },
+                                child: Text('Save'),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                      child: Icon(Icons.api),
+                    ),
+                  ))
           : MyHomePage(
               novelList: novelList,
               mangaList: mangaList,

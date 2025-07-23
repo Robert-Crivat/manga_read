@@ -3,9 +3,11 @@ import 'package:http/http.dart' as http;
 import 'package:manga_read/model/manga/dataMangager.dart';
 import 'package:manga_read/model/novels/novel_chapter.dart';
 import 'package:manga_read/model/novels/novel_models.dart';
+import 'package:manga_read/service/shared_prefs.dart';
 
 class WebNovelsApi {
-  static const String baseUrl = 'http://192.168.86.62:8000';
+  SharedPrefs prefs = SharedPrefs();
+  String get baseUrl => "http://${prefs.url}";
 
   Future<DataManager> getAllNovels() async {
     DataManager dataManager = DataManager();

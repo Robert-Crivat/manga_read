@@ -8,6 +8,14 @@ class SharedPrefs {
     _sharedPrefs = await SharedPreferences.getInstance();
   }
 
+   String get url {
+    return _sharedPrefs!.getString('url') ?? "";
+  }
+
+  set url(String value) {
+    _sharedPrefs!.setString('url', value);
+  }
+
   // GETTER - Restituiscono copie delle liste salvate
   List<String> get mangaPref {
     return _sharedPrefs?.getStringList('mangaPref') ?? [];
