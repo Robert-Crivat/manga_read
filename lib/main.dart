@@ -10,11 +10,10 @@ final sharedPrefs = SharedPrefs();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await sharedPrefs.init(); // Assicuriamo che SharedPrefs sia inizializzato
+  await sharedPrefs.init();
   runApp(const MyApp());
 }
 
-//todo controllare x mauri 
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
@@ -36,7 +35,7 @@ class _MyAppState extends State<MyApp> {
     super.initState();
     _loadThemePreference();
     allManga();
-    //allNoverls();
+    allNoverls();
   }
 
   _loadThemePreference() async {
@@ -95,7 +94,7 @@ class _MyAppState extends State<MyApp> {
       });
 
       var results = await webNovelsApi.getAllNovels();
-      if (!mounted) return; 
+      if (!mounted) return;
       
       if (results.status == "ok") {
         setState(() {

@@ -5,7 +5,7 @@ import 'package:manga_read/model/novels/novel_chapter.dart';
 import 'package:manga_read/model/novels/novel_models.dart';
 
 class WebNovelsApi {
-  static const String baseUrl = 'http://python-api-manga.onrender.com';
+  static const String baseUrl = 'http://192.168.86.62:8000';
 
   Future<DataManager> getAllNovels() async {
     DataManager dataManager = DataManager();

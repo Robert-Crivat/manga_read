@@ -185,8 +185,9 @@ def all_manga():
 @app.route('/getnovelsfire')
 def getnovelsfire():
     """
-    Estrae l'elenco delle novel da novelfire.net basandosi sulla struttura HTML fornita.
+    Estrae l'elenco delle novel da novelfire.net basandosi sulla nuova struttura HTML.
     Supporta la paginazione per recuperare tutte le novel disponibili.
+    Versione aggiornata per la struttura HTML corrente (2025).
     """
     # URL base e parametri
     base_url = 'https://novelfire.net'
@@ -198,6 +199,7 @@ def getnovelsfire():
     genre = request.args.get('genre', default='all', type=str)
     sort = request.args.get('sort', default='new', type=str)
     status = request.args.get('status', default='all', type=str)
+    debug_mode = request.args.get('debug', 'false').lower() == 'true'
     
     # Costruisci URL con i parametri forniti
     if genre != 'all' or sort != 'new' or status != 'all':
@@ -209,14 +211,28 @@ def getnovelsfire():
     
     print(f"Fetching novels from: {novels_url}")
     
-    # Headers per simulare un browser reale
+    # Headers aggiornati per simulare un browser reale
+    import random
+    user_agents = [
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36',
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Safari/605.1.15',
+        'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.5060.53 Safari/537.36'
+    ]
+    
     headers = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36',
-    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
-    'Accept-Language': 'en-US,en;q=0.9,it;q=0.8',
-    'Accept-Encoding': 'gzip, deflate, br',
-    'Connection': 'keep-alive',
-    'Referer': 'https://novelfire.net/'
+        'User-Agent': random.choice(user_agents),
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
+        'Accept-Language': 'en-US,en;q=0.9,it;q=0.8',
+        'Connection': 'keep-alive',
+        'Cache-Control': 'max-age=0',
+        'Referer': 'https://novelfire.net/',
+        'sec-ch-ua': '"Chromium";v="112", "Google Chrome";v="112", "Not:A-Brand";v="99"',
+        'sec-ch-ua-mobile': '?0',
+        'sec-ch-ua-platform': '"Windows"',
+        'Sec-Fetch-Dest': 'document',
+        'Sec-Fetch-Mode': 'navigate',
+        'Sec-Fetch-Site': 'same-origin',
+        'Upgrade-Insecure-Requests': '1'
     }
     
     novels_list = []
@@ -232,96 +248,188 @@ def getnovelsfire():
             
             print(f"Processing page {current_page}: {current_url}")
             
-            response = requests.get(current_url, headers=headers)
-            
-            if response.status_code != 200:
-                print(f"Error fetching page {current_page}: HTTP {response.status_code}")
-                break
+            # Richiesta con gestione robusta di errori
+            try:
+                response = requests.get(current_url, headers=headers, timeout=30, verify=False)
                 
-            soup = BeautifulSoup(response.content, 'html.parser')
+                if response.status_code != 200:
+                    print(f"Error fetching page {current_page}: HTTP {response.status_code}")
+                    if debug_mode:
+                        print(f"Response headers: {response.headers}")
+                        print(f"Response content preview: {response.text[:500]}")
+                    break
+                
+                # Forza encoding UTF-8
+                response.encoding = 'utf-8'
+                soup = BeautifulSoup(response.text, 'html.parser')
+                
+                if debug_mode:
+                    print(f"Page content length: {len(response.text)} characters")
+                
+            except requests.exceptions.RequestException as e:
+                print(f"Network error on page {current_page}: {str(e)}")
+                continue
             
-            # Trova il contenitore principale delle novel
-            novel_list_div = soup.find('div', {'id': 'list-novel'})
+            # Strategia 1: Cerca il contenitore principale delle novel
+            print("Cercando contenitore delle novel...")
             novel_items = []
             
-            if novel_list_div:
-                novel_lists = novel_list_div.find_all('ul', {'class': 'novel-list'})
+            # Cerca prima 'ul.novel-list col6' come nell'HTML fornito
+            novel_lists = soup.find_all('ul', class_='novel-list col6')
+            if novel_lists:
+                print(f"Trovati {len(novel_lists)} contenitori 'ul.novel-list col6'")
                 for novel_list in novel_lists:
-                    items = novel_list.find_all('li', {'class': 'novel-item'})
+                    items = novel_list.find_all('li', class_='novel-item')
                     novel_items.extend(items)
             
+            # Strategia 2: Cerca 'ul.novel-list' generico
             if not novel_items:
-                novel_items = soup.find_all('li', {'class': 'novel-item'})
-                
+                novel_lists = soup.find_all('ul', class_='novel-list')
+                if novel_lists:
+                    print(f"Trovati {len(novel_lists)} contenitori 'ul.novel-list' generici")
+                    for novel_list in novel_lists:
+                        items = novel_list.find_all('li', class_='novel-item')
+                        novel_items.extend(items)
+            
+            # Strategia 3: Cerca direttamente tutti i 'li.novel-item'
+            if not novel_items:
+                novel_items = soup.find_all('li', class_='novel-item')
+                print(f"Trovati {len(novel_items)} elementi 'li.novel-item' diretti")
+            
+            # Strategia 4: Cerca nel contenitore #list-novel se esiste
+            if not novel_items:
+                novel_list_div = soup.find('div', id='list-novel')
+                if novel_list_div:
+                    novel_items = novel_list_div.find_all('li', class_='novel-item')
+                    print(f"Trovati {len(novel_items)} elementi nel contenitore #list-novel")
+            
             print(f"Found {len(novel_items)} novel items on page {current_page}")
             
             for item in novel_items:
                 novel_info = {}
                 
-                # Estrai il titolo e l'URL
-                title_elem = item.find('a', {'title': True})
-                if title_elem:
-                    novel_info['title'] = title_elem.get('title', '').strip()
-                    novel_info['url'] = title_elem.get('href', '')
-                    if novel_info['url'] and novel_info['url'].startswith('/'):
-                        novel_info['url'] = f"{base_url}{novel_info['url']}"
-                
-                # Estrai l'immagine di copertina
-                cover_img = item.select_one('figure.novel-cover img')
-                if cover_img:
-                    image_url = None
+                try:
+                    # Estrai il titolo e l'URL dal link principale
+                    main_link = item.find('a', title=True)
+                    if main_link:
+                        novel_info['title'] = main_link.get('title', '').strip()
+                        novel_info['url'] = main_link.get('href', '')
+                        if novel_info['url'] and not novel_info['url'].startswith('http'):
+                            novel_info['url'] = f"{base_url}{novel_info['url']}" if novel_info['url'].startswith('/') else f"{base_url}/{novel_info['url']}"
                     
-                    if cover_img.has_attr('src') and not cover_img['src'].startswith('data:'):
-                        image_url = cover_img['src']
+                    # Se non trovato, prova con h4.novel-title
+                    if not novel_info.get('title'):
+                        title_elem = item.find('h4', class_='novel-title')
+                        if title_elem:
+                            novel_info['title'] = title_elem.get_text(strip=True)
+                            # Trova il link associato
+                            parent_link = title_elem.find_parent('a')
+                            if parent_link:
+                                novel_info['url'] = parent_link.get('href', '')
+                                if novel_info['url'] and not novel_info['url'].startswith('http'):
+                                    novel_info['url'] = f"{base_url}{novel_info['url']}" if novel_info['url'].startswith('/') else f"{base_url}/{novel_info['url']}"
                     
-                    if not image_url and cover_img.has_attr('data-src'):
-                        image_url = cover_img['data-src']
+                    # Estrai l'immagine di copertina dalla figura
+                    cover_img = item.select_one('figure.novel-cover img')
+                    if cover_img:
+                        image_url = None
+                        
+                        # Prova diversi attributi per l'immagine
+                        for attr in ['src', 'data-src', 'data-original']:
+                            if cover_img.has_attr(attr) and not cover_img[attr].startswith('data:'):
+                                image_url = cover_img[attr]
+                                break
+                        
+                        if image_url:
+                            novel_info['cover_image'] = image_url
+                            # Assicurati che l'URL sia completo
+                            if novel_info['cover_image'].startswith('/'):
+                                novel_info['cover_image'] = f"https://novelfire.net{novel_info['cover_image']}"
+                            elif not novel_info['cover_image'].startswith('http'):
+                                novel_info['cover_image'] = f"https://novelfire.net/{novel_info['cover_image']}"
                     
-                    if not image_url and cover_img.has_attr('data-original'):
-                        image_url = cover_img['data-original']
+                    # Estrai il numero di capitoli dalle statistiche
+                    stats_div = item.find('div', class_='novel-stats')
+                    if stats_div:
+                        # Cerca l'icona del libro e il testo dei capitoli
+                        book_icon = stats_div.find('i', class_='icon-book-open')
+                        if book_icon:
+                            # Il testo dovrebbe essere nel contenitore padre dell'icona
+                            chapters_text = stats_div.get_text(strip=True)
+                            chapter_match = re.search(r'(\d+)\s*Chapters', chapters_text, re.IGNORECASE)
+                            if chapter_match:
+                                novel_info['chapters_count'] = int(chapter_match.group(1))
+                            else:
+                                # Se non riesce a parsare il numero, salva il testo completo
+                                novel_info['chapters_count'] = chapters_text
                     
-                    if image_url:
-                        novel_info['cover_image'] = image_url
-                        if novel_info['cover_image'].startswith('/'):
-                            novel_info['cover_image'] = f"https://novelfire.net{novel_info['cover_image']}"
-                
-                # Estrai il numero di capitoli
-                chapters_elem = item.select_one('div.novel-stats i.icon-book-open')
-                if chapters_elem and chapters_elem.parent:
-                    chapters_text = chapters_elem.parent.get_text(strip=True)
-                    chapter_match = re.search(r'(\d+)\s*Chapters', chapters_text)
-                    if chapter_match:
-                        novel_info['chapters_count'] = int(chapter_match.group(1))
-                    else:
-                        novel_info['chapters_count'] = chapters_text
-                
-                # Aggiungi alla lista solo se abbiamo almeno titolo e URL
-                if novel_info.get('title') and novel_info.get('url'):
-                    novels_list.append(novel_info)
+                    # Estrai eventuali badge (rating, stelle, ecc.)
+                    badges = item.find_all('span', class_='badge')
+                    if badges:
+                        badge_info = {}
+                        for badge in badges:
+                            badge_text = badge.get_text(strip=True)
+                            if 'R ' in badge_text:  # Rating badge
+                                rating_match = re.search(r'R\s*(\d+)', badge_text)
+                                if rating_match:
+                                    badge_info['rating'] = int(rating_match.group(1))
+                            elif re.search(r'\d+', badge_text):  # Altri badge numerici (stelle, ecc.)
+                                star_match = re.search(r'(\d+)', badge_text)
+                                if star_match:
+                                    badge_info['stars'] = int(star_match.group(1))
+                        
+                        if badge_info:
+                            novel_info['badges'] = badge_info
+                    
+                    # Aggiungi alla lista solo se abbiamo almeno titolo e URL
+                    if novel_info.get('title') and novel_info.get('url'):
+                        novels_list.append(novel_info)
+                        if debug_mode and len(novels_list) <= 3:  # Debug solo per i primi 3
+                            print(f"Novel estratta: {novel_info}")
+                    
+                except Exception as item_error:
+                    print(f"Errore nell'estrazione di un elemento novel: {str(item_error)}")
+                    continue
             
+            # Se non troviamo novel items, interrompi il loop
             if not novel_items:
+                print(f"Nessun elemento novel trovato nella pagina {current_page}, interruzione del loop")
                 break
     
     except Exception as e:
         print(f"Error during novels extraction: {str(e)}")
+        if debug_mode:
+            import traceback
+            print(f"Traceback completo: {traceback.format_exc()}")
     
     # Rimuovi duplicati basati sull'URL
     unique_novels = []
     seen_urls = set()
     
     for novel in novels_list:
-        if novel['url'] not in seen_urls:
-            seen_urls.add(novel['url'])
+        novel_url = novel.get('url', '')
+        if novel_url and novel_url not in seen_urls:
+            seen_urls.add(novel_url)
             unique_novels.append(novel)
     
     print(f"Total unique novels found: {len(unique_novels)}")
     
+    # Aggiungi informazioni di debug se richiesto
     response_data = {
         "status": "ok",
         "messaggio": f"chiamata eseguita correttamente - getnovelsfire",
         "totale": len(unique_novels),
+        "pagina_corrente": page,
+        "pagine_elaborate": max_pages,
         "data": unique_novels
     }
+    
+    if debug_mode:
+        response_data["debug_info"] = {
+            "total_processed_pages": len(range(page, page + max_pages)),
+            "novels_before_dedup": len(novels_list),
+            "novels_after_dedup": len(unique_novels)
+        }
     
     return jsonify(response_data)
 
@@ -1064,4 +1172,4 @@ def get_novelfire_chapter_content():
     return jsonify(response_data)
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=8000, debug=True)

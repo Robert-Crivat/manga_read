@@ -3,8 +3,8 @@ import 'package:http/http.dart' as http;
 import 'package:manga_read/model/manga/dataMangager.dart';
 
 class MangaWorldApi {
-  static const String baseUrl = 'http://python-api-manga.onrender.com';
-  
+  static const String baseUrl = 'http://192.168.86.62:8000';
+
   Future<DataManager> searchManga(String keyword) async {
     DataManager dataManager = DataManager();
     Uri uri = Uri.parse('$baseUrl/search_manga?keyword=$keyword');
@@ -68,9 +68,9 @@ class MangaWorldApi {
   Future<DataManager> getAllManga() async {
     DataManager dataManager = DataManager();
     try {
-      Uri url =  Uri.parse('$baseUrl/all_manga?max_pages=10');
+      Uri url = Uri.parse('$baseUrl/all_manga?max_pages=5');
       final response = await http.get(
-       url,
+        url,
         headers: {'Content-Type': 'application/json'},
       );
 

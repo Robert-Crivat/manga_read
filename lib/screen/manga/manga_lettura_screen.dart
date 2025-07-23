@@ -2,14 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:manga_read/api/manga_world_api.dart';
 import 'package:manga_read/model/manga/capitoli_model.dart';
 import 'package:manga_read/model/manga/manga_search_model.dart';
+import 'package:widget_zoom/widget_zoom.dart';
 
 class LetturaScreenManga extends StatefulWidget {
   final MangaSearchModel manga;
   final ChapterModel capitolo;
   final List<ChapterModel> allChapters;
 
-  const LetturaScreenManga({Key? key, required this.manga, required this.capitolo, required this.allChapters})
-    : super(key: key);
+  const LetturaScreenManga(
+      {Key? key,
+      required this.manga,
+      required this.capitolo,
+      required this.allChapters})
+      : super(key: key);
 
   @override
   State<LetturaScreenManga> createState() => _LetturaScreenMangaState();
@@ -41,8 +46,8 @@ class _LetturaScreenMangaState extends State<LetturaScreenManga> {
       });
     } catch (e) {
       print("Error searching manga: $e");
-      ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Errore nella ricerca: $e")));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text("Errore nella ricerca: $e")));
       setState(() {
         isLoading = false;
       });
@@ -70,82 +75,92 @@ class _LetturaScreenMangaState extends State<LetturaScreenManga> {
         children: [
           // Main content area for reading
           Expanded(
-            child: capitoliList.isEmpty ? 
-              Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.menu_book, size: 80, color: Colors.grey[700]),
-                    const SizedBox(height: 24),
-                    const Text(
-                      'Benvenuto nella schermata di lettura!',
-                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 16),
-                    CircularProgressIndicator()
-                  ],
-                ),
-              ) : 
-              ListView.builder(
-                itemCount: capitoliList.length,
-                itemBuilder: (context, index) {
-                  return Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Image.network(
-                      capitoliList[index],
-                      fit: BoxFit.cover,
-                    ),
-                  );
-                },
-              ),
-          ),
-          
-          // Chapters list at bottom
-          Container(
-            height: 80,
-            color: Colors.grey[200],
-            child: isLoadingChapters ?
-              Center(child: CircularProgressIndicator()) :
-              ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: allChapters.length,
-                itemBuilder: (context, index) {
-                  final chapter = allChapters[index];
-                  final isCurrentChapter = chapter.url == widget.capitolo.url;
-                  return GestureDetector(
-                    onTap: () {
-                      if (!isCurrentChapter) {
-                        navigateToChapter(chapter);
-                      }
-                    },
-                    child: Container(
-                      width: 80,
-                      margin: EdgeInsets.all(5),
-                      decoration: BoxDecoration(
-                        color: isCurrentChapter ? Colors.blue : Colors.white,
-                        borderRadius: BorderRadius.circular(8),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black26,
-                            blurRadius: 3,
-                          ),
-                        ],
-                      ),
-                      child: Center(
-                        child: Text(
-                          (index+1).toString(),
+            child: capitoliList.isEmpty
+                ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.menu_book,
+                            size: 80, color: Colors.grey[700]),
+                        const SizedBox(height: 24),
+                        const Text(
+                          'Benvenuto nella schermata di lettura!',
                           style: TextStyle(
-                            color: isCurrentChapter ? Colors.white : Colors.black,
-                            fontWeight: isCurrentChapter ? FontWeight.bold : FontWeight.normal,
-                          ),
+                              fontSize: 20, fontWeight: FontWeight.bold),
                           textAlign: TextAlign.center,
                         ),
-                      ),
+                        const SizedBox(height: 16),
+                        CircularProgressIndicator()
+                      ],
                     ),
-                  );
-                },
-              ),
+                  )
+                : ListView.builder(
+                    itemCount: capitoliList.length,
+                    itemBuilder: (context, index) {
+                      return Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: WidgetZoom(
+                          zoomWidget: Image.network(
+                            capitoliList[index],
+                            fit: BoxFit.cover,
+                          ),
+                          heroAnimationTag: "image$index",
+                        ),
+                      );
+                    },
+                  ),
+          ),
+          Container(
+            height: 40,
+            color: Colors.black.withAlpha(100),
+            child: isLoadingChapters
+                ? Center(child: CircularProgressIndicator())
+                : ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: allChapters.length,
+                    itemBuilder: (context, index) {
+                      final chapter = allChapters[index];
+                      final isCurrentChapter =
+                          chapter.url == widget.capitolo.url;
+                      return GestureDetector(
+                        onTap: () {
+                          if (!isCurrentChapter) {
+                            navigateToChapter(chapter);
+                          }
+                        },
+                        child: Container(
+                          width: 40,
+                          margin: EdgeInsets.all(5),
+                          decoration: BoxDecoration(
+                            color: isCurrentChapter
+                                ? Colors.greenAccent
+                                : Colors.white,
+                            borderRadius: BorderRadius.circular(8),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black26,
+                                blurRadius: 3,
+                              ),
+                            ],
+                          ),
+                          child: Center(
+                            child: Text(
+                              (index + 1).toString(),
+                              style: TextStyle(
+                                color: isCurrentChapter
+                                    ? Colors.white
+                                    : Colors.black,
+                                fontWeight: isCurrentChapter
+                                    ? FontWeight.bold
+                                    : FontWeight.normal,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
           ),
         ],
       ),
