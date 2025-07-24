@@ -24,18 +24,38 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   bool _isDarkMode = true;
   bool isLoading = false;
+  bool isInitialized = false;
   List<MangaSearchModel> mangaList = [];
   final MangaWorldApi mangaWorldApi = MangaWorldApi();
   final WebNovelsApi webNovelsApi = WebNovelsApi();
   bool isLoadingNovel = false;
   List<NovelModels> novelList = [];
+  String url = "";
+  late TextEditingController urlController;
 
   @override
   void initState() {
     super.initState();
-    _loadThemePreference();
-    allManga();
-    allNoverls();
+    _initializeApp();
+  }
+
+  _initializeApp() async {
+    url = sharedPrefs.url;
+    urlController = TextEditingController(text: url);
+    await _loadThemePreference();
+    setState(() {
+      isInitialized = true;
+    });
+    await allManga();
+    await allNoverls();
+  }
+
+  @override
+  void dispose() {
+    if (isInitialized) {
+      urlController.dispose();
+    }
+    super.dispose();
   }
 
   _loadThemePreference() async {
@@ -62,6 +82,8 @@ class _MyAppState extends State<MyApp> {
       });
 
       var results = await mangaWorldApi.getAllManga();
+      if (!mounted) return;
+      
       if (results.status == "ok") {
         setState(() {
           for (var manga in results.parametri) {
@@ -69,19 +91,23 @@ class _MyAppState extends State<MyApp> {
           }
         });
       } else {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text("Nessun manga trovato")));
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Nessun manga trovato"))
+        );
       }
     } catch (e) {
-      print("Error fetching all manga: $e");
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("Errore nel caricamento: $e")));
+      debugPrint("Error fetching all manga: $e");
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Errore nel caricamento: $e"))
+        );
+      }
     }
-    setState(() {
-      isLoading = false;
-    });
+    if (mounted) {
+      setState(() {
+        isLoading = false;
+      });
+    }
   }
 
   allNoverls() async {
@@ -124,7 +150,6 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    SharedPrefs prefs = SharedPrefs();
     return MaterialApp(
       title: 'Manga Reader',
       theme: ThemeData(
@@ -157,7 +182,7 @@ class _MyAppState extends State<MyApp> {
         scaffoldBackgroundColor: const Color(0xFF121212),
       ),
       themeMode: _isDarkMode ? ThemeMode.dark : ThemeMode.light,
-      home: isLoading == true || isLoadingNovel == true
+      home: !isInitialized || isLoading == true || isLoadingNovel == true
           ? Builder(
               builder: (context) => Scaffold(
                     body: Center(
@@ -180,49 +205,116 @@ class _MyAppState extends State<MyApp> {
                         ),
                       ),
                     ),
-                    floatingActionButton: FloatingActionButton(
-                      onPressed: () {
+                    floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
+                    floatingActionButton: isInitialized ? Column(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 16.0),
+                        child: FloatingActionButton(
+                        onPressed: () async {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text("Aggiornamento dati in corso...")),
+                          );
+                          await allManga();
+                          await allNoverls();
+                          if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text("Dati aggiornati con successo!")),
+                          );
+                          }
+                        },
+                        child: const Icon(Icons.refresh),
+                        heroTag: 'refreshButton',
+                        ),
+                      ),
+                      FloatingActionButton(
+                        onPressed: () {
                         showDialog(
                           context: context,
-                          builder: (context) => AlertDialog(
-                            title: Text('Edit API URLs'),
-                            content: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                TextField(
-                                  decoration: InputDecoration(
-                                    labelText: 'Manga API URL',
-                                    hintText: 'Enter manga API URL',
-                                  ),
-                                  controller: TextEditingController(),
-                                  onChanged: (value) {
-                                    prefs.url = value;
-                                  },
-                                ),
-                              ],
+                          builder: (BuildContext context) {
+                          return AlertDialog(
+                            title: const Text('Configure API URL'),
+                            content: TextField(
+                            decoration: const InputDecoration(
+                              labelText: 'Manga API URL',
+                              hintText: 'Enter manga API URL',
+                            ),
+                            controller: urlController,
+                            onChanged: (value) {
+                              setState(() {
+                              url = value;
+                              });
+                            },
                             ),
                             actions: [
-                              TextButton(
-                                onPressed: () => Navigator.pop(context),
-                                child: Text('Cancel'),
-                              ),
-                              TextButton(
-                                onPressed: () {
-                                  Navigator.pop(context);
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                          content: Text(
-                                              'API URLs updated. Restart app to apply changes.')));
-                                },
-                                child: Text('Save'),
-                              ),
+                            TextButton(
+                              onPressed: () async {
+                              try {
+                                String newUrl = urlController.text.trim();
+                                if (newUrl.isEmpty) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                  content: Text('Please enter a valid URL'),
+                                  ),
+                                );
+                                return;
+                                }
+                                
+                                // Salva l'URL nelle SharedPreferences
+                                bool saved = await sharedPrefs.setUrl(newUrl);
+                                
+                                if (!saved) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                  content: Text('Failed to save URL'),
+                                  backgroundColor: Colors.red,
+                                  ),
+                                );
+                                return;
+                                }
+                                
+                                // Aggiorna la variabile locale
+                                setState(() {
+                                url = newUrl;
+                                });
+                                
+                                print('URL saved: ${sharedPrefs.url}');
+                                Navigator.pop(context);
+                                
+                                if (mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                  content: Text('API URL updated successfully: $newUrl'),
+                                  duration: const Duration(seconds: 3),
+                                  ),
+                                );
+                                }
+                              } catch (e) {
+                                print('Error saving URL: $e');
+                                Navigator.pop(context);
+                                if (mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                  content: Text('Error saving URL: $e'),
+                                  backgroundColor: Colors.red,
+                                  ),
+                                );
+                                }
+                              }
+                              },
+                              child: const Text('Save'),
+                            ),
                             ],
-                          ),
+                          );
+                          },
                         );
-                      },
-                      child: Icon(Icons.api),
-                    ),
+                        },
+                        child: const Icon(Icons.api),
+                        heroTag: 'apiButton',
+                      ),
+                      ],
+                    ) : null
                   ))
           : MyHomePage(
               novelList: novelList,

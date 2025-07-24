@@ -1,11 +1,10 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:manga_read/model/manga/dataMangager.dart';
-import 'package:manga_read/service/shared_prefs.dart';
+import 'package:manga_read/main.dart';
 
 class MangaWorldApi {
-  SharedPrefs prefs = SharedPrefs();
-  String get baseUrl => "http://${prefs.url}";
+  String get baseUrl => "http://${sharedPrefs.url}:8000";
 
   Future<DataManager> searchManga(String keyword) async {
     DataManager dataManager = DataManager();

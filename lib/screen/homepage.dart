@@ -8,6 +8,7 @@ import "package:manga_read/screen/manga/home_manga.dart";
 import "package:manga_read/screen/manga/manga_preferiti.dart";
 import "package:manga_read/screen/novel/novel_detail.dart";
 import "package:manga_read/screen/novel/widget/novel_card.dart";
+import 'package:liquid_pull_to_refresh/liquid_pull_to_refresh.dart';
 
 class Homepage extends StatefulWidget {
   final Function? toggleTheme;
@@ -72,6 +73,80 @@ class _HomepageState extends State<Homepage>
     }
   }
 
+  Future<void> allNoverls() async {
+    setState(() {
+      isLoadingNovel = true;
+    });
+    try {
+      setState(() {
+        novelList.clear();
+      });
+
+      var results = await webNovelsApi.getAllNovels();
+      if (!mounted) return;
+
+      if (results.status == "ok") {
+        setState(() {
+          for (var novel in results.parametri) {
+            novelList.add(NovelModels.fromJson(novel));
+          }
+        });
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text("Nessuna novel trovata")));
+        }
+      }
+    } catch (e) {
+      debugPrint("Error fetching all novels: $e");
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("Errore nel caricamento: $e")));
+      }
+    }
+    if (mounted) {
+      setState(() {
+        isLoadingNovel = false;
+      });
+    }
+  }
+
+  Future<void> allManga() async {
+    setState(() {
+      isLoading = true;
+    });
+    try {
+      setState(() {
+        mangaList.clear(); // Clear previous results
+      });
+
+      var results = await mangaWorldApi.getAllManga();
+      if (!mounted) return;
+
+      if (results.status == "ok") {
+        setState(() {
+          for (var manga in results.parametri) {
+            mangaList.add(MangaSearchModel.fromJson(manga));
+          }
+        });
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Nessun manga trovato")));
+      }
+    } catch (e) {
+      debugPrint("Error fetching all manga: $e");
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("Errore nel caricamento: $e")));
+      }
+    }
+    if (mounted) {
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -115,45 +190,58 @@ class _HomepageState extends State<Homepage>
           unselectedLabelColor: Colors.white70,
           indicatorColor: Colors.white,
           tabs: const [
-            Tab(text: 'Manga'),
             Tab(text: 'Novel'),
+            Tab(text: 'Manga'),
           ],
         ),
       ),
-      body: TabBarView(controller: _tabController, children: <Widget>[
-        isLoading == true
-            ? const Center(child: CircularProgressIndicator())
-            : HomeManga(mangalist: mangaList),
-        Column(
-          children: [
-            Expanded(
-              child: GridView.builder(
-                padding: const EdgeInsets.all(8),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  crossAxisSpacing: 12,
-                  mainAxisSpacing: 12,
-                  childAspectRatio: 0.55,
-                ),
-                itemCount: novelList.length,
-                itemBuilder: (context, index) {
-                  final novel = novelList[index];
-                  return GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => NovelDetail(novel: novel),
+      body: TabBarView(
+        controller: _tabController,
+        children: <Widget>[
+          isLoadingNovel
+              ? const Center(child: CircularProgressIndicator())
+              : Column(
+                  children: [
+                    Expanded(
+                      child: LiquidPullToRefresh(
+                        onRefresh: allNoverls,
+                        child: GridView.builder(
+                          padding: const EdgeInsets.all(8),
+                          gridDelegate:
+                              const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2,
+                            crossAxisSpacing: 12,
+                            mainAxisSpacing: 12,
+                            childAspectRatio: 0.55,
                           ),
-                        );
-                      },
-                      child: NovelCard(novel: novel));
-                },
-              ),
-            ),
-          ],
-        ),
-      ]),
+                          itemCount: novelList.length,
+                          itemBuilder: (context, index) {
+                            final novel = novelList[index];
+                            return GestureDetector(
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          NovelDetail(novel: novel),
+                                    ),
+                                  );
+                                },
+                                child: NovelCard(novel: novel));
+                          },
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+          isLoading == true
+              ? const Center(child: CircularProgressIndicator())
+              : LiquidPullToRefresh(
+                  onRefresh: allManga,
+                  child: HomeManga(mangalist: mangaList),
+                ),
+        ],
+      ),
     );
   }
 }

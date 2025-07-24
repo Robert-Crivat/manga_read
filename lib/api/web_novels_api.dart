@@ -1,17 +1,16 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:manga_read/main.dart';
 import 'package:manga_read/model/manga/dataMangager.dart';
 import 'package:manga_read/model/novels/novel_chapter.dart';
 import 'package:manga_read/model/novels/novel_models.dart';
-import 'package:manga_read/service/shared_prefs.dart';
 
 class WebNovelsApi {
-  SharedPrefs prefs = SharedPrefs();
-  String get baseUrl => "http://${prefs.url}";
+  String get baseUrl => "http://${sharedPrefs.url}:8000";
 
   Future<DataManager> getAllNovels() async {
     DataManager dataManager = DataManager();
-    Uri uri = Uri.parse('$baseUrl/getnovelsfire');
+    Uri uri = Uri.parse('$baseUrl/getnovelsfire?max_pages=5'); // Limitato a una pagina per test, cambia a max_pages=448 per produzione
     try {
       final response = await http.get(
         uri,

@@ -8,12 +8,17 @@ class SharedPrefs {
     _sharedPrefs = await SharedPreferences.getInstance();
   }
 
-   String get url {
-    return _sharedPrefs!.getString('url') ?? "";
+  String get url {
+    return _sharedPrefs?.getString('url') ?? "";
   }
 
   set url(String value) {
-    _sharedPrefs!.setString('url', value);
+    _sharedPrefs?.setString('url', value);
+  }
+
+  // Metodo asincrono per salvare l'URL
+  Future<bool> setUrl(String value) async {
+    return await _sharedPrefs?.setString('url', value) ?? false;
   }
 
   // GETTER - Restituiscono copie delle liste salvate
