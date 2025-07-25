@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:manga_read/api/web_novels_api.dart';
 import 'package:manga_read/model/manga/dataMangager.dart';
 import 'package:manga_read/model/novels/novel_chaprter_content.dart';
-import 'package:manga_read/model/novels/novel_chapter.dart';
+import 'package:translator/translator.dart';
 import 'package:manga_read/service/shared_prefs.dart';
 
 class NovelReadingScreen extends StatefulWidget {
@@ -29,9 +29,10 @@ class _NovelReadingScreenState extends State<NovelReadingScreen> {
   NovelChaprterContent? chapterContent;
   bool isLoading = true;
   bool isDarkMode = false;
+  bool isInTranslate = false;
   double fontSize = 16.0;
   String translationMode = 'default'; // Opzioni: default, dynamic, robust, lore
-
+  late GoogleTranslator translator;
   @override
   void initState() {
     super.initState();
@@ -61,6 +62,19 @@ class _NovelReadingScreenState extends State<NovelReadingScreen> {
 
       if (reponse.parametri.isNotEmpty) {
         chapterContent = NovelChaprterContent.fromJson(reponse.parametri);
+        // Translate to Italian
+        setState(() {
+          isInTranslate = true;
+        });
+        final translatedContent =
+            await chapterContent!.translateContent(from: 'en', to: 'it');
+
+        if (translatedContent.content.isNotEmpty) {
+          setState(() {
+            isInTranslate = false;
+            chapterContent!.content = translatedContent.content;
+          });
+        }
       } else {
         chapterContent = null;
       }
@@ -189,7 +203,16 @@ class _NovelReadingScreenState extends State<NovelReadingScreen> {
         ],
       ),
       body: isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? Center(
+              child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                CircularProgressIndicator(),
+                isInTranslate
+                    ? Text('Traduzione in corso...')
+                    : Text('Caricamento capitolo...'),
+              ],
+            ))
           : chapterContent == null
               ? const Center(child: Text('Nessun contenuto disponibile'))
               : _buildChapterContent(),
