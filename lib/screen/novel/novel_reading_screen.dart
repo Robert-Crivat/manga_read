@@ -207,7 +207,12 @@ class _NovelReadingScreenState extends State<NovelReadingScreen> {
               child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                CircularProgressIndicator(),
+                isInTranslate
+                    ? Icon(
+                        Icons.translate,
+                        size: 25,
+                      )
+                    : CircularProgressIndicator(),
                 isInTranslate
                     ? Text('Traduzione in corso...')
                     : Text('Caricamento capitolo...'),
