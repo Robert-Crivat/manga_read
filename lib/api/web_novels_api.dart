@@ -132,7 +132,7 @@ class WebNovelsApi {
     }
   }
 
-  Future<NovelChapterContent> getNovelFireChapterContent(
+  Future<DataManager> getNovelFireChapterContent(
     String chapterUrl, {
     String translationMode =
         'default', // Opzioni: default, dynamic, robust, lore
@@ -146,11 +146,13 @@ class WebNovelsApi {
         uri,
         headers: {'Content-Type': 'application/json'},
       );
+      DataManager dataManager = DataManager();
 
       if (response.statusCode == 200) {
-        Map<String, dynamic> jsonData = json.decode(response.body);
-        NovelChapterContent content = NovelChapterContent.fromJson(jsonData);
-        return content;
+        Map<String, dynamic> data = json.decode(response.body);
+        dataManager = DataManager.fromJson(data);
+
+        return dataManager;
       } else {
         throw Exception(
             'Failed to get chapter content: ${response.statusCode}');

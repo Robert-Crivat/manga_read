@@ -41,34 +41,3 @@ class NovelChapter {
     };
   }
 }
-
-class NovelChapterContent {
-  final String title;
-  final String content;
-  final List<String> paragraphs;
-  final String? prevChapter;
-  final String? nextChapter;
-  final String translationMode;
-
-  NovelChapterContent({
-    required this.title,
-    required this.content,
-    required this.paragraphs,
-    this.prevChapter,
-    this.nextChapter,
-    this.translationMode = 'default',
-  });
-
-  factory NovelChapterContent.fromJson(Map<String, dynamic> json) {
-    final Map<String, dynamic> data = json['data'] ?? {};
-    
-    return NovelChapterContent(
-      title: data['title'] ?? '',
-      content: data['content'] ?? '',
-      paragraphs: List<String>.from(data['paragraphs'] ?? []),
-      prevChapter: data['prev_chapter'],
-      nextChapter: data['next_chapter'],
-      translationMode: data['translation_mode'] ?? 'default',
-    );
-  }
-}

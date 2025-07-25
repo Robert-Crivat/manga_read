@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:manga_read/api/web_novels_api.dart';
+import 'package:manga_read/model/manga/dataMangager.dart';
+import 'package:manga_read/model/novels/novel_chaprter_content.dart';
 import 'package:manga_read/model/novels/novel_chapter.dart';
 import 'package:manga_read/service/shared_prefs.dart';
 
@@ -24,7 +26,7 @@ class NovelReadingScreen extends StatefulWidget {
 class _NovelReadingScreenState extends State<NovelReadingScreen> {
   final WebNovelsApi webNovelsApi = WebNovelsApi();
   final SharedPrefs _prefs = SharedPrefs();
-  NovelChapterContent? chapterContent;
+  NovelChaprterContent? chapterContent;
   bool isLoading = true;
   bool isDarkMode = false;
   double fontSize = 16.0;
@@ -52,13 +54,18 @@ class _NovelReadingScreenState extends State<NovelReadingScreen> {
     });
 
     try {
-      NovelChapterContent content = await webNovelsApi.getNovelFireChapterContent(
+      DataManager reponse = await webNovelsApi.getNovelFireChapterContent(
         widget.chapterUrl,
         translationMode: translationMode,
       );
 
+      if (reponse.parametri.isNotEmpty) {
+        chapterContent = NovelChaprterContent.fromJson(reponse.parametri);
+      } else {
+        chapterContent = null;
+      }
+
       setState(() {
-        chapterContent = content;
         isLoading = false;
       });
     } catch (e) {
@@ -92,10 +99,10 @@ class _NovelReadingScreenState extends State<NovelReadingScreen> {
       return;
     }
 
-    String title = direction == 'precedente' 
-        ? 'Capitolo Precedente' 
+    String title = direction == 'precedente'
+        ? 'Capitolo Precedente'
         : 'Capitolo Successivo';
-        
+
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
@@ -198,16 +205,18 @@ class _NovelReadingScreenState extends State<NovelReadingScreen> {
           ElevatedButton.icon(
             icon: const Icon(Icons.arrow_back),
             label: const Text('Precedente'),
-            onPressed: chapterContent?.prevChapter != null
+            onPressed: /* chapterContent?.prevChapter != null
                 ? () => _navigateToChapter(chapterContent!.prevChapter, 'precedente')
-                : null,
+                :*/
+                null,
           ),
           ElevatedButton.icon(
             icon: const Icon(Icons.arrow_forward),
             label: const Text('Successivo'),
-            onPressed: chapterContent?.nextChapter != null
+            onPressed: /*chapterContent?.nextChapter != null
                 ? () => _navigateToChapter(chapterContent!.nextChapter, 'successivo')
-                : null,
+                : */
+                null,
           ),
         ],
       ),
@@ -226,7 +235,7 @@ class _NovelReadingScreenState extends State<NovelReadingScreen> {
               width: double.infinity,
               padding: const EdgeInsets.only(bottom: 20.0),
               child: Text(
-                chapterContent!.title,
+                chapterContent!.chapterTitle,
                 style: TextStyle(
                   fontSize: fontSize + 6,
                   fontWeight: FontWeight.bold,
@@ -234,7 +243,7 @@ class _NovelReadingScreenState extends State<NovelReadingScreen> {
                 textAlign: TextAlign.center,
               ),
             ),
-            
+
             // Badge che mostra la modalità di traduzione attiva
             if (translationMode != 'default')
               Container(
@@ -245,9 +254,9 @@ class _NovelReadingScreenState extends State<NovelReadingScreen> {
                   backgroundColor: Colors.blue.shade100,
                 ),
               ),
-            
+
             // Contenuto del capitolo paragrafo per paragrafo
-            ...chapterContent!.paragraphs.map((paragraph) {
+            ...chapterContent!.content.split('\n\n').map((paragraph) {
               return Padding(
                 padding: const EdgeInsets.only(bottom: 16.0),
                 child: Text(
@@ -260,7 +269,7 @@ class _NovelReadingScreenState extends State<NovelReadingScreen> {
                 ),
               );
             }).toList(),
-            
+
             const SizedBox(height: 40),
           ],
         ),
