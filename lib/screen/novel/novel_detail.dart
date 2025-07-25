@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:manga_read/api/web_novels_api.dart';
+import 'package:manga_read/model/manga/dataMangager.dart';
 import 'package:manga_read/model/novels/novel_chapter.dart';
 import 'package:manga_read/model/novels/novel_models.dart';
 import 'package:manga_read/screen/novel/novel_reading_screen.dart';
@@ -34,11 +35,10 @@ class _NovelDetailState extends State<NovelDetail> {
       });
 
       // Usa la funzione getNovelFireChapters invece di getNovelDetail
-      List<NovelChapter> chapters = await webNovelsApi.getNovelFireChapters(widget.novel.url);
-      setState(() {
-        novelChapters = chapters;
-      });
-      
+      DataManager chapters = await webNovelsApi.getNovelFireChapters(widget.novel.url);
+      for (var chapter in chapters.parametri) {
+        novelChapters.add(NovelChapter.fromJson(chapter));
+      }
     } catch (e) {
       debugPrint("Error fetching novel chapters: $e");
       if (mounted) {

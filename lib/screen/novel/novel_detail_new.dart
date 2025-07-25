@@ -21,35 +21,6 @@ class _NovelDetailState extends State<NovelDetail> {
   @override
   void initState() {
     super.initState();
-    getNovelChapters();
-  }
-
-  getNovelChapters() async {
-    setState(() {
-      isLoading = true;
-    });
-    try {
-      setState(() {
-        novelChapters.clear();
-      });
-
-      // Usa la funzione getNovelFireChapters invece di getNovelDetail
-      List<NovelChapter> chapters = await webNovelsApi.getNovelFireChapters(widget.novel.url);
-      setState(() {
-        novelChapters = chapters;
-      });
-      
-    } catch (e) {
-      debugPrint("Error fetching novel chapters: $e");
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text("Errore nel caricamento dei capitoli: $e")));
-      }
-    }
-    setState(() {
-      isLoading = false;
-    });
   }
 
   @override
