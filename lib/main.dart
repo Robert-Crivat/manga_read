@@ -4,6 +4,7 @@ import 'package:manga_read/api/web_novels_api.dart';
 import 'package:manga_read/model/manga/manga_search_model.dart';
 import 'package:manga_read/model/novels/novel_models.dart';
 import 'package:manga_read/screen/homepage.dart';
+import 'package:manga_read/screen/manga/OfflinePage.dart';
 import 'package:manga_read/service/shared_prefs.dart';
 import 'package:translator/translator.dart';
 
@@ -203,6 +204,9 @@ class _MyAppState extends State<MyApp> {
                                 fontWeight: FontWeight.w400,
                               ),
                             ),
+
+                            ElevatedButton(onPressed: (){Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => OfflinePage()));}, child: Text("Accedi Offline"))
+
                           ],
                         ),
                       ),

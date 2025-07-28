@@ -8,6 +8,7 @@ class MangaCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       child: Container(

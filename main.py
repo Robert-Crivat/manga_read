@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, Response
 from flask_cors import CORS
 from bs4 import BeautifulSoup
 import requests
@@ -6,10 +6,17 @@ import re
 import json
 import os
 import time
+import base64
+import logging
+from concurrent.futures import ThreadPoolExecutor, as_completed
 import cloudscraper  # Importa questa libreria aggiuntiva
 
 app = Flask(__name__)
 CORS(app)  # Abilita CORS per permettere chiamate da Flutter
+
+# Configurazione logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 def encode_keyword(keyword):
     return keyword.replace(' ', '%20')
@@ -148,6 +155,116 @@ def chapter_pages():
         "data": linkLetturaCapitolo
     }
     
+    return jsonify(response_data)
+
+@app.route('/download_single_image')
+def download_single_image():
+    image_url = request.args.get('url', '')
+    if not image_url:
+        return jsonify({
+            "status": "error",
+            "messaggio": "Parametro 'url' mancante",
+            "data": {}
+        }), 400
+    logger.info(f"Richiesta ricevuta per: {image_url}")
+    try:
+        response = requests.get(image_url, timeout=10)
+        if response.status_code != 200:
+            return jsonify({
+                "status": "error",
+                "messaggio": f"Immagine non trovata (HTTP {response.status_code})",
+                "data": {}
+            }), 404
+        image_base64 = base64.b64encode(response.content).decode('utf-8')
+        content_type = response.headers.get('Content-Type', 'image/jpeg')
+        response_data = {
+            "status": "ok",
+            "messaggio": "Immagine scaricata correttamente",
+            "data": {
+                "url": image_url,
+                "mime_type": content_type,
+                "uint8list_base64": image_base64,
+                "size_bytes": len(response.content)
+            }
+        }
+        return jsonify(response_data)
+    except Exception as e:
+        logger.error(f"Errore durante il download: {str(e)}")
+        return jsonify({
+            "status": "error",
+            "messaggio": f"Errore durante il download: {str(e)}",
+            "data": {}
+        }), 500
+
+@app.route('/download_image')
+def download_image():
+    urls_str = request.args.get('urls', '[]')
+    logger.info(f"Richiesta ricevuta con: {urls_str}")
+    try:
+        urls = json.loads(urls_str)
+        if not isinstance(urls, list) or len(urls) == 0:
+            return jsonify({
+                "status": "error",
+                "messaggio": "Parametro 'urls' deve essere una lista non vuota",
+                "data": []
+            }), 400
+        MAX_URLS = 5000
+        if len(urls) > MAX_URLS:
+            urls = urls[:MAX_URLS]
+            warning = f"Limite di {MAX_URLS} URL raggiunto. Solo i primi {MAX_URLS} URL sono stati processati."
+            logger.warning(warning)
+        else:
+            warning = None
+    except Exception as e:
+        logger.error(f"Errore nel parsing degli URL: {str(e)}")
+        return jsonify({
+            "status": "error",
+            "messaggio": f"Errore nel parsing degli URL: {str(e)}",
+            "data": []
+        }), 400
+    results = []
+    def download_single_image(image_url):
+        try:
+            response = requests.get(image_url, timeout=10)
+            if response.status_code != 200:
+                return {
+                    "url": image_url,
+                    "success": False,
+                    "error": f"Immagine non trovata (HTTP {response.status_code})"
+                }
+            image_base64 = base64.b64encode(response.content).decode('utf-8')
+            content_type = response.headers.get('Content-Type', 'image/jpeg')
+            return {
+                "url": image_url,
+                "success": True,
+                "mime_type": content_type,
+                "uint8list_base64": image_base64,
+                "size_bytes": len(response.content)
+            }
+        except Exception as e:
+            return {
+                "url": image_url,
+                "success": False,
+                "error": f"Errore durante il download: {str(e)}"
+            }
+    with ThreadPoolExecutor(max_workers=5) as executor:
+        future_to_url = {executor.submit(download_single_image, url): url for url in urls}
+        for future in as_completed(future_to_url):
+            result = future.result()
+            results.append(result)
+    url_to_result = {result['url']: result for result in results}
+    sorted_results = [url_to_result[url] for url in urls if url in url_to_result]
+    response_data = {
+        "status": "ok",
+        "messaggio": "Download immagini completato",
+        "data": {
+            "total_urls": len(urls),
+            "successful_downloads": sum(1 for r in sorted_results if r.get("success")),
+            "results": sorted_results,
+            "warning": warning if warning else None
+        }
+    }
+    logger.info(f"Richiesta completata: {len(urls)} URL, {response_data['data']['successful_downloads']} successi")
     return jsonify(response_data)
 
 @app.route('/all_manga')

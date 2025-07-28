@@ -86,4 +86,69 @@ class MangaWorldApi {
       throw Exception('Error getting all manga: $e');
     }
   }
+
+  String removeQueryFromUrl(String url) {
+    if (url.isEmpty) return url;
+    final questionMarkIndex = url.indexOf('?');
+    if (questionMarkIndex == -1) {
+      return url;
+    }
+    return url.substring(0, questionMarkIndex);
+  }
+
+  Future<DataManager> downloadMultipleImages(List<String> imageUrls) async {
+    const String baseUrl = 'http://100.70.187.3:8000';
+
+    // Codifica la lista di URL come stringa JSON
+    final encodedUrls = json.encode(imageUrls);
+
+    // Costruisci URI in modo sicuro
+    final uri = Uri.parse(baseUrl).replace(
+      path: '/download_image',
+      queryParameters: {
+        'urls': encodedUrls,
+      },
+    );
+
+    print('Calling URL: $uri');
+
+    try {
+      final response = await http.get(
+        uri,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        return DataManager.fromJson(data);
+      } else {
+        throw Exception('Errore nel download immagini: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Eccezione nella richiesta HTTP: $e');
+    }
+  }
+
+  Future<DataManager> downloadSingleImage(String imageUrl) async {
+    DataManager dataManager = DataManager();
+    final uri = Uri.parse('$baseUrl/download_single_image?url=$imageUrl');
+    try {
+      final response = await http.get(
+        uri,
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (response.statusCode == 200) {
+        Map<String, dynamic> data = json.decode(response.body);
+        dataManager = DataManager.fromJson(data);
+        return dataManager;
+      } else {
+        throw Exception('Failed to get all manga: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Error getting all manga: $e');
+    }
+  }
 }
