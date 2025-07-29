@@ -4,6 +4,7 @@ import "package:manga_read/api/web_novels_api.dart";
 import "package:manga_read/main.dart";
 import "package:manga_read/model/manga/manga_search_model.dart";
 import "package:manga_read/model/novels/novel_models.dart";
+import "package:manga_read/screen/manga/OfflinePage.dart";
 import "package:manga_read/screen/manga/home_manga.dart";
 import "package:manga_read/screen/manga/manga_preferiti.dart";
 import "package:manga_read/screen/novel/novel_detail.dart";
@@ -242,6 +243,19 @@ class _HomepageState extends State<Homepage>
                 ),
         ],
       ),
+      floatingActionButton: _tabController.index == 1
+          ? FloatingActionButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const OfflinePage(),
+                  ),
+                );
+              },
+              child: const Icon(Icons.wifi_off_outlined),
+            )
+          : null,
     );
   }
 }

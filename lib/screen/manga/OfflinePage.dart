@@ -1,9 +1,6 @@
-import 'dart:typed_data';
-
+import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:manga_read/db/manga_db.dart';
-import 'package:manga_read/model/manga/db_model/manga.dart';
-import 'package:manga_read/model/manga/downloaded_image.dart';
+import 'package:path_provider/path_provider.dart';
 
 class OfflinePage extends StatefulWidget {
   const OfflinePage({super.key});
@@ -13,73 +10,143 @@ class OfflinePage extends StatefulWidget {
 }
 
 class _OfflinePageState extends State<OfflinePage> {
-  bool _isLoading = false;
-  List<Map<String, dynamic>> _chapters = [];
+  List<String> mangaList = [];
+  String? selectedManga;
+  List<String> chapterList = [];
+  String? selectedChapter;
+  List<File> images = [];
 
-  Future<List<Manga>> getAllMangas() async {
-    final db = await MangaDatabase().database;
-    final result = await db.query('mangas', orderBy: 'created_at DESC');
+  @override
+  void initState() {
+    super.initState();
+    loadMangaList();
+  }
 
-    return result.map((row) {
-      return Manga(
-        id: row['id'] as int,
-        title: row['title'] as String,
-        coverImage:
-            row['cover_image'] != null ? row['cover_image'] as Uint8List : null,
-      );
-    }).toList();
+  Future<void> loadMangaList() async {
+    final dir = await getApplicationDocumentsDirectory();
+    final mangaDirs = Directory(dir.path).listSync().whereType<Directory>();
+    setState(() {
+      mangaList = mangaDirs.map((d) => d.path.split('/').last).toList();
+    });
+  }
+
+  Future<void> loadChapterList(String manga) async {
+    final dir = await getApplicationDocumentsDirectory();
+    final chapters = Directory('${dir.path}/$manga')
+        .listSync()
+        .whereType<Directory>();
+    setState(() {
+      chapterList = chapters.map((d) => d.path.split('/').last).toList();
+      selectedChapter = null;
+      images = [];
+    });
+  }
+
+  Future<void> loadImages(String manga, String chapter) async {
+    final dir = await getApplicationDocumentsDirectory();
+    final files = Directory('${dir.path}/$manga/$chapter')
+        .listSync()
+        .whereType<File>()
+        .where((f) => f.path.endsWith('.png'))
+        .toList();
+    setState(() {
+      images = files;
+    });
+  }
+
+  void resetToMangaList() {
+    setState(() {
+      selectedManga = null;
+      chapterList = [];
+      selectedChapter = null;
+      images = [];
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: Text('Offline Mode'),
+      appBar: AppBar(
+        title: Text('Offline Manga'),
+        leading: (selectedManga != null)
+            ? IconButton(
+                icon: Icon(Icons.arrow_back),
+                onPressed: () {
+                  if (images.isNotEmpty) {
+                    setState(() {
+                      images = [];
+                      selectedChapter = null;
+                    });
+                  } else if (chapterList.isNotEmpty) {
+                    resetToMangaList();
+                  }
+                },
+              )
+            : null,
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Builder(
+          builder: (context) {
+            // Step 1: Show manga list
+            if (selectedManga == null) {
+              return mangaList.isEmpty
+                  ? Center(child: Text('Nessun manga offline'))
+                  : ListView.separated(
+                      itemCount: mangaList.length,
+                      separatorBuilder: (_, __) => Divider(),
+                      itemBuilder: (context, index) {
+                        final manga = mangaList[index];
+                        return ListTile(
+                          title: Text(manga,
+                              style: Theme.of(context).textTheme.titleMedium),
+                          trailing: Icon(Icons.chevron_right),
+                          onTap: () {
+                            setState(() {
+                              selectedManga = manga;
+                            });
+                            loadChapterList(manga);
+                          },
+                        );
+                      },
+                    );
+            }
+            // Step 2: Show chapter list
+            if (selectedChapter == null) {
+              return chapterList.isEmpty
+                  ? Center(child: Text('Nessun capitolo trovato'))
+                  : ListView.separated(
+                      itemCount: chapterList.length,
+                      separatorBuilder: (_, __) => Divider(),
+                      itemBuilder: (context, index) {
+                        final chapter = chapterList[index];
+                        return ListTile(
+                          title: Text(chapter,
+                              style: Theme.of(context).textTheme.titleMedium),
+                          trailing: Icon(Icons.chevron_right),
+                          onTap: () {
+                            setState(() {
+                              selectedChapter = chapter;
+                            });
+                            loadImages(selectedManga!, chapter);
+                          },
+                        );
+                      },
+                    );
+            }
+            // Step 3: Show images
+            return images.isEmpty
+                ? Center(child: Text('Nessuna immagine'))
+                : ListView.builder(
+                    itemCount: images.length,
+                    itemBuilder: (context, index) => Card(
+                      margin: EdgeInsets.symmetric(vertical: 8),
+                      child: Image.file(images[index]),
+                    ),
+                  );
+          },
         ),
-        body: Center(
-          child: ListView.builder(
-            itemCount: _chapters.length,
-            itemBuilder: (context, index) {
-              final chapter = _chapters[index];
-              final imageList = chapter['imageList'] as List<DownloadedImage>;
-
-              return Card(
-                margin: EdgeInsets.all(8),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Text(
-                        "${chapter['mangaTitle']} - Capitolo ${chapter['chapterIndex']}",
-                        style: TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                    // Mostra le prime 3 immagini come anteprima
-                    SizedBox(
-                      height: 100,
-                      child: ListView(
-                        scrollDirection: Axis.horizontal,
-                        children: [
-                          for (int i = 0; i < imageList.length && i < 3; i++)
-                            Container(
-                              width: 100,
-                              margin: EdgeInsets.only(left: 8),
-                              child: Image.memory(
-                                imageList[i]
-                                    .imagePath, // Usa imagePath direttamente
-                                fit: BoxFit.cover,
-                              ),
-                            ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            },
-          ),
-        ));
+      ),
+    );
   }
 }
