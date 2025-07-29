@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:manga_read/main.dart';
 import 'package:manga_read/model/manga/dataMangager.dart';
-import 'package:manga_read/model/novels/novel_chapter.dart';
 import 'package:manga_read/model/novels/novel_models.dart';
 
 class WebNovelsApi {

@@ -5,14 +5,12 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:manga_read/api/manga_world_api.dart';
-import 'package:manga_read/db/manga_db.dart';
 import 'package:manga_read/model/manga/capitoli_model.dart';
 import 'package:manga_read/model/manga/downloaded_image.dart';
 import 'package:manga_read/model/manga/manga_search_model.dart';
 import 'package:manga_read/screen/manga/manga_lettura_screen.dart';
 import 'package:manga_read/screen/manga/widget/show_case_manga_detail.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:sqflite/sqflite.dart';
 
 class MangaDetailScreen extends StatefulWidget {
   final MangaSearchModel manga;

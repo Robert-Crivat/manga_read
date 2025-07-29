@@ -6,13 +6,11 @@ import 'package:manga_read/model/novels/novel_models.dart';
 import 'package:manga_read/screen/homepage.dart';
 import 'package:manga_read/screen/manga/OfflinePage.dart';
 import 'package:manga_read/service/shared_prefs.dart';
-import 'package:translator/translator.dart';
 
 final sharedPrefs = SharedPrefs();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  final translator = GoogleTranslator();
   await sharedPrefs.init();
   runApp(const MyApp());
 }
