@@ -54,6 +54,47 @@ class _OfflinePageState extends State<OfflinePage> {
     });
   }
 
+    Future<void> deleteDownloadedChapter(String mangaName, int chapterNumber) async {
+    final directory = await getApplicationDocumentsDirectory();
+    final chapterDir = Directory('${directory.path}/$mangaName/capitolo_$chapterNumber');
+    if (chapterDir.existsSync()) {
+      final files = chapterDir.listSync().whereType<File>().where((f) => f.path.endsWith('.png'));
+      for (var file in files) {
+        await file.delete();
+      }
+      // Dopo aver eliminato le immagini, elimina la cartella del capitolo se vuota
+      if (chapterDir.listSync().isEmpty) {
+        await chapterDir.delete();
+      }
+    }
+
+    // Se non ci sono più capitoli scaricati, elimina la cartella del manga e rimuovi dalla lista locale
+    final mangaDir = Directory('${directory.path}/$mangaName');
+    bool hasOtherChapters = false;
+    if (mangaDir.existsSync()) {
+      final subDirs = mangaDir.listSync().whereType<Directory>();
+      for (var subDir in subDirs) {
+        final pngFiles = subDir.listSync().whereType<File>().where((f) => f.path.endsWith('.png'));
+        if (pngFiles.isNotEmpty) {
+          hasOtherChapters = true;
+          break;
+        }
+      }
+      if (!hasOtherChapters) {
+        await mangaDir.delete(recursive: true);
+        // Rimuovi il manga dalla lista locale (se usi una lista locale tipo sharedPrefs/localDb)
+        // Esempio: se hai una funzione removeLocalManga(String title)
+        if (mounted) {
+          // TODO: implementa la rimozione dal tuo storage locale
+          // await sharedPrefs.removeLocalManga(mangaName);
+        }
+      }
+    }
+
+    await loadMangaList();
+    setState(() {});
+  }
+
   void resetToMangaList() {
     setState(() {
       selectedManga = null;
@@ -101,6 +142,12 @@ class _OfflinePageState extends State<OfflinePage> {
                           title: Text(manga,
                               style: Theme.of(context).textTheme.titleMedium),
                           trailing: Icon(Icons.chevron_right),
+                          leading: IconButton(
+                            icon: Icon(Icons.delete),
+                            onPressed: () {
+                              deleteDownloadedChapter(manga, index);
+                            },
+                          ),
                           onTap: () {
                             setState(() {
                               selectedManga = manga;

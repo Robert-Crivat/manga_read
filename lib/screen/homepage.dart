@@ -10,6 +10,7 @@ import "package:manga_read/screen/manga/manga_preferiti.dart";
 import "package:manga_read/screen/novel/novel_detail.dart";
 import "package:manga_read/screen/novel/widget/novel_card.dart";
 import 'package:liquid_pull_to_refresh/liquid_pull_to_refresh.dart';
+import "package:manga_read/service/shared_prefs.dart";
 
 class Homepage extends StatefulWidget {
   final Function? toggleTheme;
@@ -40,6 +41,7 @@ class _HomepageState extends State<Homepage>
   bool isLoading = false;
   bool isLoadingNovel = false;
   List<MangaSearchModel> mangaPreferiti = [];
+  SharedPrefs prefs = SharedPrefs();
 
   late final TabController _tabController;
 
@@ -190,10 +192,14 @@ class _HomepageState extends State<Homepage>
           labelColor: Colors.white,
           unselectedLabelColor: Colors.white70,
           indicatorColor: Colors.white,
-          tabs: const [
-            Tab(text: 'Novel'),
-            Tab(text: 'Manga'),
-          ],
+          tabs: prefs.url != mangaWorldApi.baseUrl
+              ? [
+                  Tab(text: 'Novel'),
+                  Tab(text: 'Manga'),
+                ]
+              : [
+                  Tab(text: 'Manga'),
+                ],
         ),
       ),
       body: TabBarView(
@@ -243,19 +249,17 @@ class _HomepageState extends State<Homepage>
                 ),
         ],
       ),
-      floatingActionButton: _tabController.index == 1
-          ? FloatingActionButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const OfflinePage(),
-                  ),
-                );
-              },
-              child: const Icon(Icons.wifi_off_outlined),
-            )
-          : null,
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const OfflinePage(),
+            ),
+          );
+        },
+        child: const Icon(Icons.wifi_off_outlined),
+      ),
     );
   }
 }

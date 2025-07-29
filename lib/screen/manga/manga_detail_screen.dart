@@ -1,3 +1,4 @@
+
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
@@ -166,6 +167,47 @@ class _MangaDetailScreenState extends State<MangaDetailScreen> {
     return files.isNotEmpty;
   }
 
+  Future<void> deleteDownloadedChapter(String mangaName, int chapterNumber) async {
+    final directory = await getApplicationDocumentsDirectory();
+    final chapterDir = Directory('${directory.path}/$mangaName/capitolo_$chapterNumber');
+    if (chapterDir.existsSync()) {
+      final files = chapterDir.listSync().whereType<File>().where((f) => f.path.endsWith('.png'));
+      for (var file in files) {
+        await file.delete();
+      }
+      // Dopo aver eliminato le immagini, elimina la cartella del capitolo se vuota
+      if (chapterDir.listSync().isEmpty) {
+        await chapterDir.delete();
+      }
+    }
+
+    // Se non ci sono più capitoli scaricati, elimina la cartella del manga e rimuovi dalla lista locale
+    final mangaDir = Directory('${directory.path}/$mangaName');
+    bool hasOtherChapters = false;
+    if (mangaDir.existsSync()) {
+      final subDirs = mangaDir.listSync().whereType<Directory>();
+      for (var subDir in subDirs) {
+        final pngFiles = subDir.listSync().whereType<File>().where((f) => f.path.endsWith('.png'));
+        if (pngFiles.isNotEmpty) {
+          hasOtherChapters = true;
+          break;
+        }
+      }
+      if (!hasOtherChapters) {
+        await mangaDir.delete(recursive: true);
+        // Rimuovi il manga dalla lista locale (se usi una lista locale tipo sharedPrefs/localDb)
+        // Esempio: se hai una funzione removeLocalManga(String title)
+        if (mounted) {
+          // TODO: implementa la rimozione dal tuo storage locale
+          // await sharedPrefs.removeLocalManga(mangaName);
+        }
+      }
+    }
+
+    await checkDownloadedChapters();
+    setState(() {});
+  }
+
   Future<void> checkDownloadedChapters() async {
     List<bool> scaricati = [];
     for (int i = 0; i < capitoliList.length; i++) {
@@ -208,10 +250,19 @@ class _MangaDetailScreenState extends State<MangaDetailScreen> {
                       return ListTile(
                         leading: CircleAvatar(child: Text('${index + 1}')),
                         title: Text('Capitolo ${index + 1}'),
-                        trailing: IconButton(
-                          onPressed: capitoliScaricati.length > index && capitoliScaricati[index]
-                              ? null
-                              : () async {
+                        trailing: capitoliScaricati.length > index && capitoliScaricati[index]
+                            ? IconButton(
+                                icon: Icon(Icons.delete, color: Colors.red),
+                                onPressed: () async {
+                                  await deleteDownloadedChapter(widget.manga.title, index + 1);
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text('Capitolo eliminato dalla memoria!')),
+                                  );
+                                },
+                              )
+                            : IconButton(
+                                icon: Icon(Icons.download),
+                                onPressed: () async {
                                   await getChaptersImg(cap.url);
                                   await downloadAndSaveImage(index);
                                   await checkDownloadedChapters();
@@ -223,10 +274,7 @@ class _MangaDetailScreenState extends State<MangaDetailScreen> {
                                     );
                                   }
                                 },
-                          icon: capitoliScaricati.length > index && capitoliScaricati[index]
-                              ? Icon(Icons.check, color: Colors.green)
-                              : Icon(Icons.download),
-                        ),
+                              ),
                         onTap: () {
                           Navigator.push(
                             context,
