@@ -73,7 +73,7 @@ def extract_manga_info_from_entry(entry):
 @app.route('/search_manga')
 def search_manga():
     keyword = request.args.get('keyword', '')
-    response = requests.get('https://www.mangaworld.nz/archive?keyword=' + encode_keyword(keyword))
+    response = requests.get('https://www.mangaworld.cx/archive?keyword=' + encode_keyword(keyword))
     result_list = []
     if response.status_code == 200:
         soup = BeautifulSoup(response.content, 'html.parser')
@@ -280,7 +280,7 @@ def all_manga():
     # Itera sulle pagine specificate
     for page_num in range(page, end_page):
         print(f"Elaborazione pagina {page_num}")
-        page_url = f'https://www.mangaworld.nz/archive?page={page_num}'
+        page_url = f'https://www.mangaworld.cx/archive?page={page_num}'
         page_response = requests.get(page_url)
         if page_response.status_code == 200:
             page_soup = BeautifulSoup(page_response.content, 'html.parser')
