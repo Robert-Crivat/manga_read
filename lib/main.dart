@@ -156,10 +156,41 @@ class _MyAppState extends State<MyApp> {
         colorScheme: ColorScheme.fromSeed(
           seedColor: Colors.deepPurple,
           brightness: Brightness.light,
+          primary: Colors.deepPurple,
+          secondary: Colors.purpleAccent,
         ),
         appBarTheme: const AppBarTheme(
+          centerTitle: true,
+          elevation: 0,
           backgroundColor: Colors.deepPurple,
           foregroundColor: Colors.white,
+        ),
+        cardTheme: CardThemeData(
+          elevation: 4,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+        ),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            elevation: 2,
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+        ),
+        inputDecorationTheme: InputDecorationTheme(
+          filled: true,
+          fillColor: Colors.grey[100],
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide.none,
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: Colors.deepPurple, width: 2),
+          ),
         ),
       ),
       darkTheme: ThemeData(
@@ -167,16 +198,47 @@ class _MyAppState extends State<MyApp> {
         colorScheme: ColorScheme.fromSeed(
           seedColor: Colors.deepPurple,
           brightness: Brightness.dark,
-          primary: Colors.deepPurple[300],
-          surface: const Color(0xFF121212),
+          primary: Colors.deepPurple[300]!,
+          secondary: Colors.purpleAccent[200]!,
+          surface: const Color(0xFF1E1E1E),
           background: const Color(0xFF121212),
           error: Colors.redAccent,
         ),
         cardColor: const Color(0xFF1E1E1E),
         canvasColor: const Color(0xFF121212),
-        appBarTheme: AppBarTheme(
-          backgroundColor: Colors.grey[900],
+        appBarTheme: const AppBarTheme(
+          centerTitle: true,
+          elevation: 0,
+          backgroundColor: Color(0xFF1E1E1E),
           foregroundColor: Colors.white,
+        ),
+        cardTheme: CardThemeData(
+          elevation: 8,
+          color: const Color(0xFF1E1E1E),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+        ),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            elevation: 4,
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+        ),
+        inputDecorationTheme: InputDecorationTheme(
+          filled: true,
+          fillColor: const Color(0xFF2C2C2C),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide.none,
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: Colors.deepPurple[300]!, width: 2),
+          ),
         ),
         scaffoldBackgroundColor: const Color(0xFF121212),
       ),
@@ -184,31 +246,156 @@ class _MyAppState extends State<MyApp> {
       home: !isInitialized || isLoading == true || isLoadingNovel == true
           ? Builder(
               builder: (context) => Scaffold(
-                  body: Center(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          CircularProgressIndicator(),
-                          Text(
-                            "Manga in caricamente, si prega di attendere...",
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: 26,
-                              fontStyle: FontStyle.italic,
-                              fontWeight: FontWeight.w400,
+                  body: Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: _isDarkMode
+                            ? [
+                                const Color(0xFF1a1a2e),
+                                const Color(0xFF16213e),
+                                const Color(0xFF0f3460),
+                              ]
+                            : [
+                                Colors.deepPurple.shade100,
+                                Colors.purple.shade200,
+                                Colors.deepPurple.shade300,
+                              ],
+                      ),
+                    ),
+                    child: Center(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 32.0),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            // Logo o icona animata
+                            TweenAnimationBuilder(
+                              tween: Tween<double>(begin: 0, end: 1),
+                              duration: const Duration(milliseconds: 800),
+                              builder: (context, double value, child) {
+                                return Transform.scale(
+                                  scale: value,
+                                  child: Container(
+                                    padding: const EdgeInsets.all(24),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white.withOpacity(0.15),
+                                      shape: BoxShape.circle,
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.deepPurple.withOpacity(0.3),
+                                          blurRadius: 30,
+                                          spreadRadius: 5,
+                                        ),
+                                      ],
+                                    ),
+                                    child: const Icon(
+                                      Icons.auto_stories_rounded,
+                                      size: 80,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                );
+                              },
                             ),
-                          ),
-                          ElevatedButton(
-                              onPressed: () {
-                                Navigator.pushReplacement(
+                            const SizedBox(height: 40),
+                            // Indicatore di caricamento moderno
+                            SizedBox(
+                              width: 60,
+                              height: 60,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 4,
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  _isDarkMode ? Colors.white : Colors.deepPurple,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 32),
+                            // Testo con animazione fade-in
+                            TweenAnimationBuilder(
+                              tween: Tween<double>(begin: 0, end: 1),
+                              duration: const Duration(milliseconds: 1200),
+                              builder: (context, double value, child) {
+                                return Opacity(
+                                  opacity: value,
+                                  child: Text(
+                                    "Caricamento in corso...",
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.w600,
+                                      color: _isDarkMode ? Colors.white : Colors.deepPurple.shade900,
+                                      letterSpacing: 0.5,
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                            const SizedBox(height: 12),
+                            Text(
+                              "Preparazione dei contenuti...",
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: _isDarkMode 
+                                    ? Colors.white.withOpacity(0.7)
+                                    : Colors.deepPurple.shade700.withOpacity(0.7),
+                                fontStyle: FontStyle.italic,
+                              ),
+                            ),
+                            const SizedBox(height: 48),
+                            // Pulsante offline con design moderno
+                            Container(
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(30),
+                                gradient: LinearGradient(
+                                  colors: [
+                                    Colors.deepPurple.shade400,
+                                    Colors.purple.shade600,
+                                  ],
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.deepPurple.withOpacity(0.4),
+                                    blurRadius: 12,
+                                    offset: const Offset(0, 6),
+                                  ),
+                                ],
+                              ),
+                              child: ElevatedButton.icon(
+                                onPressed: () {
+                                  Navigator.pushReplacement(
                                     context,
                                     MaterialPageRoute(
-                                        builder: (context) => OfflinePage()));
-                              },
-                              child: Text("Accedi Offline"))
-                        ],
+                                      builder: (context) => const OfflinePage(),
+                                    ),
+                                  );
+                                },
+                                icon: const Icon(Icons.wifi_off_outlined, color: Colors.white),
+                                label: const Text(
+                                  "Accedi Offline",
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.transparent,
+                                  shadowColor: Colors.transparent,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 32,
+                                    vertical: 16,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(30),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),

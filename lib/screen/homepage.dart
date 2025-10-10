@@ -9,6 +9,7 @@ import "package:manga_read/screen/manga/home_manga.dart";
 import "package:manga_read/screen/manga/manga_preferiti.dart";
 import "package:manga_read/screen/novel/novel_detail.dart";
 import "package:manga_read/screen/novel/widget/novel_card.dart";
+import "package:manga_read/screen/widgets/shimmer_loading.dart";
 import 'package:liquid_pull_to_refresh/liquid_pull_to_refresh.dart';
 
 class Homepage extends StatefulWidget {
@@ -152,34 +153,132 @@ class _HomepageState extends State<Homepage>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'Manga Reader',
-          style: TextStyle(color: Colors.white),
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: widget.isDarkMode ?? true
+                  ? [
+                      const Color(0xFF1E1E1E),
+                      const Color(0xFF2C2C2C),
+                    ]
+                  : [
+                      Colors.deepPurple,
+                      Colors.deepPurple.shade700,
+                    ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+        ),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Icon(
+                Icons.auto_stories_rounded,
+                color: Colors.white,
+                size: 24,
+              ),
+            ),
+            const SizedBox(width: 12),
+            const Text(
+              'Manga Reader',
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 0.5,
+              ),
+            ),
+          ],
         ),
         actions: [
-          // Aggiungi pulsante per cambiare tema
+          // Aggiungi pulsante per cambiare tema con animazione
           if (widget.toggleTheme != null)
-            IconButton(
-              icon: Icon(
-                widget.isDarkMode ?? true ? Icons.light_mode : Icons.dark_mode,
-                color: Colors.white,
-              ),
-              onPressed: () {
-                if (widget.toggleTheme != null) {
-                  widget.toggleTheme!();
-                }
+            TweenAnimationBuilder(
+              duration: const Duration(milliseconds: 300),
+              tween: Tween<double>(begin: 0, end: 1),
+              builder: (context, double value, child) {
+                return Transform.scale(
+                  scale: 0.8 + (value * 0.2),
+                  child: Container(
+                    margin: const EdgeInsets.only(right: 8),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white.withOpacity(0.15),
+                    ),
+                    child: IconButton(
+                      icon: AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 300),
+                        transitionBuilder: (Widget child, Animation<double> animation) {
+                          return RotationTransition(
+                            turns: animation,
+                            child: FadeTransition(
+                              opacity: animation,
+                              child: child,
+                            ),
+                          );
+                        },
+                        child: Icon(
+                          widget.isDarkMode ?? true ? Icons.light_mode : Icons.dark_mode,
+                          key: ValueKey(widget.isDarkMode ?? true),
+                          color: Colors.white,
+                        ),
+                      ),
+                      onPressed: () {
+                        if (widget.toggleTheme != null) {
+                          widget.toggleTheme!();
+                        }
+                      },
+                      tooltip: widget.isDarkMode ?? true
+                          ? 'Passa al tema chiaro'
+                          : 'Passa al tema scuro',
+                    ),
+                  ),
+                );
               },
-              tooltip: widget.isDarkMode ?? true
-                  ? 'Passa al tema chiaro'
-                  : 'Passa al tema scuro',
             ),
-          IconButton(
-            icon: const Icon(Icons.favorite, color: Colors.white),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const MangaPreferitiScreen(),
+          TweenAnimationBuilder(
+            duration: const Duration(milliseconds: 300),
+            tween: Tween<double>(begin: 0, end: 1),
+            builder: (context, double value, child) {
+              return Transform.scale(
+                scale: 0.8 + (value * 0.2),
+                child: Container(
+                  margin: const EdgeInsets.only(right: 12),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.white.withOpacity(0.15),
+                  ),
+                  child: IconButton(
+                    icon: const Icon(Icons.favorite, color: Colors.white),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        PageRouteBuilder(
+                          pageBuilder: (context, animation, secondaryAnimation) =>
+                              const MangaPreferitiScreen(),
+                          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                            const begin = Offset(1.0, 0.0);
+                            const end = Offset.zero;
+                            const curve = Curves.easeInOutCubic;
+                            var tween = Tween(begin: begin, end: end).chain(
+                              CurveTween(curve: curve),
+                            );
+                            return SlideTransition(
+                              position: animation.drive(tween),
+                              child: child,
+                            );
+                          },
+                          transitionDuration: const Duration(milliseconds: 400),
+                        ),
+                      );
+                    },
+                    tooltip: 'Preferiti',
+                  ),
                 ),
               );
             },
@@ -190,9 +289,40 @@ class _HomepageState extends State<Homepage>
           labelColor: Colors.white,
           unselectedLabelColor: Colors.white70,
           indicatorColor: Colors.white,
-          tabs: const [
-            Tab(text: 'Novel'),
-            Tab(text: 'Manga'),
+          indicatorWeight: 3,
+          indicatorSize: TabBarIndicatorSize.label,
+          indicator: BoxDecoration(
+            borderRadius: BorderRadius.circular(50),
+            color: Colors.white.withOpacity(0.2),
+          ),
+          labelStyle: const TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.w600,
+            letterSpacing: 0.5,
+          ),
+          unselectedLabelStyle: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w400,
+          ),
+          tabs: [
+            Tab(
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(50),
+                ),
+                child: const Text('Novel'),
+              ),
+            ),
+            Tab(
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(50),
+                ),
+                child: const Text('Manga'),
+              ),
+            ),
           ],
         ),
       ),
@@ -200,7 +330,21 @@ class _HomepageState extends State<Homepage>
         controller: _tabController,
         children: <Widget>[
           isLoadingNovel
-              ? const Center(child: CircularProgressIndicator())
+              ? Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: GridView.builder(
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      crossAxisSpacing: 12,
+                      mainAxisSpacing: 12,
+                      childAspectRatio: 0.55,
+                    ),
+                    itemCount: 6,
+                    itemBuilder: (context, index) {
+                      return const MangaCardSkeleton();
+                    },
+                  ),
+                )
               : Column(
                   children: [
                     Expanded(
@@ -218,17 +362,49 @@ class _HomepageState extends State<Homepage>
                           itemCount: novelList.length,
                           itemBuilder: (context, index) {
                             final novel = novelList[index];
-                            return GestureDetector(
+                            return TweenAnimationBuilder(
+                              duration: Duration(milliseconds: 300 + (index * 50)),
+                              tween: Tween<double>(begin: 0, end: 1),
+                              curve: Curves.easeOutCubic,
+                              builder: (context, double value, child) {
+                                return Transform.translate(
+                                  offset: Offset(0, 50 * (1 - value)),
+                                  child: Opacity(
+                                    opacity: value,
+                                    child: child,
+                                  ),
+                                );
+                              },
+                              child: GestureDetector(
                                 onTap: () {
                                   Navigator.push(
                                     context,
-                                    MaterialPageRoute(
-                                      builder: (context) =>
+                                    PageRouteBuilder(
+                                      pageBuilder: (context, animation, secondaryAnimation) =>
                                           NovelDetail(novel: novel),
+                                      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                                        const begin = Offset(1.0, 0.0);
+                                        const end = Offset.zero;
+                                        const curve = Curves.easeInOutCubic;
+                                        var tween = Tween(begin: begin, end: end).chain(
+                                          CurveTween(curve: curve),
+                                        );
+                                        var offsetAnimation = animation.drive(tween);
+                                        return SlideTransition(
+                                          position: offsetAnimation,
+                                          child: child,
+                                        );
+                                      },
+                                      transitionDuration: const Duration(milliseconds: 400),
                                     ),
                                   );
                                 },
-                                child: NovelCard(novel: novel));
+                                child: Hero(
+                                  tag: 'novel_${novel.url}',
+                                  child: NovelCard(novel: novel),
+                                ),
+                              ),
+                            );
                           },
                         ),
                       ),
@@ -243,19 +419,52 @@ class _HomepageState extends State<Homepage>
                 ),
         ],
       ),
-      floatingActionButton: _tabController.index == 1
-          ? FloatingActionButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const OfflinePage(),
+      floatingActionButton: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 300),
+        transitionBuilder: (Widget child, Animation<double> animation) {
+          return ScaleTransition(
+            scale: animation,
+            child: child,
+          );
+        },
+        child: _tabController.index == 1
+            ? FloatingActionButton.extended(
+                key: const ValueKey('offline_fab'),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    PageRouteBuilder(
+                      pageBuilder: (context, animation, secondaryAnimation) =>
+                          const OfflinePage(),
+                      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                        const begin = Offset(0.0, 1.0);
+                        const end = Offset.zero;
+                        const curve = Curves.easeInOutCubic;
+                        var tween = Tween(begin: begin, end: end).chain(
+                          CurveTween(curve: curve),
+                        );
+                        return SlideTransition(
+                          position: animation.drive(tween),
+                          child: child,
+                        );
+                      },
+                      transitionDuration: const Duration(milliseconds: 400),
+                    ),
+                  );
+                },
+                icon: const Icon(Icons.wifi_off_outlined),
+                label: const Text(
+                  'Offline',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 0.5,
                   ),
-                );
-              },
-              child: const Icon(Icons.wifi_off_outlined),
-            )
-          : null,
+                ),
+                backgroundColor: Colors.deepPurple,
+                elevation: 6,
+              )
+            : null,
+      ),
     );
   }
 }

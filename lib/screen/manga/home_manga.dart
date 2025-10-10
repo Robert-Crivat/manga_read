@@ -47,8 +47,18 @@ class _HomeMangaState extends State<HomeManga> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Padding(
+        Container(
           padding: const EdgeInsets.all(16.0),
+          decoration: BoxDecoration(
+            color: Theme.of(context).cardColor,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
           child: Row(
             children: [
               Expanded(
@@ -61,38 +71,119 @@ class _HomeMangaState extends State<HomeManga> {
                       });
                     }
                   },
-                  child: TextField(
-                    controller: searchController,
-                    decoration: InputDecoration(
-                      hintText: 'Cerca manga...',
-                      border: OutlineInputBorder(),
-                      suffixIcon: IconButton(
-                        onPressed: () {
-                          setState(() {
-                            mangaWorldList.clear();
-                            searchController.clear();
-                          });
-                          FocusScope.of(context).unfocus();
-                        },
-                        icon: Icon(Icons.clear),
-                      ),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(30),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.08),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
                     ),
-                    onSubmitted: (value) {
-                      if (value.isNotEmpty) {
-                        searchMangaWorld(value);
-                      }
-                    },
+                    child: TextField(
+                      controller: searchController,
+                      decoration: InputDecoration(
+                        hintText: '🔍 Cerca manga...',
+                        hintStyle: TextStyle(
+                          color: Colors.grey[500],
+                          fontSize: 15,
+                        ),
+                        filled: true,
+                        fillColor: Theme.of(context).brightness == Brightness.dark
+                            ? Colors.grey[850]
+                            : Colors.grey[100],
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(30),
+                          borderSide: BorderSide.none,
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(30),
+                          borderSide: BorderSide.none,
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(30),
+                          borderSide: BorderSide(
+                            color: Colors.deepPurple.withOpacity(0.5),
+                            width: 2,
+                          ),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 16,
+                        ),
+                        suffixIcon: searchController.text.isNotEmpty
+                            ? IconButton(
+                                onPressed: () {
+                                  setState(() {
+                                    mangaWorldList.clear();
+                                    searchController.clear();
+                                  });
+                                  FocusScope.of(context).unfocus();
+                                },
+                                icon: Icon(
+                                  Icons.clear,
+                                  color: Colors.grey[600],
+                                ),
+                              )
+                            : null,
+                      ),
+                      onChanged: (value) {
+                        setState(() {}); // Per aggiornare l'icona clear
+                      },
+                      onSubmitted: (value) {
+                        if (value.isNotEmpty) {
+                          searchMangaWorld(value);
+                        }
+                      },
+                    ),
                   ),
                 ),
               ),
-              const SizedBox(width: 8),
-              ElevatedButton(
-                onPressed: () {
-                  if (searchController.text.isNotEmpty) {
-                    searchMangaWorld(searchController.text);
-                  }
-                },
-                child: const Text('Cerca'),
+              const SizedBox(width: 12),
+              Container(
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Colors.deepPurple, Colors.purpleAccent],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(30),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.deepPurple.withOpacity(0.4),
+                      blurRadius: 8,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: ElevatedButton(
+                  onPressed: () {
+                    if (searchController.text.isNotEmpty) {
+                      searchMangaWorld(searchController.text);
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.transparent,
+                    shadowColor: Colors.transparent,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 14,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                  ),
+                  child: const Text(
+                    'Cerca',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 15,
+                    ),
+                  ),
+                ),
               ),
             ],
           ),
@@ -245,14 +336,31 @@ class _HomeMangaState extends State<HomeManga> {
                       onTap: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(
-                            builder: (context) => MangaDetailScreen(manga: manga),
+                          PageRouteBuilder(
+                            pageBuilder: (context, animation, secondaryAnimation) =>
+                                MangaDetailScreen(manga: manga),
+                            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                              const begin = Offset(1.0, 0.0);
+                              const end = Offset.zero;
+                              const curve = Curves.easeInOutCubic;
+                              var tween = Tween(begin: begin, end: end).chain(
+                                CurveTween(curve: curve),
+                              );
+                              var offsetAnimation = animation.drive(tween);
+                              return SlideTransition(
+                                position: offsetAnimation,
+                                child: child,
+                              );
+                            },
+                            transitionDuration: const Duration(milliseconds: 400),
                           ),
                         );
                       },
-                      child: MangaCard(
-                        manga: manga,
-                        widget: IconButton(
+                      child: Hero(
+                        tag: 'manga_${manga.url}',
+                        child: MangaCard(
+                          manga: manga,
+                          widget: IconButton(
                           icon: Icon(
                             Icons.favorite,
                             color: sharedPrefs.isMangaInFavorites(manga.url)
@@ -346,6 +454,7 @@ class _HomeMangaState extends State<HomeManga> {
                           },
                         ),
                       ),
+                    ),
                     );
                   },
                 ),

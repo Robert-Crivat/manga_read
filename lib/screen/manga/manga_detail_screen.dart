@@ -180,71 +180,281 @@ class _MangaDetailScreenState extends State<MangaDetailScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(widget.manga.title)),
+      extendBodyBehindAppBar: true,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: Container(
+          margin: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: Colors.black.withOpacity(0.3),
+            shape: BoxShape.circle,
+          ),
+          child: IconButton(
+            icon: const Icon(Icons.arrow_back, color: Colors.white),
+            onPressed: () => Navigator.pop(context),
+          ),
+        ),
+        title: Text(
+          widget.manga.title,
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w700,
+            shadows: [
+              Shadow(
+                color: Colors.black,
+                blurRadius: 10,
+              ),
+            ],
+          ),
+        ),
+      ),
       body: Column(
         children: [
           ShowCaseMangaDetail(manga: widget.manga),
-
+          // Section header
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: Row(
+              children: [
+                Container(
+                  width: 4,
+                  height: 24,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Colors.deepPurple, Colors.purpleAccent],
+                    ),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  'Capitoli',
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const Spacer(),
+                if (capitoliList.isNotEmpty)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: Colors.deepPurple.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      '${capitoliList.length}',
+                      style: TextStyle(
+                        color: Colors.deepPurple[700],
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
           // Chapters list (scrollable)
           Expanded(
-            child: ListView.builder(
-              itemCount: ((capitoliList.length - 1) ~/ 100) + 1,
-              itemBuilder: (context, groupIndex) {
-                int startIndex = groupIndex * 100;
-                int endIndex = (groupIndex + 1) * 100;
-                if (endIndex > capitoliList.length)
-                  endIndex = capitoliList.length;
+            child: capitoliList.isEmpty
+                ? const Center(child: CircularProgressIndicator())
+                : ListView.builder(
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    itemCount: ((capitoliList.length - 1) ~/ 100) + 1,
+                    itemBuilder: (context, groupIndex) {
+                      int startIndex = groupIndex * 100;
+                      int endIndex = (groupIndex + 1) * 100;
+                      if (endIndex > capitoliList.length)
+                        endIndex = capitoliList.length;
 
-                return Card(
-                  child: ExpansionTile(
-                    tilePadding: EdgeInsets.all(8.0),
-                    initiallyExpanded: true,
-                    title: Text('Capitoli ${startIndex + 1} - ${endIndex}'),
-                    shape: const Border(),
-                    collapsedShape: const Border(),
-                    children: List.generate(endIndex - startIndex, (i) {
-                      int index = startIndex + i;
-                      var cap = capitoliList[index];
-                      return ListTile(
-                        leading: CircleAvatar(child: Text('${index + 1}')),
-                        title: Text('Capitolo ${index + 1}'),
-                        trailing: IconButton(
-                          onPressed: capitoliScaricati.length > index && capitoliScaricati[index]
-                              ? null
-                              : () async {
-                                  await getChaptersImg(cap.url);
-                                  await downloadAndSaveImage(index);
-                                  await checkDownloadedChapters();
-                                  if (downloadedImages.isNotEmpty) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text('Immagini scaricate con successo!'),
-                                      ),
-                                    );
-                                  }
-                                },
-                          icon: capitoliScaricati.length > index && capitoliScaricati[index]
-                              ? Icon(Icons.check, color: Colors.green)
-                              : Icon(Icons.download),
-                        ),
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => LetturaScreenManga(
-                                capitolo: cap,
-                                manga: widget.manga,
-                                allChapters: capitoliList,
-                              ),
+                      return TweenAnimationBuilder(
+                        duration: Duration(milliseconds: 300 + (groupIndex * 100)),
+                        tween: Tween<double>(begin: 0, end: 1),
+                        curve: Curves.easeOut,
+                        builder: (context, double value, child) {
+                          return Opacity(
+                            opacity: value,
+                            child: Transform.translate(
+                              offset: Offset(0, 30 * (1 - value)),
+                              child: child,
                             ),
                           );
                         },
+                        child: Card(
+                          margin: const EdgeInsets.only(bottom: 12),
+                          elevation: 4,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: ExpansionTile(
+                            tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            initiallyExpanded: groupIndex == 0,
+                            leading: Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                gradient: const LinearGradient(
+                                  colors: [Colors.deepPurple, Colors.purpleAccent],
+                                ),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: const Icon(
+                                Icons.auto_stories,
+                                color: Colors.white,
+                                size: 24,
+                              ),
+                            ),
+                            title: Text(
+                              'Capitoli ${startIndex + 1} - $endIndex',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w600,
+                                fontSize: 16,
+                              ),
+                            ),
+                            shape: const Border(),
+                            collapsedShape: const Border(),
+                            children: List.generate(endIndex - startIndex, (i) {
+                              int index = startIndex + i;
+                              var cap = capitoliList[index];
+                              final isDownloaded = capitoliScaricati.length > index && capitoliScaricati[index];
+                              
+                              return Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                                child: Card(
+                                  margin: const EdgeInsets.only(bottom: 8),
+                                  elevation: 2,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    side: BorderSide(
+                                      color: isDownloaded 
+                                          ? Colors.green.withOpacity(0.3)
+                                          : Colors.transparent,
+                                      width: 2,
+                                    ),
+                                  ),
+                                  child: ListTile(
+                                    leading: Container(
+                                      width: 40,
+                                      height: 40,
+                                      decoration: BoxDecoration(
+                                        gradient: LinearGradient(
+                                          colors: isDownloaded
+                                              ? [Colors.green, Colors.green[700]!]
+                                              : [Colors.deepPurple[200]!, Colors.deepPurple[400]!],
+                                        ),
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: Center(
+                                        child: Text(
+                                          '${index + 1}',
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.w700,
+                                            fontSize: 14,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    title: Text(
+                                      'Capitolo ${index + 1}',
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                    trailing: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        if (isDownloaded)
+                                          Container(
+                                            padding: const EdgeInsets.all(8),
+                                            decoration: BoxDecoration(
+                                              color: Colors.green.withOpacity(0.1),
+                                              shape: BoxShape.circle,
+                                            ),
+                                            child: const Icon(
+                                              Icons.check_circle,
+                                              color: Colors.green,
+                                              size: 20,
+                                            ),
+                                          )
+                                        else
+                                          IconButton(
+                                            onPressed: () async {
+                                              await getChaptersImg(cap.url);
+                                              await downloadAndSaveImage(index);
+                                              await checkDownloadedChapters();
+                                              if (downloadedImages.isNotEmpty) {
+                                                ScaffoldMessenger.of(context).showSnackBar(
+                                                  SnackBar(
+                                                    content: const Row(
+                                                      children: [
+                                                        Icon(Icons.check_circle, color: Colors.white),
+                                                        SizedBox(width: 12),
+                                                        Text('Capitolo scaricato con successo!'),
+                                                      ],
+                                                    ),
+                                                    backgroundColor: Colors.green,
+                                                    behavior: SnackBarBehavior.floating,
+                                                    shape: RoundedRectangleBorder(
+                                                      borderRadius: BorderRadius.circular(12),
+                                                    ),
+                                                  ),
+                                                );
+                                              }
+                                            },
+                                            icon: Container(
+                                              padding: const EdgeInsets.all(8),
+                                              decoration: BoxDecoration(
+                                                color: Colors.deepPurple.withOpacity(0.1),
+                                                shape: BoxShape.circle,
+                                              ),
+                                              child: Icon(
+                                                Icons.download,
+                                                color: Colors.deepPurple[700],
+                                                size: 20,
+                                              ),
+                                            ),
+                                          ),
+                                        const SizedBox(width: 8),
+                                        Icon(
+                                          Icons.chevron_right,
+                                          color: Colors.grey[400],
+                                        ),
+                                      ],
+                                    ),
+                                    onTap: () {
+                                      Navigator.push(
+                                        context,
+                                        PageRouteBuilder(
+                                          pageBuilder: (context, animation, secondaryAnimation) =>
+                                              LetturaScreenManga(
+                                                capitolo: cap,
+                                                manga: widget.manga,
+                                                allChapters: capitoliList,
+                                              ),
+                                          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                                            const begin = Offset(1.0, 0.0);
+                                            const end = Offset.zero;
+                                            const curve = Curves.easeInOutCubic;
+                                            var tween = Tween(begin: begin, end: end).chain(
+                                              CurveTween(curve: curve),
+                                            );
+                                            return SlideTransition(
+                                              position: animation.drive(tween),
+                                              child: child,
+                                            );
+                                          },
+                                          transitionDuration: const Duration(milliseconds: 400),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ),
+                              );
+                            }),
+                          ),
+                        ),
                       );
-                    }),
+                    },
                   ),
-                );
-              },
-            ),
           ),
         ],
       ),
