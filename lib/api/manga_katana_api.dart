@@ -2,8 +2,14 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:manga_read/model/manga/dataMangager.dart';
 
-class MangaWorldApi {
+class MangaKatanaApi {
   String get baseUrl => "http://80.97.160.102:8000";
+
+  static const String getLastRelease = "";
+  static const String getProgressiveLastRelease = "";
+  static const String getSearchManga = "";
+  static const String getMangaChaptersMK = "";
+  static const String getChapterPagesMK = "";
 
   Future<DataManager> latestRelease() async {
     DataManager dataManager = DataManager();
@@ -46,8 +52,6 @@ class MangaWorldApi {
     }
     return dataManager;
   }
-
-
 
   Future<DataManager> searchManga(String keyword) async {
     DataManager dataManager = DataManager();

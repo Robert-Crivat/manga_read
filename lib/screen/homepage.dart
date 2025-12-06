@@ -40,10 +40,13 @@ class _HomepageState extends State<Homepage>
   final MangaWorldApi mangaWorldApi = MangaWorldApi();
   final WebNovelsApi webNovelsApi = WebNovelsApi();
   final TextEditingController searchController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
 
   bool isLoading = false;
   bool isLoadingNovel = false;
   bool isSearching = false;
+  bool isLoadingMore = false;
+  int currentPage = 1;
 
   SharedPrefs prefs = SharedPrefs();
   late final TabController _tabController;
@@ -60,6 +63,9 @@ class _HomepageState extends State<Homepage>
       if (mounted) setState(() {});
     });
 
+    // Listener per lo scroll infinito
+    _scrollController.addListener(_onScroll);
+
     // Assumi che sharedPrefs sia un'istanza globale o gestita qui
     // sharedPrefs.init();
   }
@@ -68,7 +74,45 @@ class _HomepageState extends State<Homepage>
   void dispose() {
     _tabController.dispose();
     searchController.dispose();
+    _scrollController.dispose();
     super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+            _scrollController.position.maxScrollExtent - 200 &&
+        !isLoadingMore &&
+        !isSearching) {
+      _loadMoreManga();
+    }
+  }
+
+  Future<void> _loadMoreManga() async {
+    if (isLoadingMore) return;
+
+    setState(() => isLoadingMore = true);
+
+    try {
+      currentPage++;
+      var results = await mangaWorldApi.progressiveLatestRelease(currentPage);
+      
+      if (!mounted) return;
+
+      setState(() {
+        for (var manga in results.parametri) {
+          mangaList.add(MangaSearchModel.fromJson(manga));
+        }
+      });
+    } catch (e) {
+      debugPrint("Error loading more manga: $e");
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Errore nel caricamento: $e")),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => isLoadingMore = false);
+    }
   }
 
   // --- API METHODS ---
@@ -110,174 +154,6 @@ class _HomepageState extends State<Homepage>
       if (mounted) setState(() => isLoading = false);
     }
   }
-
-  // --- WIDGET BUILDERS ---
-
-  // Widget _buildModernNovelCard(NovelModels novel, int index) {
-  //   return TweenAnimationBuilder(
-  //     duration: Duration(milliseconds: 300 + (index * 50)),
-  //     tween: Tween<double>(begin: 0, end: 1),
-  //     curve: Curves.easeOutCubic,
-  //     builder: (context, double value, child) {
-  //       return Transform.translate(
-  //         offset: Offset(0, 30 * (1 - value)),
-  //         child: Opacity(
-  //           opacity: value,
-  //           child: child,
-  //         ),
-  //       );
-  //     },
-  //     child: Container(
-  //       decoration: BoxDecoration(
-  //         borderRadius: BorderRadius.circular(16),
-  //         boxShadow: [
-  //           BoxShadow(
-  //             color: Colors.black.withOpacity(0.15),
-  //             blurRadius: 10,
-  //             offset: const Offset(0, 4),
-  //           ),
-  //         ],
-  //       ),
-  //       child: Material(
-  //         color: Colors.transparent,
-  //         child: InkWell(
-  //           borderRadius: BorderRadius.circular(16),
-  //           onTap: () {
-  //             Navigator.push(
-  //               context,
-  //               MaterialPageRoute(
-  //                 builder: (context) => NovelDetail(novel: novel),
-  //               ),
-  //             );
-  //           },
-  //           child: ClipRRect(
-  //             borderRadius: BorderRadius.circular(16),
-  //             child: Stack(
-  //               fit: StackFit.expand,
-  //               children: [
-  //                 novel.img.isNotEmpty
-  //                     ? Image.network(
-  //                         novel.img,
-  //                         fit: BoxFit.cover,
-  //                         loadingBuilder: (context, child, loadingProgress) {
-  //                           if (loadingProgress == null) return child;
-  //                           return Container(
-  //                             color: Colors.grey.shade800,
-  //                             child: const Center(child: CircularProgressIndicator()),
-  //                           );
-  //                         },
-  //                         errorBuilder: (context, error, stackTrace) {
-  //                           return Container(color: Colors.grey.shade800, child: const Icon(Icons.broken_image, color: Colors.white54));
-  //                         },
-  //                       )
-  //                     : Container(
-  //                         color: Colors.grey.shade800,
-  //                         child: const Icon(Icons.book, size: 50, color: Colors.white54),
-  //                       ),
-
-  //                 // Gradiente
-  //                 Container(
-  //                   decoration: BoxDecoration(
-  //                     gradient: LinearGradient(
-  //                       begin: Alignment.topCenter,
-  //                       end: Alignment.bottomCenter,
-  //                       colors: [
-  //                         Colors.transparent,
-  //                         Colors.black.withOpacity(0.3),
-  //                         Colors.black.withOpacity(0.85),
-  //                       ],
-  //                       stops: const [0.4, 0.7, 1.0],
-  //                     ),
-  //                   ),
-  //                 ),
-
-  //                 // Info
-  //                 Positioned(
-  //                   bottom: 0, left: 0, right: 0,
-  //                   child: Padding(
-  //                     padding: const EdgeInsets.all(12.0),
-  //                     child: Column(
-  //                       crossAxisAlignment: CrossAxisAlignment.start,
-  //                       mainAxisSize: MainAxisSize.min,
-  //                       children: [
-  //                         Text(
-  //                           novel.title,
-  //                           style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),
-  //                           maxLines: 2,
-  //                           overflow: TextOverflow.ellipsis,
-  //                         ),
-  //                         const SizedBox(height: 6),
-  //                       //   if (novel.category != null && novel.category!.isNotEmpty)
-  //                       //     Container(
-  //                       //       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-  //                       //       decoration: BoxDecoration(color: Colors.teal.withOpacity(0.8), borderRadius: BorderRadius.circular(12)),
-  //                       //       child: Text(
-  //                       //         novel.category!,
-  //                       //         style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w600),
-  //                       //       ),
-  //                       //     ),
-  //                       ],
-  //                     ),
-  //                   ),
-  //                 ),
-  //                  Positioned(
-  //                   top: 8, right: 8,
-  //                   child: Container(
-  //                     decoration: BoxDecoration(color: Colors.black.withOpacity(0.6), shape: BoxShape.circle),
-  //                     child: IconButton(
-  //                       icon: Icon(
-  //                         sharedPrefs.isMangaInFavorites(manga.url)
-  //                             ? Icons.favorite
-  //                             : Icons.favorite_border,
-  //                         color: sharedPrefs.isMangaInFavorites(manga.url)
-  //                             ? Colors.red
-  //                             : Colors.white,
-  //                         size: 20,
-  //                       ),
-  //                       onPressed: () async {
-  //                         final bool isAlreadyFavorite = sharedPrefs.isMangaInFavorites(manga.url);
-
-  //                         if (isAlreadyFavorite) {
-  //                           final success = await sharedPrefs.removeMangaFromFavorites(url: manga.url);
-  //                           if (success && mounted) {
-  //                             setState(() {});
-  //                             ScaffoldMessenger.of(context).showSnackBar(
-  //                               SnackBar(
-  //                                 content: Text('${manga.title} rimosso dai preferiti'),
-  //                                 backgroundColor: Colors.orange,
-  //                               ),
-  //                             );
-  //                           }
-  //                         } else {
-  //                           final success = await sharedPrefs.addMangaToFavorites(
-  //                             title: manga.title,
-  //                             url: manga.url,
-  //                             imgUrl: manga.img,
-  //                           );
-  //                           if (success && mounted) {
-  //                             setState(() {});
-  //                             ScaffoldMessenger.of(context).showSnackBar(
-  //                               SnackBar(
-  //                                 content: Text('${manga.title} aggiunto ai preferiti'),
-  //                                 backgroundColor: Colors.green,
-  //                               ),
-  //                             );
-  //                           }
-  //                         }
-  //                       },
-  //                       padding: const EdgeInsets.all(6),
-  //                       constraints: const BoxConstraints(),
-  //                     ),
-  //                   ),
-  //                 ),
-  //               ],
-  //             ),
-  //           ),
-  //         ),
-  //       ),
-  //     ),
-  //   );
-  // }
 
   Widget _buildMangaCard(MangaSearchModel manga, int index) {
     return TweenAnimationBuilder(
@@ -586,23 +462,10 @@ class _HomepageState extends State<Homepage>
             },
           ),
         ],
-        // bottom:
-        // TabBar(
-        //   controller: _tabController,
-        //   indicatorColor: Colors.white,
-        //   indicatorWeight: 3,
-        //   labelColor: Colors.white,
-        //   unselectedLabelColor: Colors.white60,
-        //   tabs: const [
-        //     Tab(text: "Novel"),
-        //     Tab(text: "Manga"),
-        //   ],
-        // ),
       ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : (isSearching && mangaWorldList.isNotEmpty)
-              // Visualizza risultati ricerca se attiva
               ? GridView.builder(
                   padding: const EdgeInsets.all(16),
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -630,7 +493,10 @@ class _HomepageState extends State<Homepage>
                     )
                   : LiquidPullToRefresh(
                       onRefresh: () async {
-                        setState(() => isLoading = true);
+                        setState(() {
+                          isLoading = true;
+                          currentPage = 1;
+                        });
                         try {
                           var results = await mangaWorldApi.getAllManga();
                           if (mounted) {
@@ -655,84 +521,59 @@ class _HomepageState extends State<Homepage>
                       color: Colors.deepPurple,
                       backgroundColor: Colors.deepPurple.shade50,
                       animSpeedFactor: 2,
-                      child: GridView.builder(
-                        padding: const EdgeInsets.all(16),
-                        gridDelegate:
-                            const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          crossAxisSpacing: 16,
-                          mainAxisSpacing: 16,
-                          childAspectRatio: 0.65,
-                        ),
-                        itemCount: mangaList.length,
-                        itemBuilder: (context, index) {
-                          return _buildMangaCard(mangaList[index], index);
-                        },
-                      ),
-                    ),
-
-      /*TabBarView(
-        controller: _tabController,
-        children: [
-          // --- TAB NOVEL ---
-          isLoadingNovel
-              ? const Center(child: CircularProgressIndicator())
-              : novelList.isEmpty
-                  ? Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                      child: Stack(
                         children: [
-                          Icon(Icons.menu_book,
-                              size: 80, color: Colors.grey.shade300),
-                          const Text("Nessuna novel trovata",
-                              style: TextStyle(color: Colors.grey)),
+                          GridView.builder(
+                            controller: _scrollController,
+                            padding: const EdgeInsets.all(16),
+                            gridDelegate:
+                                const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 2,
+                              crossAxisSpacing: 16,
+                              mainAxisSpacing: 16,
+                              childAspectRatio: 0.65,
+                            ),
+                            itemCount: mangaList.length,
+                            itemBuilder: (context, index) {
+                              return _buildMangaCard(mangaList[index], index);
+                            },
+                          ),
+                          if (isLoadingMore)
+                            Positioned(
+                              bottom: 20,
+                              left: 0,
+                              right: 0,
+                              child: Center(
+                                child: Container(
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                    color: Colors.deepPurple,
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  child: const Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      SizedBox(
+                                        width: 20,
+                                        height: 20,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                        ),
+                                      ),
+                                      SizedBox(width: 10),
+                                      Text(
+                                        'Caricamento...',
+                                        style: TextStyle(color: Colors.white),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
                         ],
                       ),
-                    )
-                  : LiquidPullToRefresh(
-                      onRefresh: () async {
-                        setState(() => isLoadingNovel = true);
-                        try {
-                          var results = await webNovelsApi.getAllNovels();
-                          if (mounted) {
-                            setState(() {
-                              novelList.clear();
-                              novelList.addAll(results.parametri);
-                            });
-                          }
-                        } catch (e) {
-                          debugPrint("Error refreshing novels: $e");
-                          if (mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text("Errore nel caricamento: $e")),
-                            );
-                          }
-                        } finally {
-                          if (mounted) setState(() => isLoadingNovel = false);
-                        }
-                      },
-                      color: Colors.teal,
-                      backgroundColor: Colors.teal.shade50,
-                      animSpeedFactor: 2,
-                      child: GridView.builder(
-                        padding: const EdgeInsets.all(16),
-                        gridDelegate:
-                            const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          crossAxisSpacing: 16,
-                          mainAxisSpacing: 16,
-                          childAspectRatio: 0.65,
-                        ),
-                        itemCount: novelList.length,
-                        itemBuilder: (context, index) {
-                          return _buildModernNovelCard(novelList[index], index);
-                        },
-                      ),
                     ),
-
-          // --- TAB MANGA ---
-          ],
-      ),*/
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
           await Navigator.push(

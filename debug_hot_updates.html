@@ -1,0 +1,4924 @@
+<!DOCTYPE html>
+<html lang="en">
+ <head>
+  <title>
+   MangaKatana - Read Manga Online
+  </title>
+  <meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+  <meta content="width=device-width, initial-scale=1" name="viewport"/>
+  <meta content="Read manga online at MangaKatana, free and updated hourly!" name="description">
+   <meta content="noarchive" name="robots"/>
+   <!--<meta name="referrer" content="never">-->
+   <meta content="summary" name="twitter:card">
+    <meta content="MangaKatana" name="twitter:site"/>
+    <meta content="MangaKatana - Read Manga Online" property="og:title"/>
+    <meta content="https://mangakatana.com" property="og:url"/>
+    <meta content="http://mangakatana.com/imgs/banner.jpg" property="og:image"/>
+    <meta content="Read manga online at MangaKatana, free and updated hourly!" property="og:description"/>
+    <meta content="article" property="og:type"/>
+    <meta content="966242223397117" property="fb:app_id"/>
+    <link href="https://mangakatana.com" rel="canonical"/>
+    <link href="https://mangakatana.com/static/img/fav.png" rel="shortcut icon" type="image/png"/>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/uikit/2.27.2/css/uikit.almost-flat.min.css" rel="stylesheet"/>
+    <link href="https://mangakatana.com/static/style-common.css?ver=1.5.8" rel="stylesheet"/>
+    <link href="https://mangakatana.com/static/style.css?ver=1.7.6" rel="stylesheet"/>
+    <link href="https://mangakatana.com/static/style-dark.css?ver=1.3.2" rel="stylesheet"/>
+    <link href="https://mangakatana.com/static/css/combine.css?v=1.0.0" rel="stylesheet"/>
+    <link href="https://mangakatana.com/static/css/slick-theme.css?ver=1.2.1" rel="stylesheet">
+     <script type="text/javascript">
+      var cdn_loaded=1;
+     </script>
+     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.10.2/jquery.min.js" type="text/javascript">
+     </script>
+     <script>
+      window.jQuery || document.write('<script src="https://mangakatana.com/static/js/jquery-1.10.2.min.js"><\/script><link rel="stylesheet" href="https://mangakatana.com/static/css/uikit.almost-flat.min.css"><script type="text/javascript">cdn_loaded=0;<\/script>')
+     </script>
+     <script async="" src="https://www.googletagmanager.com/gtag/js?id=UA-114914530-1">
+     </script>
+     <script>
+      window.dataLayer = window.dataLayer || [];
+	function gtag(){dataLayer.push(arguments);}
+	gtag('js', new Date());
+	
+	gtag('config', 'UA-114914530-1');
+     </script>
+    </link>
+   </meta>
+  </meta>
+ </head>
+ <body>
+  <style type="text/css">
+   #navbar-mobile>li:nth-child(1)>a>h2{color:#fe322e;}
+  </style>
+  <div class="uk-offcanvas" id="nav_sidebar">
+   <div class="uk-offcanvas-bar">
+    <ul class="uk-nav uk-nav-offcanvas" data-uk-nav="">
+    </ul>
+   </div>
+  </div>
+  <header id="header">
+   <div class="uk-container uk-container-center">
+    <div class="uk-grid uk-grid-collapse">
+     <div class="uk-width-large-3-10 uk-width-medium-2-4 uk-width-2-6 col_header">
+      <div class="logo">
+       <a href="https://mangakatana.com" title="">
+        <img alt="" class="" src="https://mangakatana.com/static/img/logo.png"/>
+       </a>
+      </div>
+     </div>
+     <div class="uk-width-large-2-10 uk-push-5-10 uk-width-medium-2-4 uk-width-4-6">
+      <div id="nav_user">
+       <div id="user_tool">
+        <a class="open_popup_form transition" data-form="signup" data-uk-modal="" href="#modal_form">
+         <i class="uk-icon-key">
+         </i>
+         Sign Up
+        </a>
+        /
+        <a class="open_popup_form transition" data-form="signin" data-uk-modal="" href="#modal_form">
+         <i class="uk-icon-sign-in">
+         </i>
+         Log In
+        </a>
+       </div>
+      </div>
+     </div>
+     <div class="uk-width-large-5-10 uk-pull-2-10 uk-width-medium-1-1">
+      <div id="f_search_wrap">
+       <form action="https://mangakatana.com" class="uk-form uk-float-right" id="f_search" method="get">
+        <input class="full-width" id="input_search" name="search" placeholder="Search..." type="text" value=""/>
+        <div class="select_wrap">
+         <select id="search_by" name="search_by">
+          <option value="book_name">
+           Manga Name
+          </option>
+          <option value="author">
+           Author
+          </option>
+         </select>
+        </div>
+        <div class="clear_bt">
+        </div>
+        <button class="uk-button uk-button-link" id="searchsubmit" type="submit">
+         <i class="uk-icon-search">
+         </i>
+        </button>
+       </form>
+       <div id="search_rs">
+       </div>
+      </div>
+     </div>
+    </div>
+   </div>
+   <div id="header_bottom">
+    <div class="uk-grid uk-grid-medium">
+     <div class="uk-width-large-1-1 uk-width-1-2">
+      <a class="uk-hidden-large navbar_toggle" data-uk-offcanvas="{target:'#nav_sidebar'}" href="#">
+       <span class="icon_bar">
+       </span>
+       <span class="icon_bar">
+       </span>
+       <span class="icon_bar">
+       </span>
+      </a>
+     </div>
+     <div class="uk-width-large-1-1 uk-width-1-2">
+      <div id="main-menu">
+       <div class="uk-container uk-container-center">
+        <ul class="uk-navbar-nav uk-visible-large" id="navbar-mobile">
+         <li>
+          <a href="https://mangakatana.com/">
+           <h2 class="nav_label">
+            Home
+           </h2>
+          </a>
+         </li>
+         <li>
+          <a href="https://mangakatana.com/latest">
+           <h2 class="nav_label">
+            Latest update
+           </h2>
+          </a>
+         </li>
+         <li>
+          <a href="https://mangakatana.com/manga">
+           <h2 class="nav_label">
+            Manga Directory
+           </h2>
+          </a>
+         </li>
+         <li>
+          <a href="https://mangakatana.com/new-manga">
+           <h2 class="nav_label">
+            New Manga
+           </h2>
+          </a>
+         </li>
+         <li>
+          <a href="https://mangakatana.com/genres">
+           <h2 class="nav_label">
+            Genres
+           </h2>
+          </a>
+          <ul class="sub-menu genres">
+           <li>
+            <a data-desc="a comic-strip format, generally consists of gag comic strips within four panels of equal size ordered from top to bottom." href="https://mangakatana.com/genre/4-koma">
+             <h3 class="nav_label">
+              4 koma
+             </h3>
+            </a>
+           </li>
+           <li>
+            <a data-desc="A work typically depicting fighting, violence, chaos, and fast paced motion." href="https://mangakatana.com/genre/action">
+             <h3 class="nav_label">
+              Action
+             </h3>
+            </a>
+           </li>
+           <li>
+            <a data-desc="Contains content that is suitable only for adults. Titles in this category may include prolonged scenes of intense violence and/or graphic sexual content and nudity." href="https://mangakatana.com/genre/adult">
+             <h3 class="nav_label">
+              Adult
+             </h3>
+            </a>
+           </li>
+           <li>
+            <a data-desc="If a character in the story goes on a trip or along that line, your best bet is that it is an adventure manga. Otherwise, it's up to your personal prejudice on this case." href="https://mangakatana.com/genre/adventure">
+             <h3 class="nav_label">
+              Adventure
+             </h3>
+            </a>
+           </li>
+           <li>
+            <a data-desc="" href="https://mangakatana.com/genre/artbook">
+             <h3 class="nav_label">
+              Artbook
+             </h3>
+            </a>
+           </li>
+           <li>
+            <a data-desc="" href="https://mangakatana.com/genre/award-winning">
+             <h3 class="nav_label">
+              Award winning
+             </h3>
+            </a>
+           </li>
+           <li>
+            <a data-desc="A dramatic work that is light and often humorous or satirical in tone and that usually contains a happy resolution of the thematic conflict." href="https://mangakatana.com/genre/comedy">
+             <h3 class="nav_label">
+              Comedy
+             </h3>
+            </a>
+           </li>
+           <li>
+            <a data-desc="N/A" href="https://mangakatana.com/genre/cooking">
+             <h3 class="nav_label">
+              Cooking
+             </h3>
+            </a>
+           </li>
+           <li>
+            <a data-desc="Fan based work inspired by official anime or manga. For MangaUpdates, original works DO NOT fall under this category" href="https://mangakatana.com/genre/doujinshi">
+             <h3 class="nav_label">
+              Doujinshi
+             </h3>
+            </a>
+           </li>
+           <li>
+            <a data-desc="A work meant to bring on an emotional response, such as instilling sadness or tension." href="https://mangakatana.com/genre/drama">
+             <h3 class="nav_label">
+              Drama
+             </h3>
+            </a>
+           </li>
+           <li>
+            <a data-desc="Possibly the line between hentai and non-hentai, ecchi usually refers to fanservice put in to attract a certain group of fans." href="https://mangakatana.com/genre/ecchi">
+             <h3 class="nav_label">
+              Ecchi
+             </h3>
+            </a>
+           </li>
+           <li>
+            <a data-desc="Deals with series that are considered profane or offensive, particularly with regards to sexual content" href="https://mangakatana.com/genre/erotica">
+             <h3 class="nav_label">
+              Erotica
+             </h3>
+            </a>
+           </li>
+           <li>
+            <a data-desc="Anything that involves, but not limited to, magic, dream world, and fairy tales." href="https://mangakatana.com/genre/fantasy">
+             <h3 class="nav_label">
+              Fantasy
+             </h3>
+            </a>
+           </li>
+           <li>
+            <a data-desc="Girls dressing up as guys, guys dressing up as girls.. Guys turning into girls, girls turning into guys.. I think you get the picture." href="https://mangakatana.com/genre/gender-bender">
+             <h3 class="nav_label">
+              Gender Bender
+             </h3>
+            </a>
+           </li>
+           <li>
+            <a data-desc="" href="https://mangakatana.com/genre/gore">
+             <h3 class="nav_label">
+              Gore
+             </h3>
+            </a>
+           </li>
+           <li>
+            <a data-desc="A series involving one male character and many female characters (usually attracted to the male character). A Reverse Harem is when the genders are reversed." href="https://mangakatana.com/genre/harem">
+             <h3 class="nav_label">
+              Harem
+             </h3>
+            </a>
+           </li>
+           <li>
+            <a data-desc="Having to do with old or ancient times." href="https://mangakatana.com/genre/historical">
+             <h3 class="nav_label">
+              Historical
+             </h3>
+            </a>
+           </li>
+           <li>
+            <a data-desc="A painful emotion of fear, dread, and abhorrence; a shuddering with terror and detestation; the feeling inspired by something frightful and shocking." href="https://mangakatana.com/genre/horror">
+             <h3 class="nav_label">
+              Horror
+             </h3>
+            </a>
+           </li>
+           <li>
+            <a data-desc="An isekai story is one in which the lead characters are transferred to and become stuck or trapped in another world, one completely different from the one they lived in up until the transfer.  (Source: anidb.net) " href="https://mangakatana.com/genre/isekai">
+             <h3 class="nav_label">
+              Isekai
+             </h3>
+            </a>
+           </li>
+           <li>
+            <a data-desc="Literally Woman. Targets women 18-30. Female equivalent to seinen. Unlike shoujo the romance is more realistic and less idealized. The storytelling is more explicit and mature." href="https://mangakatana.com/genre/josei">
+             <h3 class="nav_label">
+              Josei
+             </h3>
+            </a>
+           </li>
+           <li>
+            <a data-desc="" href="https://mangakatana.com/genre/loli">
+             <h3 class="nav_label">
+              Loli
+             </h3>
+            </a>
+           </li>
+           <li>
+            <a data-desc="Manhua are Chinese comics originally produced in China." href="https://mangakatana.com/genre/manhua">
+             <h3 class="nav_label">
+              Manhua
+             </h3>
+            </a>
+           </li>
+           <li>
+            <a data-desc="Manhwa is the general Korean term for comics and print cartoons (common usage also includes animated cartoons). " href="https://mangakatana.com/genre/manhwa">
+             <h3 class="nav_label">
+              Manhwa
+             </h3>
+            </a>
+           </li>
+           <li>
+            <a data-desc="As the name suggests, anything martial arts related. Any of several arts of combat or self-defense, such as aikido, karate, judo, or tae kwon do, kendo, fencing, and so on and so forth." href="https://mangakatana.com/genre/martial-arts">
+             <h3 class="nav_label">
+              Martial Arts
+             </h3>
+            </a>
+           </li>
+           <li>
+            <a data-desc="A work involving and usually concentrating on all types of large robotic machines." href="https://mangakatana.com/genre/mecha">
+             <h3 class="nav_label">
+              Mecha
+             </h3>
+            </a>
+           </li>
+           <li>
+            <a data-desc="N/A" href="https://mangakatana.com/genre/medical">
+             <h3 class="nav_label">
+              Medical
+             </h3>
+            </a>
+           </li>
+           <li>
+            <a data-desc="N/A" href="https://mangakatana.com/genre/music">
+             <h3 class="nav_label">
+              Music
+             </h3>
+            </a>
+           </li>
+           <li>
+            <a data-desc="Usually an unexplained event occurs, and the main protagonist attempts to find out what caused it." href="https://mangakatana.com/genre/mystery">
+             <h3 class="nav_label">
+              Mystery
+             </h3>
+            </a>
+           </li>
+           <li>
+            <a data-desc="N/A" href="https://mangakatana.com/genre/one-shot">
+             <h3 class="nav_label">
+              One shot
+             </h3>
+            </a>
+           </li>
+           <li>
+            <a data-desc="Main character strong from the start" href="https://mangakatana.com/genre/overpowered-mc">
+             <h3 class="nav_label">
+              Overpowered MC
+             </h3>
+            </a>
+           </li>
+           <li>
+            <a data-desc="Usually deals with the philosophy of a state of mind, in most cases detailing abnormal psychology." href="https://mangakatana.com/genre/psychological">
+             <h3 class="nav_label">
+              Psychological
+             </h3>
+            </a>
+           </li>
+           <li>
+            <a data-desc="" href="https://mangakatana.com/genre/reincarnation">
+             <h3 class="nav_label">
+              Reincarnation
+             </h3>
+            </a>
+           </li>
+           <li>
+            <a data-desc="Any love related story. We will define love as between man and woman in this case. Other than that, it is up to your own imagination of what love is." href="https://mangakatana.com/genre/romance">
+             <h3 class="nav_label">
+              Romance
+             </h3>
+            </a>
+           </li>
+           <li>
+            <a data-desc="Having a major setting of the story deal with some type of school." href="https://mangakatana.com/genre/school-life">
+             <h3 class="nav_label">
+              School Life
+             </h3>
+            </a>
+           </li>
+           <li>
+            <a data-desc="Short for science fiction, these works involve twists on technology and other science related phenomena which are contrary or stretches of the modern day scientific world." href="https://mangakatana.com/genre/sci-fi">
+             <h3 class="nav_label">
+              Sci-fi
+             </h3>
+            </a>
+           </li>
+           <li>
+            <a data-desc="Seinen means young Man. Manga and anime that specifically targets young adult males around the ages of 18 to 25 are seinen titles.The stories in seinen works appeal to university students and those in the working world. Typically the story lines deal with the issues of adulthood." href="https://mangakatana.com/genre/seinen">
+             <h3 class="nav_label">
+              Seinen
+             </h3>
+            </a>
+           </li>
+           <li>
+            <a data-desc="" href="https://mangakatana.com/genre/sexual-violence">
+             <h3 class="nav_label">
+              Sexual violence
+             </h3>
+            </a>
+           </li>
+           <li>
+            <a data-desc="" href="https://mangakatana.com/genre/shota">
+             <h3 class="nav_label">
+              Shota
+             </h3>
+            </a>
+           </li>
+           <li>
+            <a data-desc="A work intended and primarily written for females. Usually involves a lot of romance and strong character development." href="https://mangakatana.com/genre/shoujo">
+             <h3 class="nav_label">
+              Shoujo
+             </h3>
+            </a>
+           </li>
+           <li>
+            <a data-desc="Often synonymous with yuri, this can be thought of as somewhat less extreme. Girl's Love, so to speak." href="https://mangakatana.com/genre/shoujo-ai">
+             <h3 class="nav_label">
+              Shoujo Ai
+             </h3>
+            </a>
+           </li>
+           <li>
+            <a data-desc="A work intended and primarily written for males. These works usually involve fighting and/or violence." href="https://mangakatana.com/genre/shounen">
+             <h3 class="nav_label">
+              Shounen
+             </h3>
+            </a>
+           </li>
+           <li>
+            <a data-desc="Often synonymous with yaoi, this can be thought of as somewhat less extreme. Boy's Love, so to speak." href="https://mangakatana.com/genre/shounen-ai">
+             <h3 class="nav_label">
+              Shounen Ai
+             </h3>
+            </a>
+           </li>
+           <li>
+            <a data-desc="As the name suggests, this genre represents day-to-day tribulations of one/many character(s). These challenges/events could technically happen in real life and are often -if not all the time- set in the present timeline in a world that mirrors our own." href="https://mangakatana.com/genre/slice-of-life">
+             <h3 class="nav_label">
+              Slice of Life
+             </h3>
+            </a>
+           </li>
+           <li>
+            <a data-desc="As the name suggests, anything sports related. Baseball, basketball, hockey, soccer, golf, and racing just to name a few." href="https://mangakatana.com/genre/sports">
+             <h3 class="nav_label">
+              Sports
+             </h3>
+            </a>
+           </li>
+           <li>
+            <a data-desc="" href="https://mangakatana.com/genre/super-power">
+             <h3 class="nav_label">
+              Super power
+             </h3>
+            </a>
+           </li>
+           <li>
+            <a data-desc="Usually entails amazing and unexplained powers or events which defy the laws of physics." href="https://mangakatana.com/genre/supernatural">
+             <h3 class="nav_label">
+              Supernatural
+             </h3>
+            </a>
+           </li>
+           <li>
+            <a data-desc="" href="https://mangakatana.com/genre/survival">
+             <h3 class="nav_label">
+              Survival
+             </h3>
+            </a>
+           </li>
+           <li>
+            <a data-desc="" href="https://mangakatana.com/genre/time-travel">
+             <h3 class="nav_label">
+              Time Travel
+             </h3>
+            </a>
+           </li>
+           <li>
+            <a data-desc="Contains events resulting in great loss and misfortune." href="https://mangakatana.com/genre/tragedy">
+             <h3 class="nav_label">
+              Tragedy
+             </h3>
+            </a>
+           </li>
+           <li>
+            <a data-desc="A webtoon is an animated cartoon, often created by an amateur, that is distributed via the Web. Webtoons are usually drawn in full color and published in chapters." href="https://mangakatana.com/genre/webtoon">
+             <h3 class="nav_label">
+              Webtoon
+             </h3>
+            </a>
+           </li>
+           <li>
+            <a data-desc="This work usually involves intimate relationships between men." href="https://mangakatana.com/genre/yaoi">
+             <h3 class="nav_label">
+              Yaoi
+             </h3>
+            </a>
+           </li>
+           <li>
+            <a data-desc="This work usually involves intimate relationships between women." href="https://mangakatana.com/genre/yuri">
+             <h3 class="nav_label">
+              Yuri
+             </h3>
+            </a>
+           </li>
+           <div class="desc">
+           </div>
+          </ul>
+         </li>
+        </ul>
+        <ul class="uk-navbar-nav uk-navbar-flip" id="switch_theme_wrap">
+         <input class="tgl tgl-flip" id="switch_theme" type="checkbox"/>
+         <label class="tgl-btn" data-tg-off="Dark Theme" data-tg-on="Light Theme" for="switch_theme">
+         </label>
+        </ul>
+       </div>
+      </div>
+     </div>
+    </div>
+   </div>
+  </header>
+  <div class="uk-visible-large" id="hot_update">
+   <div class="uk-container uk-container-center">
+    <h2 class="heading">
+     Hot updates
+    </h2>
+    <ul class="slick_book">
+     <li>
+      <div class="item" data-genre=",17,16,14,28,3,5," data-id="27607">
+       <div class="wrap_img">
+        <a href="https://mangakatana.com/manga/hero-organization.27607">
+         <img alt="[Cover]" src="https://mangakatana.com/imgs/cover/09c/27/48bde.jpg"/>
+        </a>
+       </div>
+       <h3 class="title">
+        <a href="https://mangakatana.com/manga/hero-organization.27607">
+         Hero Organization
+        </a>
+       </h3>
+       <div class="chapter">
+        <a href="https://mangakatana.com/manga/hero-organization.27607/c45">
+         <i class="uk-icon-arrow-circle-o-right">
+         </i>
+         Chapter 45
+        </a>
+       </div>
+      </div>
+     </li>
+     <li>
+      <div class="item" data-genre=",14,15,2,5,16,17,21," data-id="25666">
+       <div class="wrap_img">
+        <a href="https://mangakatana.com/manga/ranger-reject.25666">
+         <img alt="[Cover]" src="https://mangakatana.com/imgs/cover/09c/1d/b5fa4.jpg"/>
+        </a>
+       </div>
+       <h3 class="title">
+        <a href="https://mangakatana.com/manga/ranger-reject.25666">
+         Ranger Reject
+        </a>
+       </h3>
+       <div class="chapter">
+        <a href="https://mangakatana.com/manga/ranger-reject.25666/c200">
+         <i class="uk-icon-arrow-circle-o-right">
+         </i>
+         Chapter 200
+        </a>
+       </div>
+      </div>
+     </li>
+     <li>
+      <div class="item" data-genre=",7,2,8,9," data-id="27558">
+       <div class="wrap_img">
+        <a href="https://mangakatana.com/manga/shes-likely-aiming-for-my-older-brother.27558">
+         <img alt="[Cover]" src="https://mangakatana.com/imgs/cover/09c/26/c09e7.jpg"/>
+        </a>
+       </div>
+       <h3 class="title">
+        <a href="https://mangakatana.com/manga/shes-likely-aiming-for-my-older-brother.27558">
+         She's Likely Aiming for My Older Brother
+        </a>
+       </h3>
+       <div class="chapter">
+        <a href="https://mangakatana.com/manga/shes-likely-aiming-for-my-older-brother.27558/c17">
+         <i class="uk-icon-arrow-circle-o-right">
+         </i>
+         Chapter 17
+        </a>
+       </div>
+      </div>
+     </li>
+     <li>
+      <div class="item" data-genre=",17,14,21,16,3," data-id="27636">
+       <div class="wrap_img">
+        <a href="https://mangakatana.com/manga/jujutsu-kaisen-modulo.27636">
+         <img alt="[Cover]" src="https://mangakatana.com/imgs/cover/09c/27/973ca.jpg"/>
+        </a>
+       </div>
+       <h3 class="title">
+        <a href="https://mangakatana.com/manga/jujutsu-kaisen-modulo.27636">
+         Jujutsu Kaisen Modulo
+        </a>
+       </h3>
+       <div class="chapter">
+        <a href="https://mangakatana.com/manga/jujutsu-kaisen-modulo.27636/c14">
+         <i class="uk-icon-arrow-circle-o-right">
+         </i>
+         Chapter 14
+        </a>
+       </div>
+      </div>
+     </li>
+     <li>
+      <div class="item" data-genre=",14,15,49,24,10,36," data-id="26848">
+       <div class="wrap_img">
+        <a href="https://mangakatana.com/manga/surviving-the-game-as-a-barbarian.26848">
+         <img alt="[Cover]" src="https://mangakatana.com/imgs/cover/09c/23/77db4.jpg"/>
+        </a>
+       </div>
+       <h3 class="title">
+        <a href="https://mangakatana.com/manga/surviving-the-game-as-a-barbarian.26848">
+         Surviving the Game as a Barbarian
+        </a>
+       </h3>
+       <div class="chapter">
+        <a href="https://mangakatana.com/manga/surviving-the-game-as-a-barbarian.26848/c133">
+         <i class="uk-icon-arrow-circle-o-right">
+         </i>
+         Chapter 133
+        </a>
+       </div>
+      </div>
+     </li>
+     <li>
+      <div class="item" data-genre=",17,7,2,8,9," data-id="27401">
+       <div class="wrap_img">
+        <a href="https://mangakatana.com/manga/they-are-still-being-shaken-this-morning.27401">
+         <img alt="[Cover]" src="https://mangakatana.com/imgs/cover/09c/26/8ea8b.jpg"/>
+        </a>
+       </div>
+       <h3 class="title">
+        <a href="https://mangakatana.com/manga/they-are-still-being-shaken-this-morning.27401">
+         They Are Still Being Shaken This Morning
+        </a>
+       </h3>
+       <div class="chapter">
+        <a href="https://mangakatana.com/manga/they-are-still-being-shaken-this-morning.27401/c34">
+         <i class="uk-icon-arrow-circle-o-right">
+         </i>
+         Chapter 34
+        </a>
+       </div>
+      </div>
+     </li>
+     <li>
+      <div class="item" data-genre=",52,14,7,2,15,20,49,3,8,24,30," data-id="27477">
+       <div class="wrap_img">
+        <a href="https://mangakatana.com/manga/reincarnated-as-the-lazy-and-villainous-noble-i-broke-the-scenario-and-became-the-most-formidable-with-extraordinary-magic.27477">
+         <img alt="[Cover]" src="https://mangakatana.com/imgs/cover/09c/26/b9fc2.jpg"/>
+        </a>
+       </div>
+       <h3 class="title">
+        <a href="https://mangakatana.com/manga/reincarnated-as-the-lazy-and-villainous-noble-i-broke-the-scenario-and-became-the-most-formidable-with-extraordinary-magic.27477">
+         Reincarnated as the Lazy and Villainous Noble, I Broke the Scenario and Became the Most Formidable With Extraordinary Magic
+        </a>
+       </h3>
+       <div class="chapter">
+        <a href="https://mangakatana.com/manga/reincarnated-as-the-lazy-and-villainous-noble-i-broke-the-scenario-and-became-the-most-formidable-with-extraordinary-magic.27477/c17">
+         <i class="uk-icon-arrow-circle-o-right">
+         </i>
+         Chapter 17
+        </a>
+       </div>
+      </div>
+     </li>
+     <li>
+      <div class="item" data-genre=",17,53,14,15,24," data-id="27518">
+       <div class="wrap_img">
+        <a href="https://mangakatana.com/manga/albus-changes-the-world.27518">
+         <img alt="[Cover]" src="https://mangakatana.com/imgs/cover/09c/26/342e6.jpg"/>
+        </a>
+       </div>
+       <h3 class="title">
+        <a href="https://mangakatana.com/manga/albus-changes-the-world.27518">
+         Albus Changes the World
+        </a>
+       </h3>
+       <div class="chapter">
+        <a href="https://mangakatana.com/manga/albus-changes-the-world.27518/c73">
+         <i class="uk-icon-arrow-circle-o-right">
+         </i>
+         Chapter 73
+        </a>
+       </div>
+      </div>
+     </li>
+     <li>
+      <div class="item" data-genre=",17,53,7,3,24,9,21,38,36," data-id="26227">
+       <div class="wrap_img">
+        <a href="https://mangakatana.com/manga/my-wife-is-from-a-thousand-years-ago.26227">
+         <img alt="[Cover]" src="https://mangakatana.com/imgs/cover/09c/20/4813d.jpg"/>
+        </a>
+       </div>
+       <h3 class="title">
+        <a href="https://mangakatana.com/manga/my-wife-is-from-a-thousand-years-ago.26227">
+         My Wife Is From a Thousand Years Ago
+        </a>
+       </h3>
+       <div class="chapter">
+        <a href="https://mangakatana.com/manga/my-wife-is-from-a-thousand-years-ago.26227/c440">
+         <i class="uk-icon-arrow-circle-o-right">
+         </i>
+         Chapter 440
+        </a>
+       </div>
+      </div>
+     </li>
+     <li>
+      <div class="item" data-genre=",19,7,2,3,8,9,5," data-id="27330">
+       <div class="wrap_img">
+        <a href="https://mangakatana.com/manga/miyu-chan-will-always-be-your-friend.27330">
+         <img alt="[Cover]" src="https://mangakatana.com/imgs/cover/09c/25/e8ca0.jpg"/>
+        </a>
+       </div>
+       <h3 class="title">
+        <a href="https://mangakatana.com/manga/miyu-chan-will-always-be-your-friend.27330">
+         Miyu-chan Will Always Be Your Friend
+        </a>
+       </h3>
+       <div class="chapter">
+        <a href="https://mangakatana.com/manga/miyu-chan-will-always-be-your-friend.27330/c31">
+         <i class="uk-icon-arrow-circle-o-right">
+         </i>
+         Chapter 31
+        </a>
+       </div>
+      </div>
+     </li>
+     <li>
+      <div class="item" data-genre=",15,2,21,49,10,36," data-id="25916">
+       <div class="wrap_img">
+        <a href="https://mangakatana.com/manga/the-greatest-estate-developer.25916">
+         <img alt="[Cover]" src="https://mangakatana.com/imgs/cover/09c/1e/aa306.jpg"/>
+        </a>
+       </div>
+       <h3 class="title">
+        <a href="https://mangakatana.com/manga/the-greatest-estate-developer.25916">
+         The Greatest Estate Developer
+        </a>
+       </h3>
+       <div class="chapter">
+        <a href="https://mangakatana.com/manga/the-greatest-estate-developer.25916/c218">
+         <i class="uk-icon-arrow-circle-o-right">
+         </i>
+         Chapter 218
+        </a>
+       </div>
+      </div>
+     </li>
+     <li>
+      <div class="item" data-genre=",14,2,3,16,19,9,21,50,11,45," data-id="437">
+       <div class="wrap_img">
+        <a href="https://mangakatana.com/manga/onepunch-man.437">
+         <img alt="[Cover]" src="https://mangakatana.com/imgs/cover/04e/03/b8b4b.jpg"/>
+        </a>
+       </div>
+       <h3 class="title">
+        <a href="https://mangakatana.com/manga/onepunch-man.437">
+         Onepunch-Man
+        </a>
+       </h3>
+       <div class="chapter">
+        <a href="https://mangakatana.com/manga/onepunch-man.437/c220">
+         <i class="uk-icon-arrow-circle-o-right">
+         </i>
+         Chapter 220
+        </a>
+       </div>
+      </div>
+     </li>
+     <li>
+      <div class="item" data-genre=",14,2,20,15,24,17,49,7," data-id="22195">
+       <div class="wrap_img">
+        <a href="https://mangakatana.com/manga/lonely-attack-on-a-different-world.22195">
+         <img alt="[Cover]" src="https://mangakatana.com/imgs/cover/09c/0b/46dd5.jpg"/>
+        </a>
+       </div>
+       <h3 class="title">
+        <a href="https://mangakatana.com/manga/lonely-attack-on-a-different-world.22195">
+         Lonely Attack on a Different World
+        </a>
+       </h3>
+       <div class="chapter">
+        <a href="https://mangakatana.com/manga/lonely-attack-on-a-different-world.22195/c295">
+         <i class="uk-icon-arrow-circle-o-right">
+         </i>
+         Chapter 295
+        </a>
+       </div>
+      </div>
+     </li>
+     <li>
+      <div class="item" data-genre=",14,18,15,2,24,20,7,17,49,34," data-id="19588">
+       <div class="wrap_img">
+        <a href="https://mangakatana.com/manga/isekai-meikyuu-de-harem-o.19588">
+         <img alt="[Cover]" src="https://mangakatana.com/imgs/cover/04e/62/164df.jpg"/>
+        </a>
+       </div>
+       <h3 class="title">
+        <a href="https://mangakatana.com/manga/isekai-meikyuu-de-harem-o.19588">
+         Isekai Meikyuu de Harem o
+        </a>
+       </h3>
+       <div class="chapter">
+        <a href="https://mangakatana.com/manga/isekai-meikyuu-de-harem-o.19588/c103">
+         <i class="uk-icon-arrow-circle-o-right">
+         </i>
+         Chapter 103
+        </a>
+       </div>
+      </div>
+     </li>
+     <li>
+      <div class="item" data-genre=",17,52,14,2,15,49,24,9,39,10,36," data-id="27314">
+       <div class="wrap_img">
+        <a href="https://mangakatana.com/manga/the-archmages-restaurant.27314">
+         <img alt="[Cover]" src="https://mangakatana.com/imgs/cover/09c/25/07835.jpg"/>
+        </a>
+       </div>
+       <h3 class="title">
+        <a href="https://mangakatana.com/manga/the-archmages-restaurant.27314">
+         The Archmage's Restaurant
+        </a>
+       </h3>
+       <div class="chapter">
+        <a href="https://mangakatana.com/manga/the-archmages-restaurant.27314/c110">
+         <i class="uk-icon-arrow-circle-o-right">
+         </i>
+         Chapter 110
+        </a>
+       </div>
+      </div>
+     </li>
+     <li>
+      <div class="item" data-genre=",17,23,7,2,20,3,8," data-id="27590">
+       <div class="wrap_img">
+        <a href="https://mangakatana.com/manga/after-being-banished-from-the-celebrity-family-i-supported-behind-the-scenes-all-i-want-is-to-enjoy-a-normal-life.27590">
+         <img alt="[Cover]" src="https://mangakatana.com/imgs/cover/09c/26/a871a.jpg"/>
+        </a>
+       </div>
+       <h3 class="title">
+        <a href="https://mangakatana.com/manga/after-being-banished-from-the-celebrity-family-i-supported-behind-the-scenes-all-i-want-is-to-enjoy-a-normal-life.27590">
+         After Being Banished from the Celebrity Family I Supported Behind the Scenes, All I Want Is to Enjoy a Normal Life.
+        </a>
+       </h3>
+       <div class="chapter">
+        <a href="https://mangakatana.com/manga/after-being-banished-from-the-celebrity-family-i-supported-behind-the-scenes-all-i-want-is-to-enjoy-a-normal-life.27590/c18">
+         <i class="uk-icon-arrow-circle-o-right">
+         </i>
+         Chapter 18
+        </a>
+       </div>
+      </div>
+     </li>
+     <li>
+      <div class="item" data-genre=",17,14,7,2,15,20,24," data-id="26679">
+       <div class="wrap_img">
+        <a href="https://mangakatana.com/manga/im-a-d-rank-adventurer-for-some-reason-i-got-recruited-into-a-hero-party-and-now-the-princess-is-stalking-me.26679">
+         <img alt="[Cover]" src="https://mangakatana.com/imgs/cover/09c/22/3c3fc.jpg"/>
+        </a>
+       </div>
+       <h3 class="title">
+        <a href="https://mangakatana.com/manga/im-a-d-rank-adventurer-for-some-reason-i-got-recruited-into-a-hero-party-and-now-the-princess-is-stalking-me.26679">
+         I’m a D-Rank Adventurer, for Some Reason I Got Recruited Into a Hero Party, and Now the Princess Is Stalking Me
+        </a>
+       </h3>
+       <div class="chapter">
+        <a href="https://mangakatana.com/manga/im-a-d-rank-adventurer-for-some-reason-i-got-recruited-into-a-hero-party-and-now-the-princess-is-stalking-me.26679/c43">
+         <i class="uk-icon-arrow-circle-o-right">
+         </i>
+         Chapter 43
+        </a>
+       </div>
+      </div>
+     </li>
+     <li>
+      <div class="item" data-genre=",19,7,2,20,24," data-id="27002">
+       <div class="wrap_img">
+        <a href="https://mangakatana.com/manga/seven-sleeping-beauties.27002">
+         <img alt="[Cover]" src="https://mangakatana.com/imgs/cover/09c/24/2ac9a.jpg"/>
+        </a>
+       </div>
+       <h3 class="title">
+        <a href="https://mangakatana.com/manga/seven-sleeping-beauties.27002">
+         Seven Sleeping Beauties
+        </a>
+       </h3>
+       <div class="chapter">
+        <a href="https://mangakatana.com/manga/seven-sleeping-beauties.27002/c75">
+         <i class="uk-icon-arrow-circle-o-right">
+         </i>
+         Chapter 75
+        </a>
+       </div>
+      </div>
+     </li>
+    </ul>
+    <i class="uk-icon-spinner uk-icon-spin">
+    </i>
+   </div>
+  </div>
+  <div id="wrap_content">
+   <div class="uk-container uk-container-center">
+    <div class="uk-grid uk-grid-medium">
+     <div class="uk-width-large-7-10">
+      <div class="widget-title">
+       <span>
+        Latest Updates
+       </span>
+      </div>
+      <div id="book_list">
+       <div class="item" data-genre=",19,14,2,24,9," data-id="27367">
+        <div class="media">
+         <div class="wrap_img">
+          <a href="https://mangakatana.com/manga/every-adventure-needs-weapons-the-meticulous-rudys-blacksmith-life.27367">
+           <img alt="[Cover]" src="https://mangakatana.com/imgs/cover/09c/25/1cf69.jpg"/>
+          </a>
+         </div>
+         <div class="status ongoing">
+          <i class="uk-icon-tasks">
+          </i>
+          Ongoing
+         </div>
+        </div>
+        <div class="text">
+         <h3 class="title">
+          <a href="https://mangakatana.com/manga/every-adventure-needs-weapons-the-meticulous-rudys-blacksmith-life.27367" target="_blank">
+           Every Adventure Needs Weapons! ~The Meticulous Rudy's Blacksmith Life~
+          </a>
+          <span>
+           - Update chapter 18
+          </span>
+         </h3>
+         <div class="uk-grid uk-grid-small">
+          <div class="uk-width-1-2">
+           <div class="date">
+            <i class="uk-icon-clock-o uk-hidden-small">
+            </i>
+            20 minutes ago
+           </div>
+          </div>
+          <div class="uk-width-1-2">
+           <div class="date uk-text-right">
+            <i class="uk-icon-angle-double-right">
+            </i>
+            <a href="https://mangakatana.com/manga/every-adventure-needs-weapons-the-meticulous-rudys-blacksmith-life.27367/fc" target="_blank">
+             First Chapter
+            </a>
+           </div>
+          </div>
+         </div>
+         <div class="genres uk-hidden-small">
+          <a href="https://mangakatana.com/genre/seinen">
+           Seinen
+          </a>
+          <a href="https://mangakatana.com/genre/action">
+           Action
+          </a>
+          <a href="https://mangakatana.com/genre/comedy">
+           Comedy
+          </a>
+          <a href="https://mangakatana.com/genre/fantasy">
+           Fantasy
+          </a>
+          <a href="https://mangakatana.com/genre/slice-of-life">
+           Slice of Life
+          </a>
+         </div>
+         <div class="last_chap uk-visible-small">
+         </div>
+         <div class="summary uk-hidden-small">
+          A young girl Rudy may dream of becoming the greatest weaponsmith in the world, but right now she's just an apprentice at a hardware store. She can't help getting scolded by her master for crafting the craziest weapons! In this dungeon-city where heroes dare to delve, experience the everyday life of the regular folk that keep things running smoothly! Welcome to your "Craft Fantasy!"
+         </div>
+         <div class="chapters uk-hidden-small">
+          <div class="uk-grid uk-grid-small">
+           <div class="uk-width-8-10">
+            <div class="chapter">
+             <a href="https://mangakatana.com/manga/every-adventure-needs-weapons-the-meticulous-rudys-blacksmith-life.27367/c18" target="_blank">
+              Chapter 18: Commission for Sorophia the Adventurer
+             </a>
+            </div>
+           </div>
+           <div class="uk-width-2-10">
+            <div class="update_time">
+             Dec-07-2025
+            </div>
+           </div>
+           <div class="uk-width-8-10">
+            <div class="chapter">
+             <a href="https://mangakatana.com/manga/every-adventure-needs-weapons-the-meticulous-rudys-blacksmith-life.27367/c17" target="_blank">
+              Chapter 17: The Alchemist's Commission - Completed
+             </a>
+            </div>
+           </div>
+           <div class="uk-width-2-10">
+            <div class="update_time">
+             Nov-02-2025
+            </div>
+           </div>
+           <div class="uk-width-8-10">
+            <div class="chapter">
+             <a href="https://mangakatana.com/manga/every-adventure-needs-weapons-the-meticulous-rudys-blacksmith-life.27367/c16.5" target="_blank">
+              Chapter 16.5: Concerning Elf Ears
+             </a>
+            </div>
+           </div>
+           <div class="uk-width-2-10">
+            <div class="update_time">
+             Nov-02-2025
+            </div>
+           </div>
+          </div>
+         </div>
+        </div>
+       </div>
+       <div class="item" data-genre=",19,14,3,8,10,36," data-id="27489">
+        <div class="media">
+         <div class="wrap_img">
+          <a href="https://mangakatana.com/manga/high-class.27489">
+           <img alt="[Cover]" src="https://mangakatana.com/imgs/cover/09c/26/ab913.jpg"/>
+          </a>
+         </div>
+         <div class="status ongoing">
+          <i class="uk-icon-tasks">
+          </i>
+          Ongoing
+         </div>
+        </div>
+        <div class="text">
+         <h3 class="title">
+          <a href="https://mangakatana.com/manga/high-class.27489" target="_blank">
+           High Class
+          </a>
+          <span>
+           - Update chapter 60
+          </span>
+         </h3>
+         <div class="uk-grid uk-grid-small">
+          <div class="uk-width-1-2">
+           <div class="date">
+            <i class="uk-icon-clock-o uk-hidden-small">
+            </i>
+            35 minutes ago
+           </div>
+          </div>
+          <div class="uk-width-1-2">
+           <div class="date uk-text-right">
+            <i class="uk-icon-angle-double-right">
+            </i>
+            <a href="https://mangakatana.com/manga/high-class.27489/fc" target="_blank">
+             First Chapter
+            </a>
+           </div>
+          </div>
+         </div>
+         <div class="genres uk-hidden-small">
+          <a href="https://mangakatana.com/genre/seinen">
+           Seinen
+          </a>
+          <a href="https://mangakatana.com/genre/action">
+           Action
+          </a>
+          <a href="https://mangakatana.com/genre/drama">
+           Drama
+          </a>
+          <a href="https://mangakatana.com/genre/school-life">
+           School Life
+          </a>
+          <a href="https://mangakatana.com/genre/manhwa">
+           Manhwa
+          </a>
+          <a href="https://mangakatana.com/genre/webtoon">
+           Webtoon
+          </a>
+         </div>
+         <div class="last_chap uk-visible-small">
+         </div>
+         <div class="summary uk-hidden-small">
+          Wang Dokpil, the boss of Jeolhwa, the largest organization in Chungcheong, and his son, Wang Dam. After his father’s death, Wang Dam has a different dream than inheriting his father’s organization and decides to head to Seoul on a whim. But life isn’t that simple, as he envisioned his uncle, who was a member of the organization, proposes a condition that if Wang Dam becomes No. 1 in his new school, he’ll receive a settlement allowance. However, Wang Dam’s new school, notoriously known as Ppak High, is infamous for school violence. Can Wang Dam become No. 1 in Ppak High School, the one full of the nation’s worst troublemakers?
+         </div>
+         <div class="chapters uk-hidden-small">
+          <div class="uk-grid uk-grid-small">
+           <div class="uk-width-8-10">
+            <div class="chapter">
+             <a href="https://mangakatana.com/manga/high-class.27489/c60" target="_blank">
+              Chapter 60
+             </a>
+            </div>
+           </div>
+           <div class="uk-width-2-10">
+            <div class="update_time">
+             Dec-07-2025
+            </div>
+           </div>
+           <div class="uk-width-8-10">
+            <div class="chapter">
+             <a href="https://mangakatana.com/manga/high-class.27489/c59" target="_blank">
+              Chapter 59
+             </a>
+            </div>
+           </div>
+           <div class="uk-width-2-10">
+            <div class="update_time">
+             Dec-06-2025
+            </div>
+           </div>
+           <div class="uk-width-8-10">
+            <div class="chapter">
+             <a href="https://mangakatana.com/manga/high-class.27489/c58" target="_blank">
+              Chapter 58
+             </a>
+            </div>
+           </div>
+           <div class="uk-width-2-10">
+            <div class="update_time">
+             Nov-29-2025
+            </div>
+           </div>
+          </div>
+         </div>
+        </div>
+       </div>
+       <div class="item" data-genre=",2,24,19,9,21," data-id="2606">
+        <div class="media">
+         <div class="wrap_img">
+          <a href="https://mangakatana.com/manga/hoozuki-no-reitetsu.2606">
+           <img alt="[Cover]" src="https://mangakatana.com/imgs/cover/04e/0e/2ef9b.jpg"/>
+          </a>
+         </div>
+         <div class="status ongoing">
+          <i class="uk-icon-tasks">
+          </i>
+          Ongoing
+         </div>
+        </div>
+        <div class="text">
+         <h3 class="title">
+          <a href="https://mangakatana.com/manga/hoozuki-no-reitetsu.2606" target="_blank">
+           Hoozuki no Reitetsu
+          </a>
+          <span>
+           - Update chapter 227
+          </span>
+         </h3>
+         <div class="uk-grid uk-grid-small">
+          <div class="uk-width-1-2">
+           <div class="date">
+            <i class="uk-icon-clock-o uk-hidden-small">
+            </i>
+            54 minutes ago
+           </div>
+          </div>
+          <div class="uk-width-1-2">
+           <div class="date uk-text-right">
+            <i class="uk-icon-angle-double-right">
+            </i>
+            <a href="https://mangakatana.com/manga/hoozuki-no-reitetsu.2606/fc" target="_blank">
+             First Chapter
+            </a>
+           </div>
+          </div>
+         </div>
+         <div class="genres uk-hidden-small">
+          <a href="https://mangakatana.com/genre/comedy">
+           Comedy
+          </a>
+          <a href="https://mangakatana.com/genre/fantasy">
+           Fantasy
+          </a>
+          <a href="https://mangakatana.com/genre/seinen">
+           Seinen
+          </a>
+          <a href="https://mangakatana.com/genre/slice-of-life">
+           Slice of Life
+          </a>
+          <a href="https://mangakatana.com/genre/supernatural">
+           Supernatural
+          </a>
+         </div>
+         <div class="last_chap uk-visible-small">
+         </div>
+         <div class="summary uk-hidden-small">
+          Hoozuki is a deputy of the King of Hell, a judge of the afterlife and a "Super Sadist," to boot. Follow the daily lives of Hoozuki and his people.
+          <br/>
+          <br/>
+          Note: Nominated for the 2012 Manga Taishou Awards.
+         </div>
+         <div class="chapters uk-hidden-small">
+          <div class="uk-grid uk-grid-small">
+           <div class="uk-width-8-10">
+            <div class="chapter">
+             <a href="https://mangakatana.com/manga/hoozuki-no-reitetsu.2606/c227" target="_blank">
+              Chapter 227: CASTING MATTERS
+             </a>
+            </div>
+           </div>
+           <div class="uk-width-2-10">
+            <div class="update_time">
+             Dec-07-2025
+            </div>
+           </div>
+           <div class="uk-width-8-10">
+            <div class="chapter">
+             <a href="https://mangakatana.com/manga/hoozuki-no-reitetsu.2606/c226" target="_blank">
+              Chapter 226: MISS CHILI PEPPER
+             </a>
+            </div>
+           </div>
+           <div class="uk-width-2-10">
+            <div class="update_time">
+             Aug-26-2025
+            </div>
+           </div>
+           <div class="uk-width-8-10">
+            <div class="chapter">
+             <a href="https://mangakatana.com/manga/hoozuki-no-reitetsu.2606/c225" target="_blank">
+              Chapter 225: THE UNDERLING LIFE IS ROUGH BUT RICH
+             </a>
+            </div>
+           </div>
+           <div class="uk-width-2-10">
+            <div class="update_time">
+             Aug-23-2025
+            </div>
+           </div>
+          </div>
+         </div>
+        </div>
+       </div>
+       <div class="item" data-genre=",2,24,9,21," data-id="24221">
+        <div class="media">
+         <div class="wrap_img">
+          <a href="https://mangakatana.com/manga/touhou-suichouka-lotus-eater-tachi-no-suisei.24221">
+           <img alt="[Cover]" src="https://mangakatana.com/imgs/cover/09c/16/25c1e.jpg"/>
+          </a>
+         </div>
+         <div class="status ongoing">
+          <i class="uk-icon-tasks">
+          </i>
+          Ongoing
+         </div>
+        </div>
+        <div class="text">
+         <h3 class="title">
+          <a href="https://mangakatana.com/manga/touhou-suichouka-lotus-eater-tachi-no-suisei.24221" target="_blank">
+           Touhou Suichouka ~ Lotus Eater-tachi no Suisei
+          </a>
+          <span>
+           - Update chapter 71
+          </span>
+         </h3>
+         <div class="uk-grid uk-grid-small">
+          <div class="uk-width-1-2">
+           <div class="date">
+            <i class="uk-icon-clock-o uk-hidden-small">
+            </i>
+            1 hour ago
+           </div>
+          </div>
+          <div class="uk-width-1-2">
+           <div class="date uk-text-right">
+            <i class="uk-icon-angle-double-right">
+            </i>
+            <a href="https://mangakatana.com/manga/touhou-suichouka-lotus-eater-tachi-no-suisei.24221/fc" target="_blank">
+             First Chapter
+            </a>
+           </div>
+          </div>
+         </div>
+         <div class="genres uk-hidden-small">
+          <a href="https://mangakatana.com/genre/comedy">
+           Comedy
+          </a>
+          <a href="https://mangakatana.com/genre/fantasy">
+           Fantasy
+          </a>
+          <a href="https://mangakatana.com/genre/slice-of-life">
+           Slice of Life
+          </a>
+          <a href="https://mangakatana.com/genre/supernatural">
+           Supernatural
+          </a>
+         </div>
+         <div class="last_chap uk-visible-small">
+         </div>
+         <div class="summary uk-hidden-small">
+          A strange story about alcohol. The latest "Touhou" official comic, written by ZUN!
+          <br/>
+          <br/>
+          There is a rumor that at a pub called “Geidontei” in a remote area of ​​Gensokyo, a drank customer was kidnapped by a youkai. Reimu, the Hakurei Shrine maiden, embarks on an investigation. Apparently, the key to the case is the poster girl...?
+         </div>
+         <div class="chapters uk-hidden-small">
+          <div class="uk-grid uk-grid-small">
+           <div class="uk-width-8-10">
+            <div class="chapter">
+             <a href="https://mangakatana.com/manga/touhou-suichouka-lotus-eater-tachi-no-suisei.24221/c71" target="_blank">
+              Chapter 71: The Sherry on Top (Part 1)
+             </a>
+            </div>
+           </div>
+           <div class="uk-width-2-10">
+            <div class="update_time">
+             Dec-07-2025
+            </div>
+           </div>
+           <div class="uk-width-8-10">
+            <div class="chapter">
+             <a href="https://mangakatana.com/manga/touhou-suichouka-lotus-eater-tachi-no-suisei.24221/c70" target="_blank">
+              Chapter 70: Worry Before Everyone Else, Drink After Everyone Has Had Theirs (Part 2)
+             </a>
+            </div>
+           </div>
+           <div class="uk-width-2-10">
+            <div class="update_time">
+             Nov-03-2025
+            </div>
+           </div>
+           <div class="uk-width-8-10">
+            <div class="chapter">
+             <a href="https://mangakatana.com/manga/touhou-suichouka-lotus-eater-tachi-no-suisei.24221/c69" target="_blank">
+              Chapter 69: Worry Before Everyone Else, Drink After Everyone Has Had Theirs (Part 1)
+             </a>
+            </div>
+           </div>
+           <div class="uk-width-2-10">
+            <div class="update_time">
+             Oct-08-2025
+            </div>
+           </div>
+          </div>
+         </div>
+        </div>
+       </div>
+       <div class="item" data-genre=",4,2,29,7,24,9," data-id="26768">
+        <div class="media">
+         <div class="wrap_img">
+          <a href="https://mangakatana.com/manga/cherry-magic-thirty-years-of-virginity-can-make-you-a-wizard.26768">
+           <img alt="[Cover]" src="https://mangakatana.com/imgs/cover/09c/22/4de45.jpg"/>
+          </a>
+         </div>
+         <div class="status ongoing">
+          <i class="uk-icon-tasks">
+          </i>
+          Ongoing
+         </div>
+        </div>
+        <div class="text">
+         <h3 class="title">
+          <a href="https://mangakatana.com/manga/cherry-magic-thirty-years-of-virginity-can-make-you-a-wizard.26768" target="_blank">
+           Cherry Magic! Thirty Years of Virginity Can Make You a Wizard?!
+          </a>
+          <span>
+           - Update chapter 67, 68, 69, 70, 71, 72, 73
+          </span>
+         </h3>
+         <div class="uk-grid uk-grid-small">
+          <div class="uk-width-1-2">
+           <div class="date">
+            <i class="uk-icon-clock-o uk-hidden-small">
+            </i>
+            1 hour ago
+           </div>
+          </div>
+          <div class="uk-width-1-2">
+           <div class="date uk-text-right">
+            <i class="uk-icon-angle-double-right">
+            </i>
+            <a href="https://mangakatana.com/manga/cherry-magic-thirty-years-of-virginity-can-make-you-a-wizard.26768/fc" target="_blank">
+             First Chapter
+            </a>
+           </div>
+          </div>
+         </div>
+         <div class="genres uk-hidden-small">
+          <a href="https://mangakatana.com/genre/josei">
+           Josei
+          </a>
+          <a href="https://mangakatana.com/genre/comedy">
+           Comedy
+          </a>
+          <a href="https://mangakatana.com/genre/shounen-ai">
+           Shounen Ai
+          </a>
+          <a href="https://mangakatana.com/genre/romance">
+           Romance
+          </a>
+          <a href="https://mangakatana.com/genre/fantasy">
+           Fantasy
+          </a>
+          <a href="https://mangakatana.com/genre/slice-of-life">
+           Slice of Life
+          </a>
+         </div>
+         <div class="last_chap uk-visible-small">
+         </div>
+         <div class="summary uk-hidden-small">
+          It's complicated: A thirty-year-old virgin gets more than he bargained for when his newfound magical power reveals he's the object of his male coworker's affections!
+Adachi, a thirty-year-old virgin, has developed the power to read people's minds by touching them. After a brush with his very handsome colleague, Adachi realizes the guy has a raging crush on none other than Adachi himself!
+         </div>
+         <div class="chapters uk-hidden-small">
+          <div class="uk-grid uk-grid-small">
+           <div class="uk-width-8-10">
+            <div class="chapter">
+             <a href="https://mangakatana.com/manga/cherry-magic-thirty-years-of-virginity-can-make-you-a-wizard.26768/c73" target="_blank">
+              Chapter 73
+             </a>
+            </div>
+           </div>
+           <div class="uk-width-2-10">
+            <div class="update_time">
+             Dec-07-2025
+            </div>
+           </div>
+           <div class="uk-width-8-10">
+            <div class="chapter">
+             <a href="https://mangakatana.com/manga/cherry-magic-thirty-years-of-virginity-can-make-you-a-wizard.26768/c72" target="_blank">
+              Chapter 72
+             </a>
+            </div>
+           </div>
+           <div class="uk-width-2-10">
+            <div class="update_time">
+             Dec-07-2025
+            </div>
+           </div>
+           <div class="uk-width-8-10">
+            <div class="chapter">
+             <a href="https://mangakatana.com/manga/cherry-magic-thirty-years-of-virginity-can-make-you-a-wizard.26768/c71" target="_blank">
+              Chapter 71
+             </a>
+            </div>
+           </div>
+           <div class="uk-width-2-10">
+            <div class="update_time">
+             Dec-07-2025
+            </div>
+           </div>
+          </div>
+         </div>
+        </div>
+       </div>
+       <div class="item" data-genre=",19,34,2,3,9," data-id="26927">
+        <div class="media">
+         <div class="wrap_img">
+          <a href="https://mangakatana.com/manga/this-is-good.26927">
+           <img alt="[Cover]" src="https://mangakatana.com/imgs/cover/09c/23/a64b3.jpg"/>
+          </a>
+         </div>
+         <div class="status ongoing">
+          <i class="uk-icon-tasks">
+          </i>
+          Ongoing
+         </div>
+        </div>
+        <div class="text">
+         <h3 class="title">
+          <a href="https://mangakatana.com/manga/this-is-good.26927" target="_blank">
+           This is good
+          </a>
+          <span>
+           - Update chapter 29
+          </span>
+         </h3>
+         <div class="uk-grid uk-grid-small">
+          <div class="uk-width-1-2">
+           <div class="date">
+            <i class="uk-icon-clock-o uk-hidden-small">
+            </i>
+            1 hour ago
+           </div>
+          </div>
+          <div class="uk-width-1-2">
+           <div class="date uk-text-right">
+            <i class="uk-icon-angle-double-right">
+            </i>
+            <a href="https://mangakatana.com/manga/this-is-good.26927/fc" target="_blank">
+             First Chapter
+            </a>
+           </div>
+          </div>
+         </div>
+         <div class="genres uk-hidden-small">
+          <a href="https://mangakatana.com/genre/seinen">
+           Seinen
+          </a>
+          <a href="https://mangakatana.com/genre/erotica">
+           Erotica
+          </a>
+          <a href="https://mangakatana.com/genre/comedy">
+           Comedy
+          </a>
+          <a href="https://mangakatana.com/genre/drama">
+           Drama
+          </a>
+          <a href="https://mangakatana.com/genre/slice-of-life">
+           Slice of Life
+          </a>
+         </div>
+         <div class="last_chap uk-visible-small">
+         </div>
+         <div class="summary uk-hidden-small">
+          Do what we want, when we want, with the person we want. Such a relationship needs no label.
+          <br/>
+          <br/>
+          Murata and Tomoka, who are tired of their past relationships, become friends after sharing a game online and decide to go directly to a love hotel. After this evening, they meet regularly and have a good time together.
+         </div>
+         <div class="chapters uk-hidden-small">
+          <div class="uk-grid uk-grid-small">
+           <div class="uk-width-8-10">
+            <div class="chapter">
+             <a href="https://mangakatana.com/manga/this-is-good.26927/c29" target="_blank">
+              Chapter 29
+             </a>
+            </div>
+           </div>
+           <div class="uk-width-2-10">
+            <div class="update_time">
+             Dec-07-2025
+            </div>
+           </div>
+           <div class="uk-width-8-10">
+            <div class="chapter">
+             <a href="https://mangakatana.com/manga/this-is-good.26927/c28" target="_blank">
+              Chapter 28
+             </a>
+            </div>
+           </div>
+           <div class="uk-width-2-10">
+            <div class="update_time">
+             Dec-01-2025
+            </div>
+           </div>
+           <div class="uk-width-8-10">
+            <div class="chapter">
+             <a href="https://mangakatana.com/manga/this-is-good.26927/c27" target="_blank">
+              Chapter 27
+             </a>
+            </div>
+           </div>
+           <div class="uk-width-2-10">
+            <div class="update_time">
+             Nov-28-2025
+            </div>
+           </div>
+          </div>
+         </div>
+        </div>
+       </div>
+       <div class="item" data-genre=",14,15,11,24,36," data-id="27689">
+        <div class="media">
+         <div class="wrap_img">
+          <a href="https://mangakatana.com/manga/dungeon-crawler-carl.27689">
+           <img alt="[Cover]" src="https://mangakatana.com/imgs/cover/09c/27/f7b87.jpg"/>
+          </a>
+         </div>
+         <div class="status ongoing">
+          <i class="uk-icon-tasks">
+          </i>
+          Ongoing
+         </div>
+        </div>
+        <div class="text">
+         <h3 class="title">
+          <a href="https://mangakatana.com/manga/dungeon-crawler-carl.27689" target="_blank">
+           Dungeon Crawler Carl
+          </a>
+          <span>
+           - Update chapter 23
+          </span>
+         </h3>
+         <div class="uk-grid uk-grid-small">
+          <div class="uk-width-1-2">
+           <div class="date">
+            <i class="uk-icon-clock-o uk-hidden-small">
+            </i>
+            1 hour ago
+           </div>
+          </div>
+          <div class="uk-width-1-2">
+           <div class="date uk-text-right">
+            <i class="uk-icon-angle-double-right">
+            </i>
+            <a href="https://mangakatana.com/manga/dungeon-crawler-carl.27689/fc" target="_blank">
+             First Chapter
+            </a>
+           </div>
+          </div>
+         </div>
+         <div class="genres uk-hidden-small">
+          <a href="https://mangakatana.com/genre/action">
+           Action
+          </a>
+          <a href="https://mangakatana.com/genre/adventure">
+           Adventure
+          </a>
+          <a href="https://mangakatana.com/genre/gore">
+           Gore
+          </a>
+          <a href="https://mangakatana.com/genre/fantasy">
+           Fantasy
+          </a>
+          <a href="https://mangakatana.com/genre/webtoon">
+           Webtoon
+          </a>
+         </div>
+         <div class="last_chap uk-visible-small">
+         </div>
+         <div class="summary uk-hidden-small">
+          You know what’s worse than breaking up with your girlfriend? Getting stuck on a sadistic alien gameshow with her cat. Join Carl and Princess Donut as they try to survive the end of the world — or just get to the next level of a trap-filled fantasy dungeon.
+         </div>
+         <div class="chapters uk-hidden-small">
+          <div class="uk-grid uk-grid-small">
+           <div class="uk-width-8-10">
+            <div class="chapter">
+             <a href="https://mangakatana.com/manga/dungeon-crawler-carl.27689/c23" target="_blank">
+              Chapter 23: Episode 23
+             </a>
+            </div>
+           </div>
+           <div class="uk-width-2-10">
+            <div class="update_time">
+             Dec-07-2025
+            </div>
+           </div>
+           <div class="uk-width-8-10">
+            <div class="chapter">
+             <a href="https://mangakatana.com/manga/dungeon-crawler-carl.27689/c22" target="_blank">
+              Chapter 22: Episode 22
+             </a>
+            </div>
+           </div>
+           <div class="uk-width-2-10">
+            <div class="update_time">
+             Dec-01-2025
+            </div>
+           </div>
+           <div class="uk-width-8-10">
+            <div class="chapter">
+             <a href="https://mangakatana.com/manga/dungeon-crawler-carl.27689/c21" target="_blank">
+              Chapter 21: Episode 21
+             </a>
+            </div>
+           </div>
+           <div class="uk-width-2-10">
+            <div class="update_time">
+             Nov-22-2025
+            </div>
+           </div>
+          </div>
+         </div>
+        </div>
+       </div>
+       <div class="item" data-genre=",17,16,14,28,3,5," data-id="27607">
+        <div class="media">
+         <div class="wrap_img">
+          <a href="https://mangakatana.com/manga/hero-organization.27607">
+           <img alt="[Cover]" src="https://mangakatana.com/imgs/cover/09c/27/48bde.jpg"/>
+          </a>
+         </div>
+         <div class="status ongoing">
+          <i class="uk-icon-tasks">
+          </i>
+          Ongoing
+         </div>
+        </div>
+        <div class="text">
+         <h3 class="title">
+          <a href="https://mangakatana.com/manga/hero-organization.27607" target="_blank">
+           Hero Organization
+          </a>
+          <span>
+           - Update chapter 45
+          </span>
+         </h3>
+         <div class="uk-grid uk-grid-small">
+          <div class="uk-width-1-2">
+           <div class="date">
+            <i class="uk-icon-clock-o uk-hidden-small">
+            </i>
+            2 hours ago
+           </div>
+          </div>
+          <div class="uk-width-1-2">
+           <div class="date uk-text-right">
+            <i class="uk-icon-angle-double-right">
+            </i>
+            <a href="https://mangakatana.com/manga/hero-organization.27607/fc" target="_blank">
+             First Chapter
+            </a>
+           </div>
+          </div>
+         </div>
+         <div class="genres uk-hidden-small">
+          <a href="https://mangakatana.com/genre/shounen">
+           Shounen
+          </a>
+          <a href="https://mangakatana.com/genre/sci-fi">
+           Sci-fi
+          </a>
+          <a href="https://mangakatana.com/genre/action">
+           Action
+          </a>
+          <a href="https://mangakatana.com/genre/mecha">
+           Mecha
+          </a>
+          <a href="https://mangakatana.com/genre/drama">
+           Drama
+          </a>
+          <a href="https://mangakatana.com/genre/mystery">
+           Mystery
+          </a>
+         </div>
+         <div class="last_chap uk-visible-small">
+         </div>
+         <div class="summary uk-hidden-small">
+          In a near-future where humanity stands on the edge of extinction, we turn our gaze to the stars. But in the depths of space, a new menace looms—the 'Star Beasts.' To combat these creatures, warriors donning mechanical armor emerge as humanity's last hope.
+         </div>
+         <div class="chapters uk-hidden-small">
+          <div class="uk-grid uk-grid-small">
+           <div class="uk-width-8-10">
+            <div class="chapter">
+             <a href="https://mangakatana.com/manga/hero-organization.27607/c45" target="_blank">
+              Chapter 45
+             </a>
+            </div>
+           </div>
+           <div class="uk-width-2-10">
+            <div class="update_time">
+             Dec-07-2025
+            </div>
+           </div>
+           <div class="uk-width-8-10">
+            <div class="chapter">
+             <a href="https://mangakatana.com/manga/hero-organization.27607/c44" target="_blank">
+              Chapter 44
+             </a>
+            </div>
+           </div>
+           <div class="uk-width-2-10">
+            <div class="update_time">
+             Nov-30-2025
+            </div>
+           </div>
+           <div class="uk-width-8-10">
+            <div class="chapter">
+             <a href="https://mangakatana.com/manga/hero-organization.27607/c43" target="_blank">
+              Chapter 43
+             </a>
+            </div>
+           </div>
+           <div class="uk-width-2-10">
+            <div class="update_time">
+             Nov-16-2025
+            </div>
+           </div>
+          </div>
+         </div>
+        </div>
+       </div>
+       <div class="item" data-genre=",14,15,2,5,16,17,21," data-id="25666">
+        <div class="media">
+         <div class="wrap_img">
+          <a href="https://mangakatana.com/manga/ranger-reject.25666">
+           <img alt="[Cover]" src="https://mangakatana.com/imgs/cover/09c/1d/b5fa4.jpg"/>
+          </a>
+         </div>
+         <div class="status ongoing">
+          <i class="uk-icon-tasks">
+          </i>
+          Ongoing
+         </div>
+        </div>
+        <div class="text">
+         <h3 class="title">
+          <a href="https://mangakatana.com/manga/ranger-reject.25666" target="_blank">
+           Ranger Reject
+          </a>
+          <span>
+           - Update chapter 200
+          </span>
+         </h3>
+         <div class="uk-grid uk-grid-small">
+          <div class="uk-width-1-2">
+           <div class="date">
+            <i class="uk-icon-clock-o uk-hidden-small">
+            </i>
+            2 hours ago
+           </div>
+          </div>
+          <div class="uk-width-1-2">
+           <div class="date uk-text-right">
+            <i class="uk-icon-angle-double-right">
+            </i>
+            <a href="https://mangakatana.com/manga/ranger-reject.25666/fc" target="_blank">
+             First Chapter
+            </a>
+           </div>
+          </div>
+         </div>
+         <div class="genres uk-hidden-small">
+          <a href="https://mangakatana.com/genre/action">
+           Action
+          </a>
+          <a href="https://mangakatana.com/genre/adventure">
+           Adventure
+          </a>
+          <a href="https://mangakatana.com/genre/comedy">
+           Comedy
+          </a>
+          <a href="https://mangakatana.com/genre/mystery">
+           Mystery
+          </a>
+          <a href="https://mangakatana.com/genre/sci-fi">
+           Sci-fi
+          </a>
+          <a href="https://mangakatana.com/genre/shounen">
+           Shounen
+          </a>
+          <a href="https://mangakatana.com/genre/supernatural">
+           Supernatural
+          </a>
+         </div>
+         <div class="last_chap uk-visible-small">
+         </div>
+         <div class="summary uk-hidden-small">
+          Thirteen years ago, suddenly the Villainous Army of evil appeared in their gigantic floating castle 10000 meters in the sky to invade Earth! The villainous army have reviving capabilities that make them immortal, making them a serious threat to humanity. To protect us against these invaders, the Divine Dragon Rangers, the Dragon Keepers, wield their miraculous powers and their weapons, Divine Tools, and continuously fight for our safety! The assault of the Villainous Army! The vigilance of the Dragon Keepers! Will they succeed in their conquest…? Find out in the action-packed superhero series of a lifetime!
+          <br/>
+          <br/>
+          From Haruba Negi, the creator of 5Toubun no Hanayome.
+         </div>
+         <div class="chapters uk-hidden-small">
+          <div class="uk-grid uk-grid-small">
+           <div class="uk-width-8-10">
+            <div class="chapter">
+             <a href="https://mangakatana.com/manga/ranger-reject.25666/c200" target="_blank">
+              Chapter 200: Together
+             </a>
+            </div>
+           </div>
+           <div class="uk-width-2-10">
+            <div class="update_time">
+             Dec-07-2025
+            </div>
+           </div>
+           <div class="uk-width-8-10">
+            <div class="chapter">
+             <a href="https://mangakatana.com/manga/ranger-reject.25666/c199" target="_blank">
+              Chapter 199: Authorship
+             </a>
+            </div>
+           </div>
+           <div class="uk-width-2-10">
+            <div class="update_time">
+             Dec-01-2025
+            </div>
+           </div>
+           <div class="uk-width-8-10">
+            <div class="chapter">
+             <a href="https://mangakatana.com/manga/ranger-reject.25666/c198" target="_blank">
+              Chapter 198: Trust
+             </a>
+            </div>
+           </div>
+           <div class="uk-width-2-10">
+            <div class="update_time">
+             Nov-25-2025
+            </div>
+           </div>
+          </div>
+         </div>
+        </div>
+       </div>
+       <div class="item" data-genre=",14,15,24,36,50,49,33," data-id="23270">
+        <div class="media">
+         <div class="wrap_img">
+          <a href="https://mangakatana.com/manga/mookhyang-dark-lady.23270">
+           <img alt="[Cover]" src="https://mangakatana.com/imgs/cover/09c/11/6d43f.jpg"/>
+          </a>
+         </div>
+         <div class="status ongoing">
+          <i class="uk-icon-tasks">
+          </i>
+          Ongoing
+         </div>
+        </div>
+        <div class="text">
+         <h3 class="title">
+          <a href="https://mangakatana.com/manga/mookhyang-dark-lady.23270" target="_blank">
+           MookHyang - Dark Lady
+          </a>
+          <span>
+           - Update chapter 273
+          </span>
+         </h3>
+         <div class="uk-grid uk-grid-small">
+          <div class="uk-width-1-2">
+           <div class="date">
+            <i class="uk-icon-clock-o uk-hidden-small">
+            </i>
+            2 hours ago
+           </div>
+          </div>
+          <div class="uk-width-1-2">
+           <div class="date uk-text-right">
+            <i class="uk-icon-angle-double-right">
+            </i>
+            <a href="https://mangakatana.com/manga/mookhyang-dark-lady.23270/fc" target="_blank">
+             First Chapter
+            </a>
+           </div>
+          </div>
+         </div>
+         <div class="genres uk-hidden-small">
+          <a href="https://mangakatana.com/genre/action">
+           Action
+          </a>
+          <a href="https://mangakatana.com/genre/adventure">
+           Adventure
+          </a>
+          <a href="https://mangakatana.com/genre/fantasy">
+           Fantasy
+          </a>
+          <a href="https://mangakatana.com/genre/webtoon">
+           Webtoon
+          </a>
+          <a href="https://mangakatana.com/genre/overpowered-mc">
+           Overpowered MC
+          </a>
+          <a href="https://mangakatana.com/genre/isekai">
+           Isekai
+          </a>
+          <a href="https://mangakatana.com/genre/gender-bender">
+           Gender Bender
+          </a>
+         </div>
+         <div class="last_chap uk-visible-small">
+         </div>
+         <div class="summary uk-hidden-small">
+          As the master of the School of Unholy Arts and as the undefeated Unmasked Demon, MookHyang unfortunately falls to a strange fantasy world by the magic of his enemies (School of Blood Arts). In the new world of elf, sorcerer, knight, and dragon, MookHyang’s adventure of finding a way back to his old world (Murim) unfolds.
+         </div>
+         <div class="chapters uk-hidden-small">
+          <div class="uk-grid uk-grid-small">
+           <div class="uk-width-8-10">
+            <div class="chapter">
+             <a href="https://mangakatana.com/manga/mookhyang-dark-lady.23270/c273" target="_blank">
+              Chapter 273
+             </a>
+            </div>
+           </div>
+           <div class="uk-width-2-10">
+            <div class="update_time">
+             Dec-06-2025
+            </div>
+           </div>
+           <div class="uk-width-8-10">
+            <div class="chapter">
+             <a href="https://mangakatana.com/manga/mookhyang-dark-lady.23270/c272" target="_blank">
+              Chapter 272
+             </a>
+            </div>
+           </div>
+           <div class="uk-width-2-10">
+            <div class="update_time">
+             Dec-02-2025
+            </div>
+           </div>
+           <div class="uk-width-8-10">
+            <div class="chapter">
+             <a href="https://mangakatana.com/manga/mookhyang-dark-lady.23270/c271" target="_blank">
+              Chapter 271
+             </a>
+            </div>
+           </div>
+           <div class="uk-width-2-10">
+            <div class="update_time">
+             Nov-24-2025
+            </div>
+           </div>
+          </div>
+         </div>
+        </div>
+       </div>
+       <div class="item" data-genre=",52,14,22,3,24,10,36," data-id="27244">
+        <div class="media">
+         <div class="wrap_img">
+          <a href="https://mangakatana.com/manga/baek-clans-terminally-ill-young-master.27244">
+           <img alt="[Cover]" src="https://mangakatana.com/imgs/cover/09c/25/b49c1.jpg"/>
+          </a>
+         </div>
+         <div class="status ongoing">
+          <i class="uk-icon-tasks">
+          </i>
+          Ongoing
+         </div>
+        </div>
+        <div class="text">
+         <h3 class="title">
+          <a href="https://mangakatana.com/manga/baek-clans-terminally-ill-young-master.27244" target="_blank">
+           Baek Clan's Terminally Ill Young Master
+          </a>
+          <span>
+           - Update chapter 85
+          </span>
+         </h3>
+         <div class="uk-grid uk-grid-small">
+          <div class="uk-width-1-2">
+           <div class="date">
+            <i class="uk-icon-clock-o uk-hidden-small">
+            </i>
+            3 hours ago
+           </div>
+          </div>
+          <div class="uk-width-1-2">
+           <div class="date uk-text-right">
+            <i class="uk-icon-angle-double-right">
+            </i>
+            <a href="https://mangakatana.com/manga/baek-clans-terminally-ill-young-master.27244/fc" target="_blank">
+             First Chapter
+            </a>
+           </div>
+          </div>
+         </div>
+         <div class="genres uk-hidden-small">
+          <a href="https://mangakatana.com/genre/reincarnation">
+           Reincarnation
+          </a>
+          <a href="https://mangakatana.com/genre/action">
+           Action
+          </a>
+          <a href="https://mangakatana.com/genre/martial-arts">
+           Martial Arts
+          </a>
+          <a href="https://mangakatana.com/genre/drama">
+           Drama
+          </a>
+          <a href="https://mangakatana.com/genre/fantasy">
+           Fantasy
+          </a>
+          <a href="https://mangakatana.com/genre/manhwa">
+           Manhwa
+          </a>
+          <a href="https://mangakatana.com/genre/webtoon">
+           Webtoon
+          </a>
+         </div>
+         <div class="last_chap uk-visible-small">
+         </div>
+         <div class="summary uk-hidden-small">
+          Baek Yigang is a son of the Baek Clan, one of the seven great clans of Zhongyuan. Afflicted with the Taiyin Qi Blockage, he is cursed with a shortened lifespan and the inability to collect internal energy. He had been peacefully spending the rest of his days indoors when he was ambushed by a group of masked people. During the ambush, he lost his servant who was like a sister to him. Chased by the attackers, Baek Yigang escaped through a secret underground path. When he came across a blocked path, he decided he’d at least die fighting and picked up a rusted sword that was stuck in the ground…
+         </div>
+         <div class="chapters uk-hidden-small">
+          <div class="uk-grid uk-grid-small">
+           <div class="uk-width-8-10">
+            <div class="chapter">
+             <a href="https://mangakatana.com/manga/baek-clans-terminally-ill-young-master.27244/c85" target="_blank">
+              Chapter 85: Omni-Directional Precision Supreme Technique
+             </a>
+            </div>
+           </div>
+           <div class="uk-width-2-10">
+            <div class="update_time">
+             Dec-06-2025
+            </div>
+           </div>
+           <div class="uk-width-8-10">
+            <div class="chapter">
+             <a href="https://mangakatana.com/manga/baek-clans-terminally-ill-young-master.27244/c84" target="_blank">
+              Chapter 84: The Way To Become A Supreme Peak Martial Master.
+             </a>
+            </div>
+           </div>
+           <div class="uk-width-2-10">
+            <div class="update_time">
+             Dec-03-2025
+            </div>
+           </div>
+           <div class="uk-width-8-10">
+            <div class="chapter">
+             <a href="https://mangakatana.com/manga/baek-clans-terminally-ill-young-master.27244/c83" target="_blank">
+              Chapter 83: That sounds convincing...
+             </a>
+            </div>
+           </div>
+           <div class="uk-width-2-10">
+            <div class="update_time">
+             Dec-02-2025
+            </div>
+           </div>
+          </div>
+         </div>
+        </div>
+       </div>
+       <div class="item" data-genre=",2,3,22,8,19,12," data-id="9911">
+        <div class="media">
+         <div class="wrap_img">
+          <a href="https://mangakatana.com/manga/chou-kakutou-densetsu-ashita-kagayake.9911">
+           <img alt="[Cover]" src="https://mangakatana.com/imgs/cover/04e/32/4a967.jpg"/>
+          </a>
+         </div>
+         <div class="status ongoing">
+          <i class="uk-icon-tasks">
+          </i>
+          Ongoing
+         </div>
+        </div>
+        <div class="text">
+         <h3 class="title">
+          <a href="https://mangakatana.com/manga/chou-kakutou-densetsu-ashita-kagayake.9911" target="_blank">
+           Chou Kakutou Densetsu Ashita Kagayake!!
+          </a>
+          <span>
+           - Update chapter 11
+          </span>
+         </h3>
+         <div class="uk-grid uk-grid-small">
+          <div class="uk-width-1-2">
+           <div class="date">
+            <i class="uk-icon-clock-o uk-hidden-small">
+            </i>
+            3 hours ago
+           </div>
+          </div>
+          <div class="uk-width-1-2">
+           <div class="date uk-text-right">
+            <i class="uk-icon-angle-double-right">
+            </i>
+            <a href="https://mangakatana.com/manga/chou-kakutou-densetsu-ashita-kagayake.9911/fc" target="_blank">
+             First Chapter
+            </a>
+           </div>
+          </div>
+         </div>
+         <div class="genres uk-hidden-small">
+          <a href="https://mangakatana.com/genre/comedy">
+           Comedy
+          </a>
+          <a href="https://mangakatana.com/genre/drama">
+           Drama
+          </a>
+          <a href="https://mangakatana.com/genre/martial-arts">
+           Martial Arts
+          </a>
+          <a href="https://mangakatana.com/genre/school-life">
+           School Life
+          </a>
+          <a href="https://mangakatana.com/genre/seinen">
+           Seinen
+          </a>
+          <a href="https://mangakatana.com/genre/sports">
+           Sports
+          </a>
+         </div>
+         <div class="last_chap uk-visible-small">
+         </div>
+         <div class="summary uk-hidden-small">
+          The story follows Tachibana Misaki, a 15-year-old girl who's bullied at school. In her quest to become stronger, she decides to enter the delinquent path, aiming for a shinny tomorrow.
+         </div>
+         <div class="chapters uk-hidden-small">
+          <div class="uk-grid uk-grid-small">
+           <div class="uk-width-8-10">
+            <div class="chapter">
+             <a href="https://mangakatana.com/manga/chou-kakutou-densetsu-ashita-kagayake.9911/c11" target="_blank">
+              Chapter 11: A New Battle
+             </a>
+            </div>
+           </div>
+           <div class="uk-width-2-10">
+            <div class="update_time">
+             Dec-06-2025
+            </div>
+           </div>
+           <div class="uk-width-8-10">
+            <div class="chapter">
+             <a href="https://mangakatana.com/manga/chou-kakutou-densetsu-ashita-kagayake.9911/c10" target="_blank">
+              Chapter 10: All or Nothing
+             </a>
+            </div>
+           </div>
+           <div class="uk-width-2-10">
+            <div class="update_time">
+             Oct-25-2025
+            </div>
+           </div>
+           <div class="uk-width-8-10">
+            <div class="chapter">
+             <a href="https://mangakatana.com/manga/chou-kakutou-densetsu-ashita-kagayake.9911/c9" target="_blank">
+              Chapter 9: I Want to Settle This
+             </a>
+            </div>
+           </div>
+           <div class="uk-width-2-10">
+            <div class="update_time">
+             Aug-09-2025
+            </div>
+           </div>
+          </div>
+         </div>
+        </div>
+       </div>
+       <div class="item" data-genre=",14,3,8,19,10,36," data-id="25834">
+        <div class="media">
+         <div class="wrap_img">
+          <a href="https://mangakatana.com/manga/get-schooled.25834">
+           <img alt="[Cover]" src="https://mangakatana.com/imgs/cover/09c/1e/d23ba.jpg"/>
+          </a>
+         </div>
+         <div class="status ongoing">
+          <i class="uk-icon-tasks">
+          </i>
+          Ongoing
+         </div>
+        </div>
+        <div class="text">
+         <h3 class="title">
+          <a href="https://mangakatana.com/manga/get-schooled.25834" target="_blank">
+           Get Schooled
+          </a>
+          <span>
+           - Update chapter 220
+          </span>
+         </h3>
+         <div class="uk-grid uk-grid-small">
+          <div class="uk-width-1-2">
+           <div class="date">
+            <i class="uk-icon-clock-o uk-hidden-small">
+            </i>
+            3 hours ago
+           </div>
+          </div>
+          <div class="uk-width-1-2">
+           <div class="date uk-text-right">
+            <i class="uk-icon-angle-double-right">
+            </i>
+            <a href="https://mangakatana.com/manga/get-schooled.25834/fc" target="_blank">
+             First Chapter
+            </a>
+           </div>
+          </div>
+         </div>
+         <div class="genres uk-hidden-small">
+          <a href="https://mangakatana.com/genre/action">
+           Action
+          </a>
+          <a href="https://mangakatana.com/genre/drama">
+           Drama
+          </a>
+          <a href="https://mangakatana.com/genre/school-life">
+           School Life
+          </a>
+          <a href="https://mangakatana.com/genre/seinen">
+           Seinen
+          </a>
+          <a href="https://mangakatana.com/genre/manhwa">
+           Manhwa
+          </a>
+          <a href="https://mangakatana.com/genre/webtoon">
+           Webtoon
+          </a>
+         </div>
+         <div class="last_chap uk-visible-small">
+         </div>
+         <div class="summary uk-hidden-small">
+          Hwajin Na’s teaching techniques are pretty violent for someone who works in the Ministry of Education. That being said, when punishments don't seem to work on even the worst of school bullies, there is no better man for the job. Sometimes you can’t get a good education until those bullies are taught a lesson.
+         </div>
+         <div class="chapters uk-hidden-small">
+          <div class="uk-grid uk-grid-small">
+           <div class="uk-width-8-10">
+            <div class="chapter">
+             <a href="https://mangakatana.com/manga/get-schooled.25834/c220" target="_blank">
+              Chapter 220
+             </a>
+            </div>
+           </div>
+           <div class="uk-width-2-10">
+            <div class="update_time">
+             Dec-06-2025
+            </div>
+           </div>
+           <div class="uk-width-8-10">
+            <div class="chapter">
+             <a href="https://mangakatana.com/manga/get-schooled.25834/c219" target="_blank">
+              Chapter 219
+             </a>
+            </div>
+           </div>
+           <div class="uk-width-2-10">
+            <div class="update_time">
+             Nov-15-2025
+            </div>
+           </div>
+           <div class="uk-width-8-10">
+            <div class="chapter">
+             <a href="https://mangakatana.com/manga/get-schooled.25834/c218" target="_blank">
+              Chapter 218
+             </a>
+            </div>
+           </div>
+           <div class="uk-width-2-10">
+            <div class="update_time">
+             Nov-06-2025
+            </div>
+           </div>
+          </div>
+         </div>
+        </div>
+       </div>
+       <div class="item" data-genre=",17,15,3,20,52,14,22,49,24,10,36," data-id="27258">
+        <div class="media">
+         <div class="wrap_img">
+          <a href="https://mangakatana.com/manga/terminally-ill-genius-dark-knight.27258">
+           <img alt="[Cover]" src="https://mangakatana.com/imgs/cover/09c/25/ca5e6.jpg"/>
+          </a>
+         </div>
+         <div class="status ongoing">
+          <i class="uk-icon-tasks">
+          </i>
+          Ongoing
+         </div>
+        </div>
+        <div class="text">
+         <h3 class="title">
+          <a href="https://mangakatana.com/manga/terminally-ill-genius-dark-knight.27258" target="_blank">
+           Terminally-Ill Genius Dark Knight
+          </a>
+          <span>
+           - Update chapter 126, 127
+          </span>
+         </h3>
+         <div class="uk-grid uk-grid-small">
+          <div class="uk-width-1-2">
+           <div class="date">
+            <i class="uk-icon-clock-o uk-hidden-small">
+            </i>
+            3 hours ago
+           </div>
+          </div>
+          <div class="uk-width-1-2">
+           <div class="date uk-text-right">
+            <i class="uk-icon-angle-double-right">
+            </i>
+            <a href="https://mangakatana.com/manga/terminally-ill-genius-dark-knight.27258/fc" target="_blank">
+             First Chapter
+            </a>
+           </div>
+          </div>
+         </div>
+         <div class="genres uk-hidden-small">
+          <a href="https://mangakatana.com/genre/shounen">
+           Shounen
+          </a>
+          <a href="https://mangakatana.com/genre/adventure">
+           Adventure
+          </a>
+          <a href="https://mangakatana.com/genre/drama">
+           Drama
+          </a>
+          <a href="https://mangakatana.com/genre/harem">
+           Harem
+          </a>
+          <a href="https://mangakatana.com/genre/reincarnation">
+           Reincarnation
+          </a>
+          <a href="https://mangakatana.com/genre/action">
+           Action
+          </a>
+          <a href="https://mangakatana.com/genre/martial-arts">
+           Martial Arts
+          </a>
+          <a href="https://mangakatana.com/genre/isekai">
+           Isekai
+          </a>
+          <a href="https://mangakatana.com/genre/fantasy">
+           Fantasy
+          </a>
+          <a href="https://mangakatana.com/genre/manhwa">
+           Manhwa
+          </a>
+          <a href="https://mangakatana.com/genre/webtoon">
+           Webtoon
+          </a>
+         </div>
+         <div class="last_chap uk-visible-small">
+         </div>
+         <div class="summary uk-hidden-small">
+          When there is no way out, the way is in.
+          <br/>
+          <br/>
+          Doomed to die next month, our terminally ill protagonist Chan is too frail and defeated to try anything at all.
+          <br/>
+          <br/>
+          No wonder he chooses to plunge himself into an RPG world he is only too familiar with.
+          <br/>
+          <br/>
+          Why should this run be any different?
+          <br/>
+          <br/>
+          Well, other than the fact that he will wake up inside the game and get struck with an existential epiphany that will make him fight tooth and nail to give Nox, his equally ill-fated RPG persona, a better chance?
+          <br/>
+          <br/>
+          Maybe, it’s not over until it’s over.
+         </div>
+         <div class="chapters uk-hidden-small">
+          <div class="uk-grid uk-grid-small">
+           <div class="uk-width-8-10">
+            <div class="chapter">
+             <a href="https://mangakatana.com/manga/terminally-ill-genius-dark-knight.27258/c127" target="_blank">
+              Chapter 127
+             </a>
+            </div>
+           </div>
+           <div class="uk-width-2-10">
+            <div class="update_time">
+             Dec-06-2025
+            </div>
+           </div>
+           <div class="uk-width-8-10">
+            <div class="chapter">
+             <a href="https://mangakatana.com/manga/terminally-ill-genius-dark-knight.27258/c126" target="_blank">
+              Chapter 126
+             </a>
+            </div>
+           </div>
+           <div class="uk-width-2-10">
+            <div class="update_time">
+             Dec-06-2025
+            </div>
+           </div>
+           <div class="uk-width-8-10">
+            <div class="chapter">
+             <a href="https://mangakatana.com/manga/terminally-ill-genius-dark-knight.27258/c125" target="_blank">
+              Chapter 125
+             </a>
+            </div>
+           </div>
+           <div class="uk-width-2-10">
+            <div class="update_time">
+             Nov-24-2025
+            </div>
+           </div>
+          </div>
+         </div>
+        </div>
+       </div>
+       <div class="item" data-genre=",14,6,3,21," data-id="26650">
+        <div class="media">
+         <div class="wrap_img">
+          <a href="https://mangakatana.com/manga/after-god.26650">
+           <img alt="[Cover]" src="https://mangakatana.com/imgs/cover/09c/22/a71bc.jpg"/>
+          </a>
+         </div>
+         <div class="status ongoing">
+          <i class="uk-icon-tasks">
+          </i>
+          Ongoing
+         </div>
+        </div>
+        <div class="text">
+         <h3 class="title">
+          <a href="https://mangakatana.com/manga/after-god.26650" target="_blank">
+           After God
+          </a>
+          <span>
+           - Update chapter 71
+          </span>
+         </h3>
+         <div class="uk-grid uk-grid-small">
+          <div class="uk-width-1-2">
+           <div class="date">
+            <i class="uk-icon-clock-o uk-hidden-small">
+            </i>
+            4 hours ago
+           </div>
+          </div>
+          <div class="uk-width-1-2">
+           <div class="date uk-text-right">
+            <i class="uk-icon-angle-double-right">
+            </i>
+            <a href="https://mangakatana.com/manga/after-god.26650/fc" target="_blank">
+             First Chapter
+            </a>
+           </div>
+          </div>
+         </div>
+         <div class="genres uk-hidden-small">
+          <a href="https://mangakatana.com/genre/action">
+           Action
+          </a>
+          <a href="https://mangakatana.com/genre/psychological">
+           Psychological
+          </a>
+          <a href="https://mangakatana.com/genre/drama">
+           Drama
+          </a>
+          <a href="https://mangakatana.com/genre/supernatural">
+           Supernatural
+          </a>
+         </div>
+         <div class="last_chap uk-visible-small">
+         </div>
+         <div class="summary uk-hidden-small">
+          Japan has been "invaded" by the gods. Tokyo, dwelling place of the gods, has been declared a "danger zone" and tightly sealed off by an impenetrable fence. A girl by the name of Waka keeps gazing beyond the fence's boundaries. Waka came to Tokyo from Saga in order to see her friend, but there she meets Tokinaga, a researcher who had been vigilantly guarding the city. It's this meeting that will change the fate of the world...
+         </div>
+         <div class="chapters uk-hidden-small">
+          <div class="uk-grid uk-grid-small">
+           <div class="uk-width-8-10">
+            <div class="chapter">
+             <a href="https://mangakatana.com/manga/after-god.26650/c71" target="_blank">
+              Chapter 71
+             </a>
+            </div>
+           </div>
+           <div class="uk-width-2-10">
+            <div class="update_time">
+             Dec-06-2025
+            </div>
+           </div>
+           <div class="uk-width-8-10">
+            <div class="chapter">
+             <a href="https://mangakatana.com/manga/after-god.26650/c70" target="_blank">
+              Chapter 70
+             </a>
+            </div>
+           </div>
+           <div class="uk-width-2-10">
+            <div class="update_time">
+             Dec-05-2025
+            </div>
+           </div>
+           <div class="uk-width-8-10">
+            <div class="chapter">
+             <a href="https://mangakatana.com/manga/after-god.26650/c69" target="_blank">
+              Chapter 69
+             </a>
+            </div>
+           </div>
+           <div class="uk-width-2-10">
+            <div class="update_time">
+             Aug-07-2025
+            </div>
+           </div>
+          </div>
+         </div>
+        </div>
+       </div>
+       <div class="item" data-genre=",14,3,24,17,36,10," data-id="26837">
+        <div class="media">
+         <div class="wrap_img">
+          <a href="https://mangakatana.com/manga/the-dark-mages-return-to-enlistment.26837">
+           <img alt="[Cover]" src="https://mangakatana.com/imgs/cover/09c/23/35bc8.jpg"/>
+          </a>
+         </div>
+         <div class="status ongoing">
+          <i class="uk-icon-tasks">
+          </i>
+          Ongoing
+         </div>
+        </div>
+        <div class="text">
+         <h3 class="title">
+          <a href="https://mangakatana.com/manga/the-dark-mages-return-to-enlistment.26837" target="_blank">
+           The Dark Mage's Return to Enlistment
+          </a>
+          <span>
+           - Update chapter 64
+          </span>
+         </h3>
+         <div class="uk-grid uk-grid-small">
+          <div class="uk-width-1-2">
+           <div class="date">
+            <i class="uk-icon-clock-o uk-hidden-small">
+            </i>
+            4 hours ago
+           </div>
+          </div>
+          <div class="uk-width-1-2">
+           <div class="date uk-text-right">
+            <i class="uk-icon-angle-double-right">
+            </i>
+            <a href="https://mangakatana.com/manga/the-dark-mages-return-to-enlistment.26837/fc" target="_blank">
+             First Chapter
+            </a>
+           </div>
+          </div>
+         </div>
+         <div class="genres uk-hidden-small">
+          <a href="https://mangakatana.com/genre/action">
+           Action
+          </a>
+          <a href="https://mangakatana.com/genre/drama">
+           Drama
+          </a>
+          <a href="https://mangakatana.com/genre/fantasy">
+           Fantasy
+          </a>
+          <a href="https://mangakatana.com/genre/shounen">
+           Shounen
+          </a>
+          <a href="https://mangakatana.com/genre/webtoon">
+           Webtoon
+          </a>
+          <a href="https://mangakatana.com/genre/manhwa">
+           Manhwa
+          </a>
+         </div>
+         <div class="last_chap uk-visible-small">
+         </div>
+         <div class="summary uk-hidden-small">
+          Minjun Kim, an ordinary high school senior in Korea, was suddenly summoned to another world, where he became a dark mage.
+          <br/>
+          <br/>
+          Determined to return home, he overcame all sorts of hardships and saved the other world with black magic before leaving all his wealth and glory as a hero behind to return to Earth.
+          <br/>
+          <br/>
+          However, before he could fully enjoy his life, a problem arose. A dungeon break had occured and monsters came pouring out, threatening his comfortable days.
+          <br/>
+          <br/>
+          Therefore, Minjun, who had just returned to earth, had no choice but to… enlist on the very next day!!!
+         </div>
+         <div class="chapters uk-hidden-small">
+          <div class="uk-grid uk-grid-small">
+           <div class="uk-width-8-10">
+            <div class="chapter">
+             <a href="https://mangakatana.com/manga/the-dark-mages-return-to-enlistment.26837/c64" target="_blank">
+              Chapter 64
+             </a>
+            </div>
+           </div>
+           <div class="uk-width-2-10">
+            <div class="update_time">
+             Dec-06-2025
+            </div>
+           </div>
+           <div class="uk-width-8-10">
+            <div class="chapter">
+             <a href="https://mangakatana.com/manga/the-dark-mages-return-to-enlistment.26837/c63" target="_blank">
+              Chapter 63
+             </a>
+            </div>
+           </div>
+           <div class="uk-width-2-10">
+            <div class="update_time">
+             Nov-26-2025
+            </div>
+           </div>
+           <div class="uk-width-8-10">
+            <div class="chapter">
+             <a href="https://mangakatana.com/manga/the-dark-mages-return-to-enlistment.26837/c62" target="_blank">
+              Chapter 62
+             </a>
+            </div>
+           </div>
+           <div class="uk-width-2-10">
+            <div class="update_time">
+             Nov-20-2025
+            </div>
+           </div>
+          </div>
+         </div>
+        </div>
+       </div>
+       <div class="item" data-genre=",17,14,3,24,26,22,52,10,36," data-id="27523">
+        <div class="media">
+         <div class="wrap_img">
+          <a href="https://mangakatana.com/manga/the-heavenly-demon-wants-a-quiet-life.27523">
+           <img alt="[Cover]" src="https://mangakatana.com/imgs/cover/09c/26/96428.jpg"/>
+          </a>
+         </div>
+         <div class="status ongoing">
+          <i class="uk-icon-tasks">
+          </i>
+          Ongoing
+         </div>
+        </div>
+        <div class="text">
+         <h3 class="title">
+          <a href="https://mangakatana.com/manga/the-heavenly-demon-wants-a-quiet-life.27523" target="_blank">
+           The Heavenly Demon Wants a Quiet Life
+          </a>
+          <span>
+           - Update chapter 60
+          </span>
+         </h3>
+         <div class="uk-grid uk-grid-small">
+          <div class="uk-width-1-2">
+           <div class="date">
+            <i class="uk-icon-clock-o uk-hidden-small">
+            </i>
+            4 hours ago
+           </div>
+          </div>
+          <div class="uk-width-1-2">
+           <div class="date uk-text-right">
+            <i class="uk-icon-angle-double-right">
+            </i>
+            <a href="https://mangakatana.com/manga/the-heavenly-demon-wants-a-quiet-life.27523/fc" target="_blank">
+             First Chapter
+            </a>
+           </div>
+          </div>
+         </div>
+         <div class="genres uk-hidden-small">
+          <a href="https://mangakatana.com/genre/shounen">
+           Shounen
+          </a>
+          <a href="https://mangakatana.com/genre/action">
+           Action
+          </a>
+          <a href="https://mangakatana.com/genre/drama">
+           Drama
+          </a>
+          <a href="https://mangakatana.com/genre/fantasy">
+           Fantasy
+          </a>
+          <a href="https://mangakatana.com/genre/historical">
+           Historical
+          </a>
+          <a href="https://mangakatana.com/genre/martial-arts">
+           Martial Arts
+          </a>
+          <a href="https://mangakatana.com/genre/reincarnation">
+           Reincarnation
+          </a>
+          <a href="https://mangakatana.com/genre/manhwa">
+           Manhwa
+          </a>
+          <a href="https://mangakatana.com/genre/webtoon">
+           Webtoon
+          </a>
+         </div>
+         <div class="last_chap uk-visible-small">
+         </div>
+         <div class="summary uk-hidden-small">
+          "I want to live the opposite way in my next life..." Cheonma, who had only fear and awe, gets a clue to properly learn  spiritual magic on his death. Spiritual magic is not just about coveting the souls of others. In this way, Cheonma wakes up in the body of Confucius Byeoktaesan, who may die at any moment...
+         </div>
+         <div class="chapters uk-hidden-small">
+          <div class="uk-grid uk-grid-small">
+           <div class="uk-width-8-10">
+            <div class="chapter">
+             <a href="https://mangakatana.com/manga/the-heavenly-demon-wants-a-quiet-life.27523/c60" target="_blank">
+              Chapter 60
+             </a>
+            </div>
+           </div>
+           <div class="uk-width-2-10">
+            <div class="update_time">
+             Dec-06-2025
+            </div>
+           </div>
+           <div class="uk-width-8-10">
+            <div class="chapter">
+             <a href="https://mangakatana.com/manga/the-heavenly-demon-wants-a-quiet-life.27523/c59" target="_blank">
+              Chapter 59
+             </a>
+            </div>
+           </div>
+           <div class="uk-width-2-10">
+            <div class="update_time">
+             Nov-29-2025
+            </div>
+           </div>
+           <div class="uk-width-8-10">
+            <div class="chapter">
+             <a href="https://mangakatana.com/manga/the-heavenly-demon-wants-a-quiet-life.27523/c58" target="_blank">
+              Chapter 58
+             </a>
+            </div>
+           </div>
+           <div class="uk-width-2-10">
+            <div class="update_time">
+             Nov-24-2025
+            </div>
+           </div>
+          </div>
+         </div>
+        </div>
+       </div>
+       <div class="item" data-genre=",17,52,14,15,49,3,24," data-id="27468">
+        <div class="media">
+         <div class="wrap_img">
+          <a href="https://mangakatana.com/manga/the-reincarnated-elf-left-on-a-journey-to-master-his-magic-and-with-his-extra-lifespan-became-a-living-legend.27468">
+           <img alt="[Cover]" src="https://mangakatana.com/imgs/cover/09c/26/9340e.jpg"/>
+          </a>
+         </div>
+         <div class="status ongoing">
+          <i class="uk-icon-tasks">
+          </i>
+          Ongoing
+         </div>
+        </div>
+        <div class="text">
+         <h3 class="title">
+          <a href="https://mangakatana.com/manga/the-reincarnated-elf-left-on-a-journey-to-master-his-magic-and-with-his-extra-lifespan-became-a-living-legend.27468" target="_blank">
+           The Reincarnated Elf Left on a Journey to Master His Magic and With His Extra Lifespan Became a Living Legend
+          </a>
+          <span>
+           - Update chapter 23
+          </span>
+         </h3>
+         <div class="uk-grid uk-grid-small">
+          <div class="uk-width-1-2">
+           <div class="date">
+            <i class="uk-icon-clock-o uk-hidden-small">
+            </i>
+            4 hours ago
+           </div>
+          </div>
+          <div class="uk-width-1-2">
+           <div class="date uk-text-right">
+            <i class="uk-icon-angle-double-right">
+            </i>
+            <a href="https://mangakatana.com/manga/the-reincarnated-elf-left-on-a-journey-to-master-his-magic-and-with-his-extra-lifespan-became-a-living-legend.27468/fc" target="_blank">
+             First Chapter
+            </a>
+           </div>
+          </div>
+         </div>
+         <div class="genres uk-hidden-small">
+          <a href="https://mangakatana.com/genre/shounen">
+           Shounen
+          </a>
+          <a href="https://mangakatana.com/genre/reincarnation">
+           Reincarnation
+          </a>
+          <a href="https://mangakatana.com/genre/action">
+           Action
+          </a>
+          <a href="https://mangakatana.com/genre/adventure">
+           Adventure
+          </a>
+          <a href="https://mangakatana.com/genre/isekai">
+           Isekai
+          </a>
+          <a href="https://mangakatana.com/genre/drama">
+           Drama
+          </a>
+          <a href="https://mangakatana.com/genre/fantasy">
+           Fantasy
+          </a>
+         </div>
+         <div class="last_chap uk-visible-small">
+         </div>
+         <div class="summary uk-hidden-small">
+          This the long tale of a reincarnated elf who become a living legend!
+          <br/>
+          <br/>
+          After his ordinary life came to an end in an accident, Minoru was reincarnated as an elf who have a average lifespan of 1000 years. Due to the regret of not being able to do anything in his previous life, he decided to leave his village and travel in this life to leave behind evidence that he once lived in this world. However, the head of the elf clan imposes a certain trial—?!
+         </div>
+         <div class="chapters uk-hidden-small">
+          <div class="uk-grid uk-grid-small">
+           <div class="uk-width-8-10">
+            <div class="chapter">
+             <a href="https://mangakatana.com/manga/the-reincarnated-elf-left-on-a-journey-to-master-his-magic-and-with-his-extra-lifespan-became-a-living-legend.27468/c23" target="_blank">
+              Chapter 23
+             </a>
+            </div>
+           </div>
+           <div class="uk-width-2-10">
+            <div class="update_time">
+             Dec-06-2025
+            </div>
+           </div>
+           <div class="uk-width-8-10">
+            <div class="chapter">
+             <a href="https://mangakatana.com/manga/the-reincarnated-elf-left-on-a-journey-to-master-his-magic-and-with-his-extra-lifespan-became-a-living-legend.27468/c22" target="_blank">
+              Chapter 22
+             </a>
+            </div>
+           </div>
+           <div class="uk-width-2-10">
+            <div class="update_time">
+             Oct-13-2025
+            </div>
+           </div>
+           <div class="uk-width-8-10">
+            <div class="chapter">
+             <a href="https://mangakatana.com/manga/the-reincarnated-elf-left-on-a-journey-to-master-his-magic-and-with-his-extra-lifespan-became-a-living-legend.27468/c21" target="_blank">
+              Chapter 21
+             </a>
+            </div>
+           </div>
+           <div class="uk-width-2-10">
+            <div class="update_time">
+             Sep-17-2025
+            </div>
+           </div>
+          </div>
+         </div>
+        </div>
+       </div>
+       <div class="item" data-genre=",17,2,23,14,15,24,10,36," data-id="27613">
+        <div class="media">
+         <div class="wrap_img">
+          <a href="https://mangakatana.com/manga/level-999-goblin.27613">
+           <img alt="[Cover]" src="https://mangakatana.com/imgs/cover/09c/27/72f59.jpg"/>
+          </a>
+         </div>
+         <div class="status ongoing">
+          <i class="uk-icon-tasks">
+          </i>
+          Ongoing
+         </div>
+        </div>
+        <div class="text">
+         <h3 class="title">
+          <a href="https://mangakatana.com/manga/level-999-goblin.27613" target="_blank">
+           Level 999 Goblin
+          </a>
+          <span>
+           - Update chapter 31
+          </span>
+         </h3>
+         <div class="uk-grid uk-grid-small">
+          <div class="uk-width-1-2">
+           <div class="date">
+            <i class="uk-icon-clock-o uk-hidden-small">
+            </i>
+            4 hours ago
+           </div>
+          </div>
+          <div class="uk-width-1-2">
+           <div class="date uk-text-right">
+            <i class="uk-icon-angle-double-right">
+            </i>
+            <a href="https://mangakatana.com/manga/level-999-goblin.27613/fc" target="_blank">
+             First Chapter
+            </a>
+           </div>
+          </div>
+         </div>
+         <div class="genres uk-hidden-small">
+          <a href="https://mangakatana.com/genre/shounen">
+           Shounen
+          </a>
+          <a href="https://mangakatana.com/genre/comedy">
+           Comedy
+          </a>
+          <a href="https://mangakatana.com/genre/ecchi">
+           Ecchi
+          </a>
+          <a href="https://mangakatana.com/genre/action">
+           Action
+          </a>
+          <a href="https://mangakatana.com/genre/adventure">
+           Adventure
+          </a>
+          <a href="https://mangakatana.com/genre/fantasy">
+           Fantasy
+          </a>
+          <a href="https://mangakatana.com/genre/manhwa">
+           Manhwa
+          </a>
+          <a href="https://mangakatana.com/genre/webtoon">
+           Webtoon
+          </a>
+         </div>
+         <div class="last_chap uk-visible-small">
+         </div>
+         <div class="summary uk-hidden-small">
+          The protagonist Kim Chulsoo works his ass off for a living as a manual laborer in real life and by grinding for and selling items in a game.
+          <br/>
+          <br/>
+          He finally gets the chance to switch to a hidden class, hoping for that one big shot in life…!
+          <br/>
+          <br/>
+          But the hidden class turns out to be... a Goblin Summoner?!
+         </div>
+         <div class="chapters uk-hidden-small">
+          <div class="uk-grid uk-grid-small">
+           <div class="uk-width-8-10">
+            <div class="chapter">
+             <a href="https://mangakatana.com/manga/level-999-goblin.27613/c31" target="_blank">
+              Chapter 31
+             </a>
+            </div>
+           </div>
+           <div class="uk-width-2-10">
+            <div class="update_time">
+             Dec-06-2025
+            </div>
+           </div>
+           <div class="uk-width-8-10">
+            <div class="chapter">
+             <a href="https://mangakatana.com/manga/level-999-goblin.27613/c30" target="_blank">
+              Chapter 30
+             </a>
+            </div>
+           </div>
+           <div class="uk-width-2-10">
+            <div class="update_time">
+             Dec-05-2025
+            </div>
+           </div>
+           <div class="uk-width-8-10">
+            <div class="chapter">
+             <a href="https://mangakatana.com/manga/level-999-goblin.27613/c29" target="_blank">
+              Chapter 29
+             </a>
+            </div>
+           </div>
+           <div class="uk-width-2-10">
+            <div class="update_time">
+             Dec-05-2025
+            </div>
+           </div>
+          </div>
+         </div>
+        </div>
+       </div>
+       <div class="item" data-genre=",17,14,49,15,3,24,21,10,36,20," data-id="25992">
+        <div class="media">
+         <div class="wrap_img">
+          <a href="https://mangakatana.com/manga/regressor-instruction-manual.25992">
+           <img alt="[Cover]" src="https://mangakatana.com/imgs/cover/09c/1e/305d8.jpg"/>
+          </a>
+         </div>
+         <div class="status ongoing">
+          <i class="uk-icon-tasks">
+          </i>
+          Ongoing
+         </div>
+        </div>
+        <div class="text">
+         <h3 class="title">
+          <a href="https://mangakatana.com/manga/regressor-instruction-manual.25992" target="_blank">
+           Regressor Instruction Manual
+          </a>
+          <span>
+           - Update chapter 165
+          </span>
+         </h3>
+         <div class="uk-grid uk-grid-small">
+          <div class="uk-width-1-2">
+           <div class="date">
+            <i class="uk-icon-clock-o uk-hidden-small">
+            </i>
+            5 hours ago
+           </div>
+          </div>
+          <div class="uk-width-1-2">
+           <div class="date uk-text-right">
+            <i class="uk-icon-angle-double-right">
+            </i>
+            <a href="https://mangakatana.com/manga/regressor-instruction-manual.25992/fc" target="_blank">
+             First Chapter
+            </a>
+           </div>
+          </div>
+         </div>
+         <div class="genres uk-hidden-small">
+          <a href="https://mangakatana.com/genre/shounen">
+           Shounen
+          </a>
+          <a href="https://mangakatana.com/genre/action">
+           Action
+          </a>
+          <a href="https://mangakatana.com/genre/isekai">
+           Isekai
+          </a>
+          <a href="https://mangakatana.com/genre/adventure">
+           Adventure
+          </a>
+          <a href="https://mangakatana.com/genre/drama">
+           Drama
+          </a>
+          <a href="https://mangakatana.com/genre/fantasy">
+           Fantasy
+          </a>
+          <a href="https://mangakatana.com/genre/supernatural">
+           Supernatural
+          </a>
+          <a href="https://mangakatana.com/genre/manhwa">
+           Manhwa
+          </a>
+          <a href="https://mangakatana.com/genre/webtoon">
+           Webtoon
+          </a>
+          <a href="https://mangakatana.com/genre/harem">
+           Harem
+          </a>
+         </div>
+         <div class="last_chap uk-visible-small">
+         </div>
+         <div class="summary uk-hidden-small">
+          He was suddenly summoned to another world one day.
+          <br/>
+          Monsters poured out, a huge disaster incoming.
+          <br/>
+          His ability the lowest.
+          <br/>
+          <br/>
+          [Player's level is low]
+          <br/>
+          [Your level is hopeless]
+          <br/>
+          <br/>
+          It doesn't matter whether you're the chosen warrior, a talented wizard,
+          <br/>
+          or someone who travelled back in time.
+          <br/>
+          One must do everything they can,
+          <br/>
+          <br/>
+          in order to survive.
+          <br/>
+          <br/>
+          The Regressor's Instruction Manual.
+          <br/>
+          <br/>
+          "It doesn't matter if I'm trash." Is there anyone who wouldn't do anything they could to survive?
+         </div>
+         <div class="chapters uk-hidden-small">
+          <div class="uk-grid uk-grid-small">
+           <div class="uk-width-8-10">
+            <div class="chapter">
+             <a href="https://mangakatana.com/manga/regressor-instruction-manual.25992/c165" target="_blank">
+              Chapter 165
+             </a>
+            </div>
+           </div>
+           <div class="uk-width-2-10">
+            <div class="update_time">
+             Dec-06-2025
+            </div>
+           </div>
+           <div class="uk-width-8-10">
+            <div class="chapter">
+             <a href="https://mangakatana.com/manga/regressor-instruction-manual.25992/c164" target="_blank">
+              Chapter 164
+             </a>
+            </div>
+           </div>
+           <div class="uk-width-2-10">
+            <div class="update_time">
+             Dec-01-2025
+            </div>
+           </div>
+           <div class="uk-width-8-10">
+            <div class="chapter">
+             <a href="https://mangakatana.com/manga/regressor-instruction-manual.25992/c163" target="_blank">
+              Chapter 163
+             </a>
+            </div>
+           </div>
+           <div class="uk-width-2-10">
+            <div class="update_time">
+             Nov-23-2025
+            </div>
+           </div>
+          </div>
+         </div>
+        </div>
+       </div>
+       <ul class="uk-pagination">
+        <li class="uk-active">
+         <span aria-current="page" class="page-numbers current">
+          1
+         </span>
+        </li>
+        <li>
+         <a class="page-numbers" href="https://mangakatana.com/page/2">
+          2
+         </a>
+        </li>
+        <li>
+         <a class="page-numbers" href="https://mangakatana.com/page/3">
+          3
+         </a>
+        </li>
+        <li>
+         <span class="page-numbers dots">
+          …
+         </span>
+        </li>
+        <li>
+         <a class="page-numbers" href="https://mangakatana.com/page/1385">
+          1,385
+         </a>
+        </li>
+        <li>
+         <a class="next page-numbers" href="https://mangakatana.com/page/2">
+          &gt;
+         </a>
+        </li>
+       </ul>
+      </div>
+      <div class="hxtc uk-overflow-container uk-text-center">
+      </div>
+     </div>
+     <div class="uk-width-large-3-10" id="col_right">
+      <div class="widget uk-hidden-small" id="genre_side">
+       <div class="widget-title">
+        <span>
+         Genres
+        </span>
+       </div>
+       <div class="widget-body">
+        <div class="uk-grid uk-grid-small">
+         <div class="uk-width-large-1-2 uk-width-medium-1-4 uk-width-1-2 wrap_item">
+          <a href="https://mangakatana.com/genre/4-koma">
+           4 koma
+          </a>
+          <span>
+           (244)
+          </span>
+         </div>
+         <div class="uk-width-large-1-2 uk-width-medium-1-4 uk-width-1-2 wrap_item">
+          <a href="https://mangakatana.com/genre/action">
+           Action
+          </a>
+          <span>
+           (6344)
+          </span>
+         </div>
+         <div class="uk-width-large-1-2 uk-width-medium-1-4 uk-width-1-2 wrap_item">
+          <a href="https://mangakatana.com/genre/adult">
+           Adult
+          </a>
+          <span>
+           (1236)
+          </span>
+         </div>
+         <div class="uk-width-large-1-2 uk-width-medium-1-4 uk-width-1-2 wrap_item">
+          <a href="https://mangakatana.com/genre/adventure">
+           Adventure
+          </a>
+          <span>
+           (3629)
+          </span>
+         </div>
+         <div class="uk-width-large-1-2 uk-width-medium-1-4 uk-width-1-2 wrap_item">
+          <a href="https://mangakatana.com/genre/artbook">
+           Artbook
+          </a>
+          <span>
+           (33)
+          </span>
+         </div>
+         <div class="uk-width-large-1-2 uk-width-medium-1-4 uk-width-1-2 wrap_item">
+          <a href="https://mangakatana.com/genre/award-winning">
+           Award winning
+          </a>
+          <span>
+           (327)
+          </span>
+         </div>
+         <div class="uk-width-large-1-2 uk-width-medium-1-4 uk-width-1-2 wrap_item">
+          <a href="https://mangakatana.com/genre/comedy">
+           Comedy
+          </a>
+          <span>
+           (12353)
+          </span>
+         </div>
+         <div class="uk-width-large-1-2 uk-width-medium-1-4 uk-width-1-2 wrap_item">
+          <a href="https://mangakatana.com/genre/cooking">
+           Cooking
+          </a>
+          <span>
+           (197)
+          </span>
+         </div>
+         <div class="uk-width-large-1-2 uk-width-medium-1-4 uk-width-1-2 wrap_item">
+          <a href="https://mangakatana.com/genre/doujinshi">
+           Doujinshi
+          </a>
+          <span>
+           (214)
+          </span>
+         </div>
+         <div class="uk-width-large-1-2 uk-width-medium-1-4 uk-width-1-2 wrap_item">
+          <a href="https://mangakatana.com/genre/drama">
+           Drama
+          </a>
+          <span>
+           (10641)
+          </span>
+         </div>
+         <div class="uk-width-large-1-2 uk-width-medium-1-4 uk-width-1-2 wrap_item">
+          <a href="https://mangakatana.com/genre/ecchi">
+           Ecchi
+          </a>
+          <span>
+           (2674)
+          </span>
+         </div>
+         <div class="uk-width-large-1-2 uk-width-medium-1-4 uk-width-1-2 wrap_item">
+          <a href="https://mangakatana.com/genre/erotica">
+           Erotica
+          </a>
+          <span>
+           (1749)
+          </span>
+         </div>
+         <div class="uk-width-large-1-2 uk-width-medium-1-4 uk-width-1-2 wrap_item">
+          <a href="https://mangakatana.com/genre/fantasy">
+           Fantasy
+          </a>
+          <span>
+           (6196)
+          </span>
+         </div>
+         <div class="uk-width-large-1-2 uk-width-medium-1-4 uk-width-1-2 wrap_item">
+          <a href="https://mangakatana.com/genre/gender-bender">
+           Gender Bender
+          </a>
+          <span>
+           (968)
+          </span>
+         </div>
+         <div class="uk-width-large-1-2 uk-width-medium-1-4 uk-width-1-2 wrap_item">
+          <a href="https://mangakatana.com/genre/gore">
+           Gore
+          </a>
+          <span>
+           (548)
+          </span>
+         </div>
+         <div class="uk-width-large-1-2 uk-width-medium-1-4 uk-width-1-2 wrap_item">
+          <a href="https://mangakatana.com/genre/harem">
+           Harem
+          </a>
+          <span>
+           (1522)
+          </span>
+         </div>
+         <div class="uk-width-large-1-2 uk-width-medium-1-4 uk-width-1-2 wrap_item">
+          <a href="https://mangakatana.com/genre/historical">
+           Historical
+          </a>
+          <span>
+           (1696)
+          </span>
+         </div>
+         <div class="uk-width-large-1-2 uk-width-medium-1-4 uk-width-1-2 wrap_item">
+          <a href="https://mangakatana.com/genre/horror">
+           Horror
+          </a>
+          <span>
+           (1390)
+          </span>
+         </div>
+         <div class="uk-width-large-1-2 uk-width-medium-1-4 uk-width-1-2 wrap_item">
+          <a href="https://mangakatana.com/genre/isekai">
+           Isekai
+          </a>
+          <span>
+           (1029)
+          </span>
+         </div>
+         <div class="uk-width-large-1-2 uk-width-medium-1-4 uk-width-1-2 wrap_item">
+          <a href="https://mangakatana.com/genre/josei">
+           Josei
+          </a>
+          <span>
+           (1489)
+          </span>
+         </div>
+         <div class="uk-width-large-1-2 uk-width-medium-1-4 uk-width-1-2 wrap_item">
+          <a href="https://mangakatana.com/genre/loli">
+           Loli
+          </a>
+          <span>
+           (274)
+          </span>
+         </div>
+         <div class="uk-width-large-1-2 uk-width-medium-1-4 uk-width-1-2 wrap_item">
+          <a href="https://mangakatana.com/genre/manhua">
+           Manhua
+          </a>
+          <span>
+           (593)
+          </span>
+         </div>
+         <div class="uk-width-large-1-2 uk-width-medium-1-4 uk-width-1-2 wrap_item">
+          <a href="https://mangakatana.com/genre/manhwa">
+           Manhwa
+          </a>
+          <span>
+           (1181)
+          </span>
+         </div>
+         <div class="uk-width-large-1-2 uk-width-medium-1-4 uk-width-1-2 wrap_item">
+          <a href="https://mangakatana.com/genre/martial-arts">
+           Martial Arts
+          </a>
+          <span>
+           (841)
+          </span>
+         </div>
+         <div class="uk-width-large-1-2 uk-width-medium-1-4 uk-width-1-2 wrap_item">
+          <a href="https://mangakatana.com/genre/mecha">
+           Mecha
+          </a>
+          <span>
+           (359)
+          </span>
+         </div>
+         <div class="uk-width-large-1-2 uk-width-medium-1-4 uk-width-1-2 wrap_item">
+          <a href="https://mangakatana.com/genre/medical">
+           Medical
+          </a>
+          <span>
+           (39)
+          </span>
+         </div>
+         <div class="uk-width-large-1-2 uk-width-medium-1-4 uk-width-1-2 wrap_item">
+          <a href="https://mangakatana.com/genre/music">
+           Music
+          </a>
+          <span>
+           (76)
+          </span>
+         </div>
+         <div class="uk-width-large-1-2 uk-width-medium-1-4 uk-width-1-2 wrap_item">
+          <a href="https://mangakatana.com/genre/mystery">
+           Mystery
+          </a>
+          <span>
+           (2151)
+          </span>
+         </div>
+         <div class="uk-width-large-1-2 uk-width-medium-1-4 uk-width-1-2 wrap_item">
+          <a href="https://mangakatana.com/genre/one-shot">
+           One shot
+          </a>
+          <span>
+           (2954)
+          </span>
+         </div>
+         <div class="uk-width-large-1-2 uk-width-medium-1-4 uk-width-1-2 wrap_item">
+          <a href="https://mangakatana.com/genre/overpowered-mc">
+           Overpowered MC
+          </a>
+          <span>
+           (268)
+          </span>
+         </div>
+         <div class="uk-width-large-1-2 uk-width-medium-1-4 uk-width-1-2 wrap_item">
+          <a href="https://mangakatana.com/genre/psychological">
+           Psychological
+          </a>
+          <span>
+           (1926)
+          </span>
+         </div>
+         <div class="uk-width-large-1-2 uk-width-medium-1-4 uk-width-1-2 wrap_item">
+          <a href="https://mangakatana.com/genre/reincarnation">
+           Reincarnation
+          </a>
+          <span>
+           (766)
+          </span>
+         </div>
+         <div class="uk-width-large-1-2 uk-width-medium-1-4 uk-width-1-2 wrap_item">
+          <a href="https://mangakatana.com/genre/romance">
+           Romance
+          </a>
+          <span>
+           (13717)
+          </span>
+         </div>
+         <div class="uk-width-large-1-2 uk-width-medium-1-4 uk-width-1-2 wrap_item">
+          <a href="https://mangakatana.com/genre/school-life">
+           School Life
+          </a>
+          <span>
+           (8285)
+          </span>
+         </div>
+         <div class="uk-width-large-1-2 uk-width-medium-1-4 uk-width-1-2 wrap_item">
+          <a href="https://mangakatana.com/genre/sci-fi">
+           Sci-fi
+          </a>
+          <span>
+           (2084)
+          </span>
+         </div>
+         <div class="uk-width-large-1-2 uk-width-medium-1-4 uk-width-1-2 wrap_item">
+          <a href="https://mangakatana.com/genre/seinen">
+           Seinen
+          </a>
+          <span>
+           (5514)
+          </span>
+         </div>
+         <div class="uk-width-large-1-2 uk-width-medium-1-4 uk-width-1-2 wrap_item">
+          <a href="https://mangakatana.com/genre/sexual-violence">
+           Sexual violence
+          </a>
+          <span>
+           (414)
+          </span>
+         </div>
+         <div class="uk-width-large-1-2 uk-width-medium-1-4 uk-width-1-2 wrap_item">
+          <a href="https://mangakatana.com/genre/shota">
+           Shota
+          </a>
+          <span>
+           (125)
+          </span>
+         </div>
+         <div class="uk-width-large-1-2 uk-width-medium-1-4 uk-width-1-2 wrap_item">
+          <a href="https://mangakatana.com/genre/shoujo">
+           Shoujo
+          </a>
+          <span>
+           (5929)
+          </span>
+         </div>
+         <div class="uk-width-large-1-2 uk-width-medium-1-4 uk-width-1-2 wrap_item">
+          <a href="https://mangakatana.com/genre/shoujo-ai">
+           Shoujo Ai
+          </a>
+          <span>
+           (898)
+          </span>
+         </div>
+         <div class="uk-width-large-1-2 uk-width-medium-1-4 uk-width-1-2 wrap_item">
+          <a href="https://mangakatana.com/genre/shounen">
+           Shounen
+          </a>
+          <span>
+           (6118)
+          </span>
+         </div>
+         <div class="uk-width-large-1-2 uk-width-medium-1-4 uk-width-1-2 wrap_item">
+          <a href="https://mangakatana.com/genre/shounen-ai">
+           Shounen Ai
+          </a>
+          <span>
+           (1015)
+          </span>
+         </div>
+         <div class="uk-width-large-1-2 uk-width-medium-1-4 uk-width-1-2 wrap_item">
+          <a href="https://mangakatana.com/genre/slice-of-life">
+           Slice of Life
+          </a>
+          <span>
+           (6172)
+          </span>
+         </div>
+         <div class="uk-width-large-1-2 uk-width-medium-1-4 uk-width-1-2 wrap_item">
+          <a href="https://mangakatana.com/genre/sports">
+           Sports
+          </a>
+          <span>
+           (788)
+          </span>
+         </div>
+         <div class="uk-width-large-1-2 uk-width-medium-1-4 uk-width-1-2 wrap_item">
+          <a href="https://mangakatana.com/genre/super-power">
+           Super power
+          </a>
+          <span>
+           (27)
+          </span>
+         </div>
+         <div class="uk-width-large-1-2 uk-width-medium-1-4 uk-width-1-2 wrap_item">
+          <a href="https://mangakatana.com/genre/supernatural">
+           Supernatural
+          </a>
+          <span>
+           (5300)
+          </span>
+         </div>
+         <div class="uk-width-large-1-2 uk-width-medium-1-4 uk-width-1-2 wrap_item">
+          <a href="https://mangakatana.com/genre/survival">
+           Survival
+          </a>
+          <span>
+           (304)
+          </span>
+         </div>
+         <div class="uk-width-large-1-2 uk-width-medium-1-4 uk-width-1-2 wrap_item">
+          <a href="https://mangakatana.com/genre/time-travel">
+           Time Travel
+          </a>
+          <span>
+           (325)
+          </span>
+         </div>
+         <div class="uk-width-large-1-2 uk-width-medium-1-4 uk-width-1-2 wrap_item">
+          <a href="https://mangakatana.com/genre/tragedy">
+           Tragedy
+          </a>
+          <span>
+           (1548)
+          </span>
+         </div>
+         <div class="uk-width-large-1-2 uk-width-medium-1-4 uk-width-1-2 wrap_item">
+          <a href="https://mangakatana.com/genre/webtoon">
+           Webtoon
+          </a>
+          <span>
+           (2101)
+          </span>
+         </div>
+         <div class="uk-width-large-1-2 uk-width-medium-1-4 uk-width-1-2 wrap_item">
+          <a href="https://mangakatana.com/genre/yaoi">
+           Yaoi
+          </a>
+          <span>
+           (3472)
+          </span>
+         </div>
+         <div class="uk-width-large-1-2 uk-width-medium-1-4 uk-width-1-2 wrap_item">
+          <a href="https://mangakatana.com/genre/yuri">
+           Yuri
+          </a>
+          <span>
+           (728)
+          </span>
+         </div>
+        </div>
+       </div>
+      </div>
+      <div class="widget" id="hot_book">
+       <div class="widget-title">
+        <span>
+         Hot Manga
+        </span>
+       </div>
+       <div class="widget-body">
+        <div class="item" data-genre=",14,18,15,2,24,20,7,17,49,34," data-id="19588">
+         <div class="d-cell media">
+          <div class="wrap_img">
+           <a href="https://mangakatana.com/manga/isekai-meikyuu-de-harem-o.19588">
+            <img alt="[Cover]" data-src="https://mangakatana.com/imgs/cover/04e/62/164df.jpg"/>
+           </a>
+          </div>
+         </div>
+         <div class="d-cell text">
+          <h3 class="title">
+           <a href="https://mangakatana.com/manga/isekai-meikyuu-de-harem-o.19588">
+            Isekai Meikyuu de Harem o
+           </a>
+          </h3>
+          <div class="status ongoing">
+           Ongoing
+          </div>
+          <div class="chapter">
+           <a href="https://mangakatana.com/manga/isekai-meikyuu-de-harem-o.19588/c103">
+            Chapter 103
+           </a>
+          </div>
+         </div>
+        </div>
+        <div class="item" data-genre=",17,52,14,2,15,49,24,9,39,10,36," data-id="27314">
+         <div class="d-cell media">
+          <div class="wrap_img">
+           <a href="https://mangakatana.com/manga/the-archmages-restaurant.27314">
+            <img alt="[Cover]" data-src="https://mangakatana.com/imgs/cover/09c/25/07835.jpg"/>
+           </a>
+          </div>
+         </div>
+         <div class="d-cell text">
+          <h3 class="title">
+           <a href="https://mangakatana.com/manga/the-archmages-restaurant.27314">
+            The Archmage's Restaurant
+           </a>
+          </h3>
+          <div class="status ongoing">
+           Ongoing
+          </div>
+          <div class="chapter">
+           <a href="https://mangakatana.com/manga/the-archmages-restaurant.27314/c110">
+            Chapter 110
+           </a>
+          </div>
+         </div>
+        </div>
+        <div class="item" data-genre=",17,23,7,2,20,3,8," data-id="27590">
+         <div class="d-cell media">
+          <div class="wrap_img">
+           <a href="https://mangakatana.com/manga/after-being-banished-from-the-celebrity-family-i-supported-behind-the-scenes-all-i-want-is-to-enjoy-a-normal-life.27590">
+            <img alt="[Cover]" data-src="https://mangakatana.com/imgs/cover/09c/26/a871a.jpg"/>
+           </a>
+          </div>
+         </div>
+         <div class="d-cell text">
+          <h3 class="title">
+           <a href="https://mangakatana.com/manga/after-being-banished-from-the-celebrity-family-i-supported-behind-the-scenes-all-i-want-is-to-enjoy-a-normal-life.27590">
+            After Being Banished from the Celebrity Family I Supported Behind the Scenes, All I Want Is to Enjoy a Normal Life.
+           </a>
+          </h3>
+          <div class="status ongoing">
+           Ongoing
+          </div>
+          <div class="chapter">
+           <a href="https://mangakatana.com/manga/after-being-banished-from-the-celebrity-family-i-supported-behind-the-scenes-all-i-want-is-to-enjoy-a-normal-life.27590/c18">
+            Chapter 18
+           </a>
+          </div>
+         </div>
+        </div>
+        <div class="item" data-genre=",17,14,7,2,15,20,24," data-id="26679">
+         <div class="d-cell media">
+          <div class="wrap_img">
+           <a href="https://mangakatana.com/manga/im-a-d-rank-adventurer-for-some-reason-i-got-recruited-into-a-hero-party-and-now-the-princess-is-stalking-me.26679">
+            <img alt="[Cover]" data-src="https://mangakatana.com/imgs/cover/09c/22/3c3fc.jpg"/>
+           </a>
+          </div>
+         </div>
+         <div class="d-cell text">
+          <h3 class="title">
+           <a href="https://mangakatana.com/manga/im-a-d-rank-adventurer-for-some-reason-i-got-recruited-into-a-hero-party-and-now-the-princess-is-stalking-me.26679">
+            I’m a D-Rank Adventurer, for Some Reason I Got Recruited Into a Hero Party, and Now the Princess Is Stalking Me
+           </a>
+          </h3>
+          <div class="status ongoing">
+           Ongoing
+          </div>
+          <div class="chapter">
+           <a href="https://mangakatana.com/manga/im-a-d-rank-adventurer-for-some-reason-i-got-recruited-into-a-hero-party-and-now-the-princess-is-stalking-me.26679/c43">
+            Chapter 43
+           </a>
+          </div>
+         </div>
+        </div>
+        <div class="item" data-genre=",19,7,2,20,24," data-id="27002">
+         <div class="d-cell media">
+          <div class="wrap_img">
+           <a href="https://mangakatana.com/manga/seven-sleeping-beauties.27002">
+            <img alt="[Cover]" data-src="https://mangakatana.com/imgs/cover/09c/24/2ac9a.jpg"/>
+           </a>
+          </div>
+         </div>
+         <div class="d-cell text">
+          <h3 class="title">
+           <a href="https://mangakatana.com/manga/seven-sleeping-beauties.27002">
+            Seven Sleeping Beauties
+           </a>
+          </h3>
+          <div class="status ongoing">
+           Ongoing
+          </div>
+          <div class="chapter">
+           <a href="https://mangakatana.com/manga/seven-sleeping-beauties.27002/c75">
+            Chapter 75
+           </a>
+          </div>
+         </div>
+        </div>
+        <div class="item" data-genre=",27,23,7,3,8,9," data-id="27025">
+         <div class="d-cell media">
+          <div class="wrap_img">
+           <a href="https://mangakatana.com/manga/tsurenai-kanojo-no-hitorijime.27025">
+            <img alt="[Cover]" data-src="https://mangakatana.com/imgs/cover/09c/24/b19fd.jpg"/>
+           </a>
+          </div>
+         </div>
+         <div class="d-cell text">
+          <h3 class="title">
+           <a href="https://mangakatana.com/manga/tsurenai-kanojo-no-hitorijime.27025">
+            Tsurenai Kanojo no Hitorijime
+           </a>
+          </h3>
+          <div class="status ongoing">
+           Ongoing
+          </div>
+          <div class="chapter">
+           <a href="https://mangakatana.com/manga/tsurenai-kanojo-no-hitorijime.27025/c58">
+            Chapter 58
+           </a>
+          </div>
+         </div>
+        </div>
+        <div class="item" data-genre=",2,7,23,20,17,9," data-id="23229">
+         <div class="d-cell media">
+          <div class="wrap_img">
+           <a href="https://mangakatana.com/manga/2-5d-seduction.23229">
+            <img alt="[Cover]" data-src="https://mangakatana.com/imgs/cover/09c/11/b3cd0.jpg"/>
+           </a>
+          </div>
+         </div>
+         <div class="d-cell text">
+          <h3 class="title">
+           <a href="https://mangakatana.com/manga/2-5d-seduction.23229">
+            2.5D Seduction
+           </a>
+          </h3>
+          <div class="status ongoing">
+           Ongoing
+          </div>
+          <div class="chapter">
+           <a href="https://mangakatana.com/manga/2-5d-seduction.23229/c199">
+            Chapter 199
+           </a>
+          </div>
+         </div>
+        </div>
+        <div class="item" data-genre=",7,23,8,19,6,18," data-id="22648">
+         <div class="d-cell media">
+          <div class="wrap_img">
+           <a href="https://mangakatana.com/manga/the-unattainable-flowers-twisted-bloom.22648">
+            <img alt="[Cover]" data-src="https://mangakatana.com/imgs/cover/09c/0e/b2e53.jpg"/>
+           </a>
+          </div>
+         </div>
+         <div class="d-cell text">
+          <h3 class="title">
+           <a href="https://mangakatana.com/manga/the-unattainable-flowers-twisted-bloom.22648">
+            The Unattainable Flower's Twisted Bloom
+           </a>
+          </h3>
+          <div class="status ongoing">
+           Ongoing
+          </div>
+          <div class="chapter">
+           <a href="https://mangakatana.com/manga/the-unattainable-flowers-twisted-bloom.22648/c80">
+            Chapter 80
+           </a>
+          </div>
+         </div>
+        </div>
+        <div class="item" data-genre=",21,17,37," data-id="22835">
+         <div class="d-cell media">
+          <div class="wrap_img">
+           <a href="https://mangakatana.com/manga/dark-gathering.22835">
+            <img alt="[Cover]" data-src="https://mangakatana.com/imgs/cover/09c/0f/81b44.jpg"/>
+           </a>
+          </div>
+         </div>
+         <div class="d-cell text">
+          <h3 class="title">
+           <a href="https://mangakatana.com/manga/dark-gathering.22835">
+            Dark Gathering
+           </a>
+          </h3>
+          <div class="status ongoing">
+           Ongoing
+          </div>
+          <div class="chapter">
+           <a href="https://mangakatana.com/manga/dark-gathering.22835/c75">
+            Chapter 75
+           </a>
+          </div>
+         </div>
+        </div>
+        <div class="item" data-genre=",14,24,17,50,10,36," data-id="25887">
+         <div class="d-cell media">
+          <div class="wrap_img">
+           <a href="https://mangakatana.com/manga/solo-max-level-newbie.25887">
+            <img alt="[Cover]" data-src="https://mangakatana.com/imgs/cover/09c/1e/7f2bc.jpg"/>
+           </a>
+          </div>
+         </div>
+         <div class="d-cell text">
+          <h3 class="title">
+           <a href="https://mangakatana.com/manga/solo-max-level-newbie.25887">
+            Solo Max-Level Newbie
+           </a>
+          </h3>
+          <div class="status ongoing">
+           Ongoing
+          </div>
+          <div class="chapter">
+           <a href="https://mangakatana.com/manga/solo-max-level-newbie.25887/c235">
+            Chapter 235
+           </a>
+          </div>
+         </div>
+        </div>
+        <div class="item" data-genre=",17,14," data-id="27529">
+         <div class="d-cell media">
+          <div class="wrap_img">
+           <a href="https://mangakatana.com/manga/the-great-villainous-boy.27529">
+            <img alt="[Cover]" data-src="https://mangakatana.com/imgs/cover/09c/26/cfd75.jpg"/>
+           </a>
+          </div>
+         </div>
+         <div class="d-cell text">
+          <h3 class="title">
+           <a href="https://mangakatana.com/manga/the-great-villainous-boy.27529">
+            The Great Villainous Boy
+           </a>
+          </h3>
+          <div class="status ongoing">
+           Ongoing
+          </div>
+          <div class="chapter">
+           <a href="https://mangakatana.com/manga/the-great-villainous-boy.27529/c14">
+            Chapter 14
+           </a>
+          </div>
+         </div>
+        </div>
+        <div class="item" data-genre=",24,49,7,10,27,36,52," data-id="24568">
+         <div class="d-cell media">
+          <div class="wrap_img">
+           <a href="https://mangakatana.com/manga/death-is-the-only-ending-for-the-villainess.24568">
+            <img alt="[Cover]" data-src="https://mangakatana.com/imgs/cover/09c/17/2a57a.jpg"/>
+           </a>
+          </div>
+         </div>
+         <div class="d-cell text">
+          <h3 class="title">
+           <a href="https://mangakatana.com/manga/death-is-the-only-ending-for-the-villainess.24568">
+            Death Is The Only Ending For The Villainess
+           </a>
+          </h3>
+          <div class="status ongoing">
+           Ongoing
+          </div>
+          <div class="chapter">
+           <a href="https://mangakatana.com/manga/death-is-the-only-ending-for-the-villainess.24568/c191">
+            Chapter 191
+           </a>
+          </div>
+         </div>
+        </div>
+        <div class="item" data-genre=",17,15,49,24," data-id="26776">
+         <div class="d-cell media">
+          <div class="wrap_img">
+           <a href="https://mangakatana.com/manga/isekai-walking.26776">
+            <img alt="[Cover]" data-src="https://mangakatana.com/imgs/cover/09c/22/07ca3.jpg"/>
+           </a>
+          </div>
+         </div>
+         <div class="d-cell text">
+          <h3 class="title">
+           <a href="https://mangakatana.com/manga/isekai-walking.26776">
+            Isekai Walking
+           </a>
+          </h3>
+          <div class="status ongoing">
+           Ongoing
+          </div>
+          <div class="chapter">
+           <a href="https://mangakatana.com/manga/isekai-walking.26776/c132">
+            Chapter 132
+           </a>
+          </div>
+         </div>
+        </div>
+        <div class="item" data-genre=",14,23,19,15,24,3,30,49,50,11,52,31," data-id="22199">
+         <div class="d-cell media">
+          <div class="wrap_img">
+           <a href="https://mangakatana.com/manga/the-strongest-brave-who-craves-for-revenge-extinguish-with-the-power-of-darkness.22199">
+            <img alt="[Cover]" data-src="https://mangakatana.com/imgs/cover/09c/0b/41221.jpg"/>
+           </a>
+          </div>
+         </div>
+         <div class="d-cell text">
+          <h3 class="title">
+           <a href="https://mangakatana.com/manga/the-strongest-brave-who-craves-for-revenge-extinguish-with-the-power-of-darkness.22199">
+            The Strongest Brave Who Craves For Revenge, Extinguish With The Power Of Darkness
+           </a>
+          </h3>
+          <div class="status ongoing">
+           Ongoing
+          </div>
+          <div class="chapter">
+           <a href="https://mangakatana.com/manga/the-strongest-brave-who-craves-for-revenge-extinguish-with-the-power-of-darkness.22199/c125.5">
+            Chapter 125.5
+           </a>
+          </div>
+         </div>
+        </div>
+        <div class="item" data-genre=",14,15,2,3,24,17,45,21," data-id="49">
+         <div class="d-cell media">
+          <div class="wrap_img">
+           <a href="https://mangakatana.com/manga/one-piece.49">
+            <img alt="[Cover]" data-src="https://mangakatana.com/imgs/cover/04e/01/dc9fd.jpg"/>
+           </a>
+          </div>
+         </div>
+         <div class="d-cell text">
+          <h3 class="title">
+           <a href="https://mangakatana.com/manga/one-piece.49">
+            One Piece
+           </a>
+          </h3>
+          <div class="status ongoing">
+           Ongoing
+          </div>
+          <div class="chapter">
+           <a href="https://mangakatana.com/manga/one-piece.49/c1168">
+            Chapter 1168
+           </a>
+          </div>
+         </div>
+        </div>
+        <div class="item" data-genre=",17,7,2,15,20,24," data-id="27095">
+         <div class="d-cell media">
+          <div class="wrap_img">
+           <a href="https://mangakatana.com/manga/an-exclusive-mage-who-broke-up-with-his-alchemist-childhood-friend-wants-to-lead-a-slow-life-in-a-remote-town.27095">
+            <img alt="[Cover]" data-src="https://mangakatana.com/imgs/cover/09c/24/c4f14.jpg"/>
+           </a>
+          </div>
+         </div>
+         <div class="d-cell text">
+          <h3 class="title">
+           <a href="https://mangakatana.com/manga/an-exclusive-mage-who-broke-up-with-his-alchemist-childhood-friend-wants-to-lead-a-slow-life-in-a-remote-town.27095">
+            An Exclusive Mage Who Broke up With His Alchemist Childhood Friend, Wants to Lead a Slow Life in a Remote Town
+           </a>
+          </h3>
+          <div class="status ongoing">
+           Ongoing
+          </div>
+          <div class="chapter">
+           <a href="https://mangakatana.com/manga/an-exclusive-mage-who-broke-up-with-his-alchemist-childhood-friend-wants-to-lead-a-slow-life-in-a-remote-town.27095/c24">
+            Chapter 24
+           </a>
+          </div>
+         </div>
+        </div>
+        <div class="item" data-genre=",19,23,14,7,2,15,3,24,38,36," data-id="27452">
+         <div class="d-cell media">
+          <div class="wrap_img">
+           <a href="https://mangakatana.com/manga/shut-up-evil-dragon-i-dont-want-to-raise-a-child-with-you-anymore.27452">
+            <img alt="[Cover]" data-src="https://mangakatana.com/imgs/cover/09c/26/f8e5a.jpg"/>
+           </a>
+          </div>
+         </div>
+         <div class="d-cell text">
+          <h3 class="title">
+           <a href="https://mangakatana.com/manga/shut-up-evil-dragon-i-dont-want-to-raise-a-child-with-you-anymore.27452">
+            Shut Up, Evil Dragon! I Don't Want to Raise a Child With You Anymore
+           </a>
+          </h3>
+          <div class="status ongoing">
+           Ongoing
+          </div>
+          <div class="chapter">
+           <a href="https://mangakatana.com/manga/shut-up-evil-dragon-i-dont-want-to-raise-a-child-with-you-anymore.27452/c70">
+            Chapter 70
+           </a>
+          </div>
+         </div>
+        </div>
+        <div class="item" data-genre=",17,7,2,9," data-id="27238">
+         <div class="d-cell media">
+          <div class="wrap_img">
+           <a href="https://mangakatana.com/manga/akanabe-sensei-doesnt-know-about-embarrassment.27238">
+            <img alt="[Cover]" data-src="https://mangakatana.com/imgs/cover/09c/25/aff4a.jpg"/>
+           </a>
+          </div>
+         </div>
+         <div class="d-cell text">
+          <h3 class="title">
+           <a href="https://mangakatana.com/manga/akanabe-sensei-doesnt-know-about-embarrassment.27238">
+            Akanabe-sensei Doesn't Know about Embarrassment
+           </a>
+          </h3>
+          <div class="status ongoing">
+           Ongoing
+          </div>
+          <div class="chapter">
+           <a href="https://mangakatana.com/manga/akanabe-sensei-doesnt-know-about-embarrassment.27238/c35.6">
+            Chapter 35.6
+           </a>
+          </div>
+         </div>
+        </div>
+        <div class="item" data-genre=",17,23,2,44,8,9," data-id="26451">
+         <div class="d-cell media">
+          <div class="wrap_img">
+           <a href="https://mangakatana.com/manga/even-the-student-council-has-holes.26451">
+            <img alt="[Cover]" data-src="https://mangakatana.com/imgs/cover/09c/21/b92c9.jpg"/>
+           </a>
+          </div>
+         </div>
+         <div class="d-cell text">
+          <h3 class="title">
+           <a href="https://mangakatana.com/manga/even-the-student-council-has-holes.26451">
+            Even The Student Council Has Holes!
+           </a>
+          </h3>
+          <div class="status ongoing">
+           Ongoing
+          </div>
+          <div class="chapter">
+           <a href="https://mangakatana.com/manga/even-the-student-council-has-holes.26451/c91">
+            Chapter 91
+           </a>
+          </div>
+         </div>
+        </div>
+        <div class="item" data-genre=",8,17,9,7," data-id="20013">
+         <div class="d-cell media">
+          <div class="wrap_img">
+           <a href="https://mangakatana.com/manga/boku-no-kokoro-no-yabai-yatsu.20013">
+            <img alt="[Cover]" data-src="https://mangakatana.com/imgs/cover/09c/01/cc06d.jpg"/>
+           </a>
+          </div>
+         </div>
+         <div class="d-cell text">
+          <h3 class="title">
+           <a href="https://mangakatana.com/manga/boku-no-kokoro-no-yabai-yatsu.20013">
+            Boku no Kokoro no Yabai yatsu
+           </a>
+          </h3>
+          <div class="status ongoing">
+           Ongoing
+          </div>
+          <div class="chapter">
+           <a href="https://mangakatana.com/manga/boku-no-kokoro-no-yabai-yatsu.20013/c182">
+            Chapter 182
+           </a>
+          </div>
+         </div>
+        </div>
+        <div class="item" data-genre=",19,23,7,2,3,9,39," data-id="27120">
+         <div class="d-cell media">
+          <div class="wrap_img">
+           <a href="https://mangakatana.com/manga/renge-to-naruto.27120">
+            <img alt="[Cover]" data-src="https://mangakatana.com/imgs/cover/09c/24/21706.jpg"/>
+           </a>
+          </div>
+         </div>
+         <div class="d-cell text">
+          <h3 class="title">
+           <a href="https://mangakatana.com/manga/renge-to-naruto.27120">
+            Renge to Naruto!
+           </a>
+          </h3>
+          <div class="status ongoing">
+           Ongoing
+          </div>
+          <div class="chapter">
+           <a href="https://mangakatana.com/manga/renge-to-naruto.27120/c46">
+            Chapter 46
+           </a>
+          </div>
+         </div>
+        </div>
+        <div class="item" data-genre=",17,7,2,20,8," data-id="27595">
+         <div class="d-cell media">
+          <div class="wrap_img">
+           <a href="https://mangakatana.com/manga/when-the-introverted-me-got-surrounded-by-s-tier-beauties-after-a-seat-change-a-secret-relationship-began.27595">
+            <img alt="[Cover]" data-src="https://mangakatana.com/imgs/cover/09c/26/35f50.jpg"/>
+           </a>
+          </div>
+         </div>
+         <div class="d-cell text">
+          <h3 class="title">
+           <a href="https://mangakatana.com/manga/when-the-introverted-me-got-surrounded-by-s-tier-beauties-after-a-seat-change-a-secret-relationship-began.27595">
+            When the Introverted Me Got Surrounded by S-Tier Beauties After a Seat Change, a Secret Relationship Began
+           </a>
+          </h3>
+          <div class="status ongoing">
+           Ongoing
+          </div>
+          <div class="chapter">
+           <a href="https://mangakatana.com/manga/when-the-introverted-me-got-surrounded-by-s-tier-beauties-after-a-seat-change-a-secret-relationship-began.27595/c8">
+            Chapter 8
+           </a>
+          </div>
+         </div>
+        </div>
+        <div class="item" data-genre=",19,3,53,14,24,10,36," data-id="27420">
+         <div class="d-cell media">
+          <div class="wrap_img">
+           <a href="https://mangakatana.com/manga/the-regressed-mercenarys-machinations.27420">
+            <img alt="[Cover]" data-src="https://mangakatana.com/imgs/cover/09c/26/fd255.jpg"/>
+           </a>
+          </div>
+         </div>
+         <div class="d-cell text">
+          <h3 class="title">
+           <a href="https://mangakatana.com/manga/the-regressed-mercenarys-machinations.27420">
+            The Regressed Mercenary's Machinations
+           </a>
+          </h3>
+          <div class="status ongoing">
+           Ongoing
+          </div>
+          <div class="chapter">
+           <a href="https://mangakatana.com/manga/the-regressed-mercenarys-machinations.27420/c66">
+            Chapter 66
+           </a>
+          </div>
+         </div>
+        </div>
+        <div class="item" data-genre=",14,15,24,16,10,36,22," data-id="25205">
+         <div class="d-cell media">
+          <div class="wrap_img">
+           <a href="https://mangakatana.com/manga/nano-machine.25205">
+            <img alt="[Cover]" data-src="https://mangakatana.com/imgs/cover/09c/1b/8fc37.jpg"/>
+           </a>
+          </div>
+         </div>
+         <div class="d-cell text">
+          <h3 class="title">
+           <a href="https://mangakatana.com/manga/nano-machine.25205">
+            Nano Machine
+           </a>
+          </h3>
+          <div class="status ongoing">
+           Ongoing
+          </div>
+          <div class="chapter">
+           <a href="https://mangakatana.com/manga/nano-machine.25205/c289">
+            Chapter 289
+           </a>
+          </div>
+         </div>
+        </div>
+        <div class="item" data-genre=",23,2,8,9," data-id="27454">
+         <div class="d-cell media">
+          <div class="wrap_img">
+           <a href="https://mangakatana.com/manga/delusional-teacher.27454">
+            <img alt="[Cover]" data-src="https://mangakatana.com/imgs/cover/09c/26/b2fe3.jpg"/>
+           </a>
+          </div>
+         </div>
+         <div class="d-cell text">
+          <h3 class="title">
+           <a href="https://mangakatana.com/manga/delusional-teacher.27454">
+            Delusional Teacher
+           </a>
+          </h3>
+          <div class="status ongoing">
+           Ongoing
+          </div>
+          <div class="chapter">
+           <a href="https://mangakatana.com/manga/delusional-teacher.27454/c59">
+            Chapter 59
+           </a>
+          </div>
+         </div>
+        </div>
+        <div class="item" data-genre=",2,17,23,8,20," data-id="24409">
+         <div class="d-cell media">
+          <div class="wrap_img">
+           <a href="https://mangakatana.com/manga/yankee-jk-kuzuhana-chan.24409">
+            <img alt="[Cover]" data-src="https://mangakatana.com/imgs/cover/09c/17/7b91c.jpg"/>
+           </a>
+          </div>
+         </div>
+         <div class="d-cell text">
+          <h3 class="title">
+           <a href="https://mangakatana.com/manga/yankee-jk-kuzuhana-chan.24409">
+            Yankee JK KuzuHana-chan
+           </a>
+          </h3>
+          <div class="status ongoing">
+           Ongoing
+          </div>
+          <div class="chapter">
+           <a href="https://mangakatana.com/manga/yankee-jk-kuzuhana-chan.24409/c264">
+            Chapter 264
+           </a>
+          </div>
+         </div>
+        </div>
+        <div class="item" data-genre=",15,2,24,8,17,21,7,49," data-id="18997">
+         <div class="d-cell media">
+          <div class="wrap_img">
+           <a href="https://mangakatana.com/manga/mairimashita-iruma-kun.18997">
+            <img alt="[Cover]" data-src="https://mangakatana.com/imgs/cover/04e/5f/22937.jpg"/>
+           </a>
+          </div>
+         </div>
+         <div class="d-cell text">
+          <h3 class="title">
+           <a href="https://mangakatana.com/manga/mairimashita-iruma-kun.18997">
+            Mairimashita! Iruma-kun
+           </a>
+          </h3>
+          <div class="status ongoing">
+           Ongoing
+          </div>
+          <div class="chapter">
+           <a href="https://mangakatana.com/manga/mairimashita-iruma-kun.18997/c423">
+            Chapter 423
+           </a>
+          </div>
+         </div>
+        </div>
+        <div class="item" data-genre=",17,53,7,3,24,9,21,38,36," data-id="26227">
+         <div class="d-cell media">
+          <div class="wrap_img">
+           <a href="https://mangakatana.com/manga/my-wife-is-from-a-thousand-years-ago.26227">
+            <img alt="[Cover]" data-src="https://mangakatana.com/imgs/cover/09c/20/4813d.jpg"/>
+           </a>
+          </div>
+         </div>
+         <div class="d-cell text">
+          <h3 class="title">
+           <a href="https://mangakatana.com/manga/my-wife-is-from-a-thousand-years-ago.26227">
+            My Wife Is From a Thousand Years Ago
+           </a>
+          </h3>
+          <div class="status ongoing">
+           Ongoing
+          </div>
+          <div class="chapter">
+           <a href="https://mangakatana.com/manga/my-wife-is-from-a-thousand-years-ago.26227/c440">
+            Chapter 440
+           </a>
+          </div>
+         </div>
+        </div>
+        <div class="item" data-genre=",17,14,15,24,10,36," data-id="27366">
+         <div class="d-cell media">
+          <div class="wrap_img">
+           <a href="https://mangakatana.com/manga/solo-leveling-ragnarok.27366">
+            <img alt="[Cover]" data-src="https://mangakatana.com/imgs/cover/09c/25/157da.jpg"/>
+           </a>
+          </div>
+         </div>
+         <div class="d-cell text">
+          <h3 class="title">
+           <a href="https://mangakatana.com/manga/solo-leveling-ragnarok.27366">
+            Solo Leveling: Ragnarok
+           </a>
+          </h3>
+          <div class="status ongoing">
+           Ongoing
+          </div>
+          <div class="chapter">
+           <a href="https://mangakatana.com/manga/solo-leveling-ragnarok.27366/c64">
+            Chapter 64
+           </a>
+          </div>
+         </div>
+        </div>
+        <div class="item" data-genre=",23,7,2,20,8," data-id="26780">
+         <div class="d-cell media">
+          <div class="wrap_img">
+           <a href="https://mangakatana.com/manga/when-trying-to-get-back-at-the-hometown-bullies-another-battle-began.26780">
+            <img alt="[Cover]" data-src="https://mangakatana.com/imgs/cover/09c/22/0519f.jpg"/>
+           </a>
+          </div>
+         </div>
+         <div class="d-cell text">
+          <h3 class="title">
+           <a href="https://mangakatana.com/manga/when-trying-to-get-back-at-the-hometown-bullies-another-battle-began.26780">
+            When Trying to Get Back at the Hometown Bullies, Another Battle Began
+           </a>
+          </h3>
+          <div class="status ongoing">
+           Ongoing
+          </div>
+          <div class="chapter">
+           <a href="https://mangakatana.com/manga/when-trying-to-get-back-at-the-hometown-bullies-another-battle-began.26780/c69.2">
+            Chapter 69.2
+           </a>
+          </div>
+         </div>
+        </div>
+        <div class="item" data-genre=",17,23,14,7,2,15,20,24,43," data-id="27063">
+         <div class="d-cell media">
+          <div class="wrap_img">
+           <a href="https://mangakatana.com/manga/the-strongest-female-masters-who-are-trying-to-raise-me-up-are-in-shambles-over-their-training-policy.27063">
+            <img alt="[Cover]" data-src="https://mangakatana.com/imgs/cover/09c/24/812e7.jpg"/>
+           </a>
+          </div>
+         </div>
+         <div class="d-cell text">
+          <h3 class="title">
+           <a href="https://mangakatana.com/manga/the-strongest-female-masters-who-are-trying-to-raise-me-up-are-in-shambles-over-their-training-policy.27063">
+            The Strongest Female Masters, Who Are Trying to Raise Me Up, Are in Shambles Over Their Training Policy
+           </a>
+          </h3>
+          <div class="status ongoing">
+           Ongoing
+          </div>
+          <div class="chapter">
+           <a href="https://mangakatana.com/manga/the-strongest-female-masters-who-are-trying-to-raise-me-up-are-in-shambles-over-their-training-policy.27063/c67">
+            Chapter 67
+           </a>
+          </div>
+         </div>
+        </div>
+        <div class="item" data-genre=",14,15,49,24,10,36," data-id="26669">
+         <div class="d-cell media">
+          <div class="wrap_img">
+           <a href="https://mangakatana.com/manga/pick-me-up.26669">
+            <img alt="[Cover]" data-src="https://mangakatana.com/imgs/cover/09c/22/90f35.jpg"/>
+           </a>
+          </div>
+         </div>
+         <div class="d-cell text">
+          <h3 class="title">
+           <a href="https://mangakatana.com/manga/pick-me-up.26669">
+            Pick Me Up!
+           </a>
+          </h3>
+          <div class="status ongoing">
+           Ongoing
+          </div>
+          <div class="chapter">
+           <a href="https://mangakatana.com/manga/pick-me-up.26669/c178">
+            Chapter 178
+           </a>
+          </div>
+         </div>
+        </div>
+        <div class="item" data-genre=",14,24,22,17,52,10,36,53,2," data-id="25882">
+         <div class="d-cell media">
+          <div class="wrap_img">
+           <a href="https://mangakatana.com/manga/the-return-of-the-crazy-demon.25882">
+            <img alt="[Cover]" data-src="https://mangakatana.com/imgs/cover/09c/1e/24096.jpg"/>
+           </a>
+          </div>
+         </div>
+         <div class="d-cell text">
+          <h3 class="title">
+           <a href="https://mangakatana.com/manga/the-return-of-the-crazy-demon.25882">
+            The Return of the Crazy Demon
+           </a>
+          </h3>
+          <div class="status ongoing">
+           Ongoing
+          </div>
+          <div class="chapter">
+           <a href="https://mangakatana.com/manga/the-return-of-the-crazy-demon.25882/c180">
+            Chapter 180
+           </a>
+          </div>
+         </div>
+        </div>
+        <div class="item" data-genre=",17,7,2,20,8," data-id="26380">
+         <div class="d-cell media">
+          <div class="wrap_img">
+           <a href="https://mangakatana.com/manga/mikadono-sanshimai-wa-angai-choroi.26380">
+            <img alt="[Cover]" data-src="https://mangakatana.com/imgs/cover/09c/20/9c49e.jpg"/>
+           </a>
+          </div>
+         </div>
+         <div class="d-cell text">
+          <h3 class="title">
+           <a href="https://mangakatana.com/manga/mikadono-sanshimai-wa-angai-choroi.26380">
+            Mikadono Sanshimai wa Angai, Choroi
+           </a>
+          </h3>
+          <div class="status ongoing">
+           Ongoing
+          </div>
+          <div class="chapter">
+           <a href="https://mangakatana.com/manga/mikadono-sanshimai-wa-angai-choroi.26380/c184">
+            Chapter 184
+           </a>
+          </div>
+         </div>
+        </div>
+        <div class="item" data-genre=",2,7,17,26,3," data-id="19857">
+         <div class="d-cell media">
+          <div class="wrap_img">
+           <a href="https://mangakatana.com/manga/tonikaku-cawaii.19857">
+            <img alt="[Cover]" data-src="https://mangakatana.com/imgs/cover/04e/64/34999.jpg"/>
+           </a>
+          </div>
+         </div>
+         <div class="d-cell text">
+          <h3 class="title">
+           <a href="https://mangakatana.com/manga/tonikaku-cawaii.19857">
+            Tonikaku Cawaii
+           </a>
+          </h3>
+          <div class="status ongoing">
+           Ongoing
+          </div>
+          <div class="chapter">
+           <a href="https://mangakatana.com/manga/tonikaku-cawaii.19857/c331">
+            Chapter 331
+           </a>
+          </div>
+         </div>
+        </div>
+       </div>
+      </div>
+      <script>
+       if($(window).width() < 768){
+					$('#hot_book .widget-title span').text('Hot updates');
+					$('#hot_book .widget-body').html('');
+					$("#hot_update .item").each(function() {
+						var title = $(this).find('.title').text(),
+						cover = $(this).find('.wrap_img img').attr('src'),
+						url = $(this).find('.title a').attr('href');
+						$('#hot_book .widget-body').append('<div class="item" data-genre="'+$(this).data('genre')+'" data-id="'+$(this).data('id')+'"><div class="d-cell media"><div class="wrap_img"><a href="'+url+'"><img src="'+cover+'" alt="'+title+'"></a></div></div><div class="d-cell text"><h3 class="title"><a href="'+url+'">'+title+'</a></h3><br><div class="chapter">'+$(this).find('.chapter').html()+'</div></div></div>');
+					});
+				}
+      </script>
+     </div>
+    </div>
+   </div>
+  </div>
+  <script type="text/javascript">
+   $(document).ready(function(){
+		$('.slick_book').on('init', function(event, slick, direction){
+			$('#hot_update .slick_book').addClass('show');
+		});
+		slick_book($('.slick_book'));
+		});
+  </script>
+  <footer id="footer">
+   <div id="copyright">
+    <div class="uk-container uk-container-center">
+     Copyright © 2018
+     <b>
+      <a href="/">
+       MangaKatana
+      </a>
+     </b>
+     .
+    </div>
+   </div>
+   <div class="scrollTo top uk-hidden-small">
+    <a class="" href="#">
+     <i class="uk-icon-angle-up">
+     </i>
+    </a>
+   </div>
+  </footer>
+  <style type="text/css">
+   #modal_form {z-index:10000;}
+	#modal_form > div {width:400px; text-align:center; padding:20px 20px; background:#ffffff; /* display:none; */}
+	#modal_form forrm {display:none;}
+	#modal_form label.uk-form-danger {position: absolute; display: block; font-size: 12px; line-height: 1.2;}
+	#modal_form .heading {text-transform:uppercase; font-weight:700; font-size:20px;}
+	#modal_form .uk-form-icon {display:block;}
+	#modal_form input {height:35px!important;}
+	#modal_form #remember {height:auto!important;}
+	#modal_form button {padding:5px 10px; width:100%; font-size:18px; font-weight:700;}
+	.uk-form-row + .uk-form-row {margin-top:22px;}
+  </style>
+  <div class="uk-modal" id="modal_form">
+   <div class="uk-modal-dialog">
+    <a class="uk-modal-close uk-close">
+    </a>
+    <form action="" class="uk-form uk-form-stacked" id="signup_form" method="post">
+     <div class="uk-form-row">
+      <div class="heading">
+       Create a new account
+      </div>
+     </div>
+     <div class="uk-form-row">
+      <div class="uk-text-left uk-text-small uk-text-warning">
+       Username is only used for login, not displayed in comments
+      </div>
+      <div class="uk-form-icon">
+       <i class="uk-icon-user">
+       </i>
+       <input autocapitalize="none" autocorrect="off" class="full-width" id="username" maxlength="30" name="username" placeholder="Username (*)" required="" type="text"/>
+      </div>
+     </div>
+     <div class="uk-form-row">
+      <div class="uk-form-icon">
+       <i class="uk-icon-envelope">
+       </i>
+       <input class="full-width" id="email" name="email" placeholder="Email" type="email"/>
+      </div>
+     </div>
+     <div class="uk-form-row">
+      <div class="uk-form-icon">
+       <i class="uk-icon-lock">
+       </i>
+       <input class="full-width" id="pwd1" minlength="6" name="pwd1" placeholder="Password (*)" required="" type="password"/>
+      </div>
+     </div>
+     <div class="uk-form-row">
+      <div class="uk-form-icon">
+       <i class="uk-icon-lock">
+       </i>
+       <input class="full-width" equalto="#pwd1" id="pwd2" name="pwd2" placeholder="Verify password (*)" required="" type="password"/>
+      </div>
+     </div>
+     <div class="uk-form-row" id="captcha_box">
+      <div class="uk-form-controls">
+       <!--<script src='https://www.google.com/recaptcha/api.js' defer></script>-->
+       <div class="g-recaptcha" data-sitekey="6LflHCcTAAAAAPN5GQsbwdygG7NZqc_cyzWKjEK-">
+       </div>
+       <div class="error_captcha">
+       </div>
+      </div>
+     </div>
+     <div class="uk-form-row">
+      <button class="uk-button uk-button-primary" id="signup_bt" type="button">
+       Create Account
+      </button>
+     </div>
+     <div class="uk-form-row">
+      <div class="ajax_msg">
+      </div>
+     </div>
+     <div class="uk-form-row">
+      Already have an account?
+      <a class="toggle_form" data-form="signin" href="#">
+       Log In!
+      </a>
+     </div>
+    </form>
+    <form action="" class="uk-form uk-form-stacked" id="signin_form" method="post">
+     <div class="uk-form-row">
+      <div class="heading">
+       Log In
+      </div>
+     </div>
+     <div class="uk-form-row">
+      <div class="uk-form-icon">
+       <i class="uk-icon-user">
+       </i>
+       <input autocapitalize="none" autocorrect="off" class="full-width" id="user_login" name="user_login" placeholder="Username (*)" required="" type="text"/>
+      </div>
+     </div>
+     <div class="uk-form-row">
+      <div class="uk-form-icon">
+       <i class="uk-icon-lock">
+       </i>
+       <input class="full-width" id="pwd" name="pwd" placeholder="Password (*)" required="" type="password"/>
+      </div>
+     </div>
+     <div class="uk-form-row">
+      <label class="uk-float-left">
+       <span class="wrap_chk">
+        <input id="remember" name="remember" type="checkbox"/>
+        <label class="include hide_check" for="remember">
+        </label>
+       </span>
+       Remember me
+      </label>
+      <a class="uk-float-right toggle_form" data-form="reset_pwd" href="#">
+       Forgot password?
+      </a>
+      <div class="uk-grid uk-grid-small">
+       <div class="uk-width-1-2">
+       </div>
+       <div class="uk-width-1-2">
+       </div>
+      </div>
+     </div>
+     <div class="uk-form-row">
+      <button class="uk-button uk-button-primary" id="signin_bt" type="button">
+       Log In
+      </button>
+     </div>
+     <div class="uk-form-row">
+      <div class="ajax_msg">
+      </div>
+     </div>
+     <div class="uk-form-row">
+      Don't have an account?
+      <a class="toggle_form" data-form="signup" href="#">
+       Sign Up!
+      </a>
+     </div>
+    </form>
+    <form action="" class="uk-form uk-form-stacked" id="reset_pwd_form" method="post">
+     <div class="uk-form-row">
+      <div class="heading">
+       Reset Password
+      </div>
+     </div>
+     <div class="uk-form-row uk-text-left">
+      Enter your username or email address:
+     </div>
+     <div class="uk-form-row uk-text-left">
+      <input autocapitalize="none" autocorrect="off" class="full-width" id="user_login_2" name="user_login_2" required="" type="text"/>
+      <div class="help" style="margin-top:15px;">
+       If the email you specified exists in our system, we will sent a password reset link to it.
+      </div>
+     </div>
+     <div class="uk-form-row">
+      <button class="uk-button uk-button-primary" id="reset_pwd_bt" type="button">
+       Reset my password
+      </button>
+     </div>
+     <div class="uk-form-row">
+      <div class="ajax_msg">
+      </div>
+     </div>
+     <div class="uk-form-row">
+      <a class="uk-float-right toggle_form uk-text-large" data-form="suggest_email" href="#">
+       Forgot email address?
+      </a>
+     </div>
+    </form>
+    <form action="" class="uk-form uk-form-stacked" id="suggest_email_form" method="post">
+     <div class="uk-form-row uk-text-left">
+      If you forgot your email address you can enter UID (get from your profile URI: /user/&lt;UID&gt;), we will suggest your email address:
+     </div>
+     <div class="uk-form-row uk-text-left">
+      <input autocapitalize="none" autocorrect="off" class="full-width" id="user_id" name="user_id" placeholder="Example of UID: 0123456789" required="" type="text"/>
+     </div>
+     <div class="uk-form-row">
+      <button class="uk-button uk-button-primary" id="suggest_email_bt" type="button">
+       Suggest my email address
+      </button>
+     </div>
+     <div class="uk-form-row">
+      <div class="ajax_msg">
+      </div>
+     </div>
+     <div class="uk-form-row">
+      <a class="uk-float-right toggle_form" data-form="reset_pwd" href="#">
+       Reset password
+      </a>
+     </div>
+    </form>
+    <!--<script src="/js/jquery.validate.min.js" defer></script>-->
+    <script type="text/javascript">
+     $(document).on('click','#signup_bt',function(e){
+				$('#signup_form').validate({
+					errorClass: "uk-form-danger",
+					messages: {
+						username: {required: "Username is required!",},
+						email: {email: "Please enter a valid email address.",},
+						pwd1: {required: "Password is required!", minlength: "Must have at least 6 characters"},
+						pwd2: {required: "Verify password!",equalTo: "Passwords do not match!"}
+					},
+					submitHandler: function(form) {}
+				});
+				
+				if ( $('#signup_form').valid() ) { // form is validated
+					submit_loading($('#signup_bt'));
+					$('#signup_form .ajax_msg').html('');
+					var data_post = { signup: "", username: $('#username').val(), email: $('#email').val(), pwd1: $('#pwd1').val(), pwd2: $('#pwd2').val(), 'g-recaptcha-response': $('#signup_form .g-recaptcha-response').val() };
+					$.post(home_url, data_post, function(response){
+						$('#signup_form .ajax_msg').html(response);
+						if(response.indexOf('uk-text-danger') > 0) grecaptcha.reset();
+						submit_loading_off($('#signup_bt'));
+					});
+				}
+			});
+			
+			$(document).on('click','#signin_bt',function(e){
+				$('#signin_form').validate({
+					errorClass: "uk-form-danger",
+					messages: {
+						user_login: {required: "Username is required!",},
+						pwd: {required: "Password is required!",},
+					},
+					submitHandler: function(form) {}
+				});
+				
+				if ( $('#signin_form').valid() ) { // form is validated
+					submit_loading($('#signin_bt'));
+					$('#signin_form .ajax_msg').html('');
+					var data_post = { signin: "", username: $('#user_login').val(), pwd: $('#pwd').val() };
+					if($('#remember').is(":checked")) {
+						data_post['remember'] = 'on';
+					}
+					$.post(home_url, data_post, function(response){
+						if(response == '1'){
+							window.location.reload();
+						}
+						else{
+							$('#signin_form .ajax_msg').html(response);
+							submit_loading_off($('#signin_bt'));
+						}
+					});
+				}
+			});
+			
+			$(document).on('click','#reset_pwd_bt',function(e){
+				$('#reset_pwd_form').validate({
+					errorClass: "uk-form-danger",
+					messages: {
+						user_login_2: {required: "Please fill out this field!",},
+					},
+					submitHandler: function(form) {}
+				});
+				
+				if ( $('#reset_pwd_form').valid() ) { // form is validated
+					submit_loading($('#reset_pwd_bt'));
+					$('#reset_pwd_form .ajax_msg').html('');
+					var data_post = { retrieve_pwd: "", user_login: $('#user_login_2').val() };
+					$.post(home_url, data_post, function(response){
+						$('#reset_pwd_form .ajax_msg').html(response);
+						submit_loading_off($('#reset_pwd_bt'));
+					});
+				}
+			});
+			
+			$(document).on('click','#suggest_email_bt',function(e){
+				$('#suggest_email_form').validate({
+					errorClass: "uk-form-danger",
+					messages: {
+						user_id: {required: "Please fill out this field!",},
+					},
+					submitHandler: function(form) {}
+				});
+				
+				if ( $('#suggest_email_form').valid() ) { // form is validated
+					submit_loading($('#suggest_email_bt'));
+					$('#suggest_email_form .ajax_msg').html('');
+					var data_post = { suggest_email: "", user_id: $('#user_id').val() };
+					$.post(home_url, data_post, function(response){
+						$('#suggest_email_form .ajax_msg').html(response);
+						submit_loading_off($('#suggest_email_bt'));
+					});
+				}
+			});
+			
+			$(document).on('click','.open_popup_form',function(e){
+				$.ajax({url: "https://mangakatana.com/static/js/jquery.validate.min.js", cache : true, dataType: "script"});
+				$.getScript("https://www.google.com/recaptcha/api.js");
+				$('#modal_form form').hide();
+				$('#modal_form form#'+$(this).attr('data-form')+'_form').show();
+				$('#user_login').focus();
+				return false;
+			});
+			
+			$(document).on('click','.toggle_form',function(e){
+				$('#modal_form form').hide();
+				$('#modal_form form#'+$(this).attr('data-form')+'_form').show();
+				return false;
+			});
+			
+			$(document).ready(function(){
+				$('form input').keypress(function(e) {
+					if (e.keyCode == '13') {
+						$(this).closest('form').find('button').click();
+					}
+				});
+				
+							});
+    </script>
+   </div>
+  </div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Readmore.js/2.2.0/readmore.min.js">
+  </script>
+  <script>
+   cdn_loaded || document.write('<script src="https://mangakatana.com/static/js/readmore.min.js"><\/script>')
+  </script>
+  <script type="text/javascript">
+   var home_url = 'https://mangakatana.com/';
+	home_url = location.protocol+home_url.substring(home_url.indexOf('://')+1);
+	if($('#book_list .summary').length > 0){
+				if($(window).width() < 768){
+			$('#book_list .item').each(function(index, value){
+				$(this).find('.last_chap').html('<i class="uk-icon-arrow-circle-o-right"></i> '+$(this).find('.chapter:eq(0)').html());
+			});
+		}
+		$('#book_list .summary').removeClass('uk-hidden-small');
+		$('#book_list .summary').readmore({
+			moreLink: '<div class="wrap_js_more"><a href="javascript:;" class="js_more_bt">Read more <i class="uk-icon-angle-down"></i></a></div>',
+			lessLink: '<div class="wrap_js_more"><a href="javascript:;" class="js_more_bt">Collapse <i class="uk-icon-angle-up"></a></div>',
+			speed: 500,
+			collapsedHeight:100
+		});
+	}
+	$(document).ready(function(){
+		$('#nav_sidebar ul').html($('#navbar-mobile').html());
+		/*if($('#genre_side').length){
+			$('#genre_side .widget-body a').each(function(index, value){
+				var href = $(this).attr('href');
+				$(this).attr('title', $('#navbar-mobile ul.genres a[href="'+href+'"]').attr('data-desc'));
+			});
+		}*/
+		$("#main-menu .sub-menu.genres > li > a").on({
+			mouseenter: function () {
+				$("#main-menu .sub-menu.genres > .desc").html($(this).attr('data-desc')).show();
+			},
+			mouseleave: function () {
+				$("#main-menu .sub-menu.genres > .desc").hide();
+			}
+		});
+	});
+	
+	$('img[data-src2]').on('error', function(e) {
+		reloadImage($(this));
+	});
+	
+	function coverError(image){
+		reloadImage($(image));
+	}
+	
+	function reloadImage(obj){
+		var loop_error = parseInt(obj.attr('data-refresh'));
+		if(isNaN(loop_error)) loop_error = 1;
+		else loop_error++;
+		setTimeout(function() {
+			if(obj.height() < 100 && loop_error<3){
+				var tmp = obj.attr('src');
+				obj.attr('src', obj.data('src2'));
+				obj.data('src', tmp);
+				obj.attr('data-refresh', loop_error);
+			}
+		}, 2000);
+	}
+  </script>
+  <script defer="" src="https://cdnjs.cloudflare.com/ajax/libs/uikit/2.24.3/js/uikit.min.js">
+  </script>
+  <script defer="" src="https://cdnjs.cloudflare.com/ajax/libs/uikit/2.21.0/js/core/modal.min.js">
+  </script>
+  <script defer="" src="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.5.0/slick.min.js">
+  </script>
+  <script>
+   cdn_loaded || document.write('<script src="https://mangakatana.com/static/js/uikit.min.js"><\/script><script src="https://mangakatana.com/static/js/modal.min.js"><\/script><script src="https://mangakatana.com/static/js/slick.min.js"><\/script>')
+  </script>
+  <script defer="" src="https://mangakatana.com/static/js/js.js?ver=1.3.5">
+  </script>
+  <script defer="" src="https://mangakatana.com/static/js/combine.js?ver=1.2.1&amp;slick_init&amp;scroll&amp;sticky&amp;tooltip">
+  </script>
+  <script defer="" src="https://mangakatana.com/static/js/jquery.lazyload.min.js?ver=1.2.7">
+  </script>
+ </body>
+</html>

@@ -614,76 +614,132 @@ Future<void> saveImageLocallyBackground(Uint8List bytes, String mangaName, int c
                   endIndex = capitoliList.length;
 
                 return Card(
+                  margin: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   child: ExpansionTile(
-                    tilePadding: EdgeInsets.all(8.0),
-                    initiallyExpanded: true,
-                    title: Text('Capitoli ${startIndex + 1} - ${endIndex}'),
+                    tilePadding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    initiallyExpanded: groupIndex == 0,
+                    title: Text(
+                      'Capitoli ${startIndex + 1} - $endIndex',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                     shape: const Border(),
                     collapsedShape: const Border(),
                     children: List.generate(endIndex - startIndex, (i) {
                       int index = startIndex + i;
                       var cap = capitoliList[index];
-                      return ListTile(
-                        leading: isSelectionMode
-                            ? (capitoliScaricati.length > index && capitoliScaricati[index])
-                                ? Icon(Icons.check_circle, color: Colors.green)
-                                : Checkbox(
-                                    value: selectedChapters.contains(index),
-                                    onChanged: (bool? value) {
-                                      toggleChapterSelection(index);
-                                    },
-                                  )
-                            : CircleAvatar(child: Text('${index + 1}')),
-                        title: Text('Capitolo ${index + 1}'),
-                        trailing: isSelectionMode
-                            ? null
-                            : downloadingChapters[index] == true
-                                ? Container(
-                                    width: 40,
-                                    height: 40,
-                                    child: Center(
-                                      child: CircularProgressIndicator(strokeWidth: 2),
-                                    ),
-                                  )
-                                : capitoliScaricati.length > index && capitoliScaricati[index]
-                                    ? IconButton(
-                                        icon: Icon(Icons.delete, color: Colors.red),
-                                        onPressed: () async {
-                                          await deleteDownloadedChapter(widget.manga.title, index + 1);
-                                          ScaffoldMessenger.of(context).showSnackBar(
-                                            SnackBar(content: Text('Capitolo eliminato dalla memoria!')),
-                                          );
-                                        },
-                                      )
-                                    : IconButton(
-                                        icon: Icon(Icons.download),
-                                        onPressed: () async {
-                                          await getChaptersImg(cap.url);
-                                          await downloadAndSaveImage(index);
-                                          await checkDownloadedChapters();
-                                          if (downloadedImages.isNotEmpty) {
-                                            ScaffoldMessenger.of(context).showSnackBar(
-                                              SnackBar(
-                                                content: Text('Immagini scaricate con successo!'),
-                                              ),
-                                            );
-                                          }
-                                        },
+                      bool isDownloaded = capitoliScaricati.length > index && capitoliScaricati[index];
+                      bool isDownloading = downloadingChapters[index] == true;
+                      
+                      return Container(
+                        decoration: BoxDecoration(
+                          border: Border(
+                            bottom: BorderSide(
+                              color: Colors.grey.shade200,
+                              width: 0.5,
+                            ),
+                          ),
+                        ),
+                        child: ListTile(
+                          contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          leading: isSelectionMode
+                              ? isDownloaded
+                                  ? Icon(Icons.check_circle, color: Colors.green, size: 28)
+                                  : Checkbox(
+                                      value: selectedChapters.contains(index),
+                                      onChanged: (bool? value) {
+                                        toggleChapterSelection(index);
+                                      },
+                                    )
+                              : Container(
+                                  width: 40,
+                                  height: 40,
+                                  decoration: BoxDecoration(
+                                    color: isDownloaded 
+                                        ? Colors.green.shade50 
+                                        : Colors.deepPurple.shade50,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Center(
+                                    child: Text(
+                                      '${index + 1}',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: isDownloaded 
+                                            ? Colors.green.shade700 
+                                            : Colors.deepPurple.shade700,
                                       ),
-                        onTap: isSelectionMode
-                            ? () => toggleChapterSelection(index)
-                            : () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => LetturaScreenManga(
-                                      capitolo: cap,
-                                      manga: widget.manga,
-                                      allChapters: capitoliList,
                                     ),
                                   ),
-                                );
-                              },
+                                ),
+                          title: Text(
+                            'Capitolo ${index + 1}',
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: isDownloaded ? FontWeight.w600 : FontWeight.normal,
+                            ),
+                          ),
+                          subtitle: isDownloaded 
+                              ? Text(
+                                  'Scaricato',
+                                  style: TextStyle(
+                                    color: Colors.green,
+                                    fontSize: 12,
+                                  ),
+                                )
+                              : null,
+                          trailing: isSelectionMode
+                              ? null
+                              : isDownloading
+                                  ? Container(
+                                      width: 40,
+                                      height: 40,
+                                      child: Center(
+                                        child: CircularProgressIndicator(strokeWidth: 2),
+                                      ),
+                                    )
+                                  : isDownloaded
+                                      ? IconButton(
+                                          icon: Icon(Icons.delete, color: Colors.red, size: 24),
+                                          onPressed: () async {
+                                            await deleteDownloadedChapter(widget.manga.title, index + 1);
+                                            ScaffoldMessenger.of(context).showSnackBar(
+                                              SnackBar(content: Text('Capitolo eliminato dalla memoria!')),
+                                            );
+                                          },
+                                        )
+                                      : IconButton(
+                                          icon: Icon(Icons.download, size: 24),
+                                          onPressed: () async {
+                                            await getChaptersImg(cap.url);
+                                            await downloadAndSaveImage(index);
+                                            await checkDownloadedChapters();
+                                            if (downloadedImages.isNotEmpty) {
+                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                SnackBar(
+                                                  content: Text('Immagini scaricate con successo!'),
+                                                ),
+                                              );
+                                            }
+                                          },
+                                        ),
+                          onTap: isSelectionMode
+                              ? () => toggleChapterSelection(index)
+                              : () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => LetturaScreenManga(
+                                        capitolo: cap,
+                                        manga: widget.manga,
+                                        allChapters: capitoliList,
+                                      ),
+                                    ),
+                                  );
+                                },
+                        ),
                       );
                     }),
                   ),
