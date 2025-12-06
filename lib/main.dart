@@ -24,15 +24,11 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   bool _isDarkMode = true;
-  bool isLoading = false;
-  bool isInitialized = false;
+  bool isLoading = true;
   List<MangaSearchModel> mangaList = [];
   final MangaWorldApi mangaWorldApi = MangaWorldApi();
   final WebNovelsApi webNovelsApi = WebNovelsApi();
-  bool isLoadingNovel = false;
   List<NovelModels> novelList = [];
-  String url = "";
-  late TextEditingController urlController;
 
   @override
   void initState() {
@@ -41,28 +37,43 @@ class _MyAppState extends State<MyApp> {
   }
 
   _initializeApp() async {
-    url = sharedPrefs.url;
-    urlController = TextEditingController(text: url);
-    await _loadThemePreference();
-    setState(() {
-      isInitialized = true;
-    });
-    await allManga();
-    await allNoverls();
-  }
-
-  @override
-  void dispose() {
-    if (isInitialized) {
-      urlController.dispose();
-    }
-    super.dispose();
-  }
-
-  _loadThemePreference() async {
+    // Carica preferenze tema
     bool isDark = await sharedPrefs.getDarkMode();
+    if (!mounted) return;
+    
     setState(() {
       _isDarkMode = isDark;
+    });
+
+    // Carica dati API in parallelo
+    try {
+      await Future.wait([
+        // Fetch Manga
+        mangaWorldApi.latestRelease().then((results) {
+          if (mounted && results.status == "ok") {
+            for (var manga in results.parametri) {
+              mangaList.add(MangaSearchModel.fromJson(manga));
+            }
+          }
+        }),
+        // Fetch Novels
+        // webNovelsApi.getAllNovels().then((results) {
+        //   if (mounted && results.status == "ok") {
+        //     for (var novel in results.parametri) {
+        //       novelList.add(NovelModels.fromJson(novel));
+        //     }
+        //   }
+        // }),
+      ]);
+    } catch (e) {
+      debugPrint("Error fetching initial data: $e");
+      // Opzionale: mostrare una snackbar o un messaggio di errore all'utente
+    }
+
+    if (!mounted) return;
+    
+    setState(() {
+      isLoading = false;
     });
   }
 
@@ -73,76 +84,28 @@ class _MyAppState extends State<MyApp> {
     await sharedPrefs.setDarkMode(_isDarkMode);
   }
 
-  allManga() async {
+  Future<void> _reloadManga() async {
     setState(() {
       isLoading = true;
     });
+
     try {
-      setState(() {
-        mangaList.clear(); // Clear previous results
-      });
-
-      var results = await mangaWorldApi.getAllManga();
-      if (!mounted) return;
-
-      if (results.status == "ok") {
+      var results = await mangaWorldApi.latestRelease();
+      if (mounted && results.status == "ok") {
         setState(() {
+          mangaList.clear();
           for (var manga in results.parametri) {
             mangaList.add(MangaSearchModel.fromJson(manga));
           }
         });
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Nessun manga trovato")));
       }
     } catch (e) {
-      debugPrint("Error fetching all manga: $e");
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("Errore nel caricamento: $e")));
-      }
+      debugPrint("Error reloading manga: $e");
     }
+
     if (mounted) {
       setState(() {
         isLoading = false;
-      });
-    }
-  }
-
-  allNoverls() async {
-    setState(() {
-      isLoadingNovel = true;
-    });
-    try {
-      setState(() {
-        novelList.clear();
-      });
-
-      var results = await webNovelsApi.getAllNovels();
-      if (!mounted) return;
-
-      if (results.status == "ok") {
-        setState(() {
-          for (var novel in results.parametri) {
-            novelList.add(NovelModels.fromJson(novel));
-          }
-        });
-      } else {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text("Nessuna novel trovata")));
-        }
-      }
-    } catch (e) {
-      debugPrint("Error fetching all novels: $e");
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("Errore nel caricamento: $e")));
-      }
-    }
-    if (mounted) {
-      setState(() {
-        isLoadingNovel = false;
       });
     }
   }
@@ -156,10 +119,26 @@ class _MyAppState extends State<MyApp> {
         colorScheme: ColorScheme.fromSeed(
           seedColor: Colors.deepPurple,
           brightness: Brightness.light,
+          primary: Colors.deepPurple,
+          surface: Colors.white,
+          background: const Color(0xFFF5F5F5),
         ),
-        appBarTheme: const AppBarTheme(
-          backgroundColor: Colors.deepPurple,
+        appBarTheme: AppBarTheme(
+          backgroundColor: Colors.transparent,
           foregroundColor: Colors.white,
+          elevation: 0,
+        ),
+        scaffoldBackgroundColor: const Color(0xFFF5F5F5),
+        cardColor: Colors.white,
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.deepPurple,
+            foregroundColor: Colors.white,
+            elevation: 3,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
         ),
       ),
       darkTheme: ThemeData(
@@ -168,185 +147,129 @@ class _MyAppState extends State<MyApp> {
           seedColor: Colors.deepPurple,
           brightness: Brightness.dark,
           primary: Colors.deepPurple[300],
-          surface: const Color(0xFF121212),
+          surface: const Color(0xFF1A1A1A),
           background: const Color(0xFF121212),
           error: Colors.redAccent,
         ),
-        cardColor: const Color(0xFF1E1E1E),
+        cardColor: const Color(0xFF2A2A2A),
         canvasColor: const Color(0xFF121212),
         appBarTheme: AppBarTheme(
-          backgroundColor: Colors.grey[900],
+          backgroundColor: Colors.transparent,
           foregroundColor: Colors.white,
+          elevation: 0,
         ),
         scaffoldBackgroundColor: const Color(0xFF121212),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.deepPurple[600],
+            foregroundColor: Colors.white,
+            elevation: 5,
+            shadowColor: Colors.black.withOpacity(0.3),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+        ),
       ),
       themeMode: _isDarkMode ? ThemeMode.dark : ThemeMode.light,
-      home: !isInitialized || isLoading == true || isLoadingNovel == true
-          ? Builder(
-              builder: (context) => Scaffold(
-                  body: Center(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          CircularProgressIndicator(),
-                          Text(
-                            "Manga in caricamente, si prega di attendere...",
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: 26,
-                              fontStyle: FontStyle.italic,
-                              fontWeight: FontWeight.w400,
-                            ),
-                          ),
-                          ElevatedButton(
-                              onPressed: () {
-                                Navigator.pushReplacement(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) => OfflinePage()));
-                              },
-                              child: Text("Accedi Offline"))
-                        ],
-                      ),
-                    ),
+      home: isLoading
+          ? Scaffold(
+              body: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      Colors.deepPurple.shade900,
+                      Colors.deepPurple.shade600,
+                      Colors.deepPurple.shade300,
+                    ],
                   ),
-                  floatingActionButtonLocation:
-                      FloatingActionButtonLocation.endDocked,
-                  floatingActionButton: isInitialized
-                      ? Column(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.only(bottom: 16.0),
-                              child: FloatingActionButton(
-                                onPressed: () async {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                        content: Text(
-                                            "Aggiornamento dati in corso...")),
-                                  );
-                                  await allManga();
-                                  await allNoverls();
-                                  if (mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                          content: Text(
-                                              "Dati aggiornati con successo!")),
-                                    );
-                                  }
-                                },
-                                child: const Icon(Icons.refresh),
-                                heroTag: 'refreshButton',
+                ),
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      TweenAnimationBuilder(
+                        duration: const Duration(seconds: 2),
+                        tween: Tween<double>(begin: 0.5, end: 1.0),
+                        curve: Curves.elasticOut,
+                        builder: (context, double scale, child) {
+                          return Transform.scale(
+                            scale: scale,
+                            child: Container(
+                              width: 100,
+                              height: 100,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                gradient: LinearGradient(
+                                  colors: [Colors.white, Colors.deepPurple.shade200],
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.3),
+                                    spreadRadius: 5,
+                                    blurRadius: 15,
+                                    offset: const Offset(0, 5),
+                                  ),
+                                ],
+                              ),
+                              child: const Icon(
+                                Icons.book,
+                                size: 50,
+                                color: Colors.deepPurple,
                               ),
                             ),
-                            FloatingActionButton(
-                              onPressed: () {
-                                showDialog(
-                                  context: context,
-                                  builder: (BuildContext context) {
-                                    return AlertDialog(
-                                      title: const Text('Configure API URL'),
-                                      content: TextField(
-                                        decoration: const InputDecoration(
-                                          labelText: 'Manga API URL',
-                                          hintText: 'Enter manga API URL',
-                                        ),
-                                        controller: urlController,
-                                        onChanged: (value) {
-                                          setState(() {
-                                            url = value;
-                                          });
-                                        },
-                                      ),
-                                      actions: [
-                                        TextButton(
-                                          onPressed: () async {
-                                            try {
-                                              String newUrl =
-                                                  urlController.text.trim();
-                                              if (newUrl.isEmpty) {
-                                                ScaffoldMessenger.of(context)
-                                                    .showSnackBar(
-                                                  const SnackBar(
-                                                    content: Text(
-                                                        'Please enter a valid URL'),
-                                                  ),
-                                                );
-                                                return;
-                                              }
-
-                                              // Salva l'URL nelle SharedPreferences
-                                              bool saved = await sharedPrefs
-                                                  .setUrl(newUrl);
-
-                                              if (!saved) {
-                                                ScaffoldMessenger.of(context)
-                                                    .showSnackBar(
-                                                  const SnackBar(
-                                                    content: Text(
-                                                        'Failed to save URL'),
-                                                    backgroundColor: Colors.red,
-                                                  ),
-                                                );
-                                                return;
-                                              }
-
-                                              // Aggiorna la variabile locale
-                                              setState(() {
-                                                url = newUrl;
-                                              });
-
-                                              print(
-                                                  'URL saved: ${sharedPrefs.url}');
-                                              Navigator.pop(context);
-
-                                              if (mounted) {
-                                                ScaffoldMessenger.of(context)
-                                                    .showSnackBar(
-                                                  SnackBar(
-                                                    content: Text(
-                                                        'API URL updated successfully: $newUrl'),
-                                                    duration: const Duration(
-                                                        seconds: 3),
-                                                  ),
-                                                );
-                                              }
-                                            } catch (e) {
-                                              print('Error saving URL: $e');
-                                              Navigator.pop(context);
-                                              if (mounted) {
-                                                ScaffoldMessenger.of(context)
-                                                    .showSnackBar(
-                                                  SnackBar(
-                                                    content: Text(
-                                                        'Error saving URL: $e'),
-                                                    backgroundColor: Colors.red,
-                                                  ),
-                                                );
-                                              }
-                                            }
-                                          },
-                                          child: const Text('Save'),
-                                        ),
-                                      ],
-                                    );
-                                  },
-                                );
-                              },
-                              child: const Icon(Icons.api),
-                              heroTag: 'apiButton',
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 30),
+                      Text(
+                        "Caricamento in corso...",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.white,
+                          shadows: [
+                            Shadow(
+                              color: Colors.black.withOpacity(0.5),
+                              offset: const Offset(1, 1),
+                              blurRadius: 3,
                             ),
                           ],
-                        )
-                      : null))
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                        strokeWidth: 3,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              floatingActionButton: FloatingActionButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => OfflinePage(
+                        onBackToOnline: _reloadManga,
+                      ),
+                    ),
+                  );
+                },
+                child: const Icon(Icons.download),
+              ),
+            )
           : MyHomePage(
               novelList: novelList,
               mangaList: mangaList,
               title: 'Manga Reader',
               toggleTheme: _toggleTheme,
               isDarkMode: _isDarkMode,
+              reloadManga: _reloadManga,
             ),
     );
   }
@@ -358,6 +281,7 @@ class MyHomePage extends StatefulWidget {
   final bool isDarkMode;
   final List<MangaSearchModel> mangaList;
   final List<NovelModels> novelList;
+  final Future<void> Function() reloadManga;
 
   const MyHomePage({
     super.key,
@@ -366,6 +290,7 @@ class MyHomePage extends StatefulWidget {
     required this.isDarkMode,
     required this.mangaList,
     required this.novelList,
+    required this.reloadManga,
   });
 
   @override
@@ -380,6 +305,7 @@ class _MyHomePageState extends State<MyHomePage> {
       mangalist: widget.mangaList,
       toggleTheme: widget.toggleTheme,
       isDarkMode: widget.isDarkMode,
+      reloadManga: widget.reloadManga,
     );
   }
 }

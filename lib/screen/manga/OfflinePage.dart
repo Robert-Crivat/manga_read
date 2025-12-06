@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 
 class OfflinePage extends StatefulWidget {
-  const OfflinePage({super.key});
+  final VoidCallback? onBackToOnline;
+  
+  const OfflinePage({super.key, this.onBackToOnline});
 
   @override
   State<OfflinePage> createState() => _OfflinePageState();
@@ -11,6 +13,7 @@ class OfflinePage extends StatefulWidget {
 
 class _OfflinePageState extends State<OfflinePage> {
   List<String> mangaList = [];
+  Map<String, File?> mangaCovers = {}; // Mappa per le copertine
   String? selectedManga;
   List<String> chapterList = [];
   String? selectedChapter;
@@ -25,8 +28,26 @@ class _OfflinePageState extends State<OfflinePage> {
   Future<void> loadMangaList() async {
     final dir = await getApplicationDocumentsDirectory();
     final mangaDirs = Directory(dir.path).listSync().whereType<Directory>();
+    
+    List<String> mangas = [];
+    Map<String, File?> covers = {};
+    
+    for (var mangaDir in mangaDirs) {
+      String mangaName = mangaDir.path.split('/').last;
+      mangas.add(mangaName);
+      
+      // Cerca la copertina
+      final coverFile = File('${mangaDir.path}/cover.png');
+      if (coverFile.existsSync()) {
+        covers[mangaName] = coverFile;
+      } else {
+        covers[mangaName] = null;
+      }
+    }
+    
     setState(() {
-      mangaList = mangaDirs.map((d) => d.path.split('/').last).toList();
+      mangaList = mangas;
+      mangaCovers = covers;
     });
   }
 
@@ -56,42 +77,15 @@ class _OfflinePageState extends State<OfflinePage> {
 
     Future<void> deleteDownloadedChapter(String mangaName, int chapterNumber) async {
     final directory = await getApplicationDocumentsDirectory();
-    final chapterDir = Directory('${directory.path}/$mangaName/capitolo_$chapterNumber');
-    if (chapterDir.existsSync()) {
-      final files = chapterDir.listSync().whereType<File>().where((f) => f.path.endsWith('.png'));
-      for (var file in files) {
-        await file.delete();
-      }
-      // Dopo aver eliminato le immagini, elimina la cartella del capitolo se vuota
-      if (chapterDir.listSync().isEmpty) {
-        await chapterDir.delete();
-      }
-    }
-
-    // Se non ci sono più capitoli scaricati, elimina la cartella del manga e rimuovi dalla lista locale
     final mangaDir = Directory('${directory.path}/$mangaName');
-    bool hasOtherChapters = false;
+    
+    // Elimina l'intera cartella del manga con tutti i capitoli
     if (mangaDir.existsSync()) {
-      final subDirs = mangaDir.listSync().whereType<Directory>();
-      for (var subDir in subDirs) {
-        final pngFiles = subDir.listSync().whereType<File>().where((f) => f.path.endsWith('.png'));
-        if (pngFiles.isNotEmpty) {
-          hasOtherChapters = true;
-          break;
-        }
-      }
-      if (!hasOtherChapters) {
-        await mangaDir.delete(recursive: true);
-        // Rimuovi il manga dalla lista locale (se usi una lista locale tipo sharedPrefs/localDb)
-        // Esempio: se hai una funzione removeLocalManga(String title)
-        if (mounted) {
-          // TODO: implementa la rimozione dal tuo storage locale
-          // await sharedPrefs.removeLocalManga(mangaName);
-        }
-      }
+      await mangaDir.delete(recursive: true);
     }
 
     await loadMangaList();
+    if (!mounted) return;
     setState(() {});
   }
 
@@ -124,6 +118,19 @@ class _OfflinePageState extends State<OfflinePage> {
                 },
               )
             : null,
+        actions: [
+          IconButton(
+            icon: Icon(Icons.cloud),
+            tooltip: 'Torna online',
+            onPressed: () {
+              // Chiama il callback e torna indietro
+              if (widget.onBackToOnline != null) {
+                widget.onBackToOnline!();
+              }
+              Navigator.pop(context);
+            },
+          ),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -138,22 +145,54 @@ class _OfflinePageState extends State<OfflinePage> {
                       separatorBuilder: (_, __) => Divider(),
                       itemBuilder: (context, index) {
                         final manga = mangaList[index];
-                        return ListTile(
-                          title: Text(manga,
-                              style: Theme.of(context).textTheme.titleMedium),
-                          trailing: Icon(Icons.chevron_right),
-                          leading: IconButton(
-                            icon: Icon(Icons.delete),
-                            onPressed: () {
-                              deleteDownloadedChapter(manga, index);
+                        final cover = mangaCovers[manga];
+                        
+                        return Card(
+                          elevation: 2,
+                          margin: const EdgeInsets.symmetric(vertical: 8),
+                          child: ListTile(
+                            contentPadding: const EdgeInsets.all(8),
+                            leading: Container(
+                              width: 60,
+                              height: 80,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(8),
+                                color: Colors.grey[300],
+                              ),
+                              child: cover != null
+                                  ? ClipRRect(
+                                      borderRadius: BorderRadius.circular(8),
+                                      child: Image.file(
+                                        cover,
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (context, error, stackTrace) {
+                                          return Icon(Icons.book, size: 40);
+                                        },
+                                      ),
+                                    )
+                                  : Icon(Icons.book, size: 40),
+                            ),
+                            title: Text(manga,
+                                style: Theme.of(context).textTheme.titleMedium),
+                            trailing: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                IconButton(
+                                  icon: Icon(Icons.delete, color: Colors.red),
+                                  onPressed: () {
+                                    deleteDownloadedChapter(manga, index);
+                                  },
+                                ),
+                                Icon(Icons.chevron_right),
+                              ],
+                            ),
+                            onTap: () {
+                              setState(() {
+                                selectedManga = manga;
+                              });
+                              loadChapterList(manga);
                             },
                           ),
-                          onTap: () {
-                            setState(() {
-                              selectedManga = manga;
-                            });
-                            loadChapterList(manga);
-                          },
                         );
                       },
                     );
@@ -194,6 +233,19 @@ class _OfflinePageState extends State<OfflinePage> {
           },
         ),
       ),
+      floatingActionButton: mangaList.isEmpty
+          ? FloatingActionButton.extended(
+              onPressed: () {
+                if (widget.onBackToOnline != null) {
+                  widget.onBackToOnline!();
+                }
+                Navigator.pop(context);
+              },
+              icon: Icon(Icons.cloud),
+              label: Text('Torna Online'),
+              backgroundColor: Colors.deepPurple,
+            )
+          : null,
     );
   }
 }

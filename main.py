@@ -70,10 +70,53 @@ def extract_manga_info_from_entry(entry):
         manga['story'] = story_element.text.strip()
     return manga
 
+@app.route('/new_manga_releases')
+def new_manga_releases():
+    # Ottieni parametri opzionali dalla richiesta
+    page = request.args.get('page', default=1, type=int)
+    max_pages = request.args.get('max_pages', default=1, type=int)
+    
+    # Calcola direttamente il numero di pagine da elaborare
+    end_page = page + max_pages
+    all_manga = []
+    
+    # Itera sulle pagine specificate
+    for page_num in range(page, end_page):
+        print(f"Elaborazione pagina {page_num}")
+        if page_num == 1:
+            # Pagina principale
+            page_url = 'https://www.mangaworld.cx/'
+        else:
+            # Pagine successive
+            page_url = f'https://www.mangaworld.cx/?page={page_num}/'
+        
+        response = requests.get(page_url)
+        
+        if response.status_code == 200:
+            soup = BeautifulSoup(response.content, 'html.parser')
+            # Find the comics-grid container that holds the manga entries
+            comics_grid = soup.find('div', {'class': 'comics-grid'})
+            if comics_grid:
+                manga_entries = comics_grid.find_all('div', {'class': 'entry'})
+                for entry in manga_entries:
+                    manga_info = extract_manga_info_from_entry(entry)
+                    if manga_info:
+                        all_manga.append(manga_info)
+                    
+    response_data = {
+        "status": "ok",
+        "messaggio": f"chiamata eseguita correttamente - new_manga_releases (pagine {page}-{end_page-1})",
+        "pagina_corrente": page,
+        "pagine_elaborate": max_pages,
+        "totale_manga": len(all_manga),
+        "data": all_manga,
+    }
+    return jsonify(response_data)
+
 @app.route('/search_manga')
 def search_manga():
     keyword = request.args.get('keyword', '')
-    response = requests.get('https://www.mangaworld.nz/archive?keyword=' + encode_keyword(keyword))
+    response = requests.get('https://www.mangaworld.cx/archive?keyword=' + encode_keyword(keyword))
     result_list = []
     if response.status_code == 200:
         soup = BeautifulSoup(response.content, 'html.parser')
@@ -93,20 +136,51 @@ def search_manga():
 @app.route('/manga_chapters')
 def manga_chapters():
     url = request.args.get('link', '')
-    response = requests.get(url)
+    html_content = request.args.get('html_content', '')
     result_list = []
-    if response.status_code == 200:
-        soup = BeautifulSoup(response.content, 'html.parser')
-        Manga = soup.find_all('a', {'class': 'chap'})
-        for item in Manga:
-            link = re.search('href="(.+?)"', str(item)).group(1)
-            alt = re.search('title="(.+?)"', str(item)).group(1)
-            if "read" in link:
-                result_list.append({'link': link, 'alt': alt})
+    
+    if html_content:
+        # Parse provided HTML content directly
+        soup = BeautifulSoup(html_content, 'html.parser')
+        manga_entries = soup.find_all('div', {'class': 'entry'})
+        
+        for entry in manga_entries:
+            # Extract manga title and URL
+            title_elem = entry.find('h3', {'class': 'entry-title'})
+            if title_elem:
+                manga_link = title_elem.find('a')
+                if manga_link:
+                    manga_title = manga_link.get_text(strip=True)
+                    manga_url = manga_link.get('href', '')
+                    
+                    # Find all chapter links within this entry
+                    chapter_links = entry.find_all('a', {'class': 'chap'})
+                    for chap_link in chapter_links:
+                        link = chap_link.get('href', '')
+                        alt = chap_link.get('title', '')
+                        if "read" in link:
+                            result_list.append({
+                                'manga_title': manga_title,
+                                'manga_url': manga_url,
+                                'chapter_link': link,
+                                'chapter_title': alt
+                            })
+    else:
+        # Original behavior: make HTTP request
+        response = requests.get(url)
+        if response.status_code == 200:
+            soup = BeautifulSoup(response.content, 'html.parser')
+            Manga = soup.find_all('a', {'class': 'chap'})
+            for item in Manga:
+                link = re.search('href="(.+?)"', str(item)).group(1)
+                alt = re.search('title="(.+?)"', str(item)).group(1)
+                if "read" in link:
+                    result_list.append({'link': link, 'alt': alt})
+    
     result_list.reverse()
     response_data = {
         "status": "ok",
-        "messaggio": f"chiamata eseguita correttamente - manga_chapters(link={url})",
+        "messaggio": f"chiamata eseguita correttamente - manga_chapters(link={url}, html_content={'provided' if html_content else 'not provided'})",
         "data": result_list
     }
     
@@ -280,7 +354,7 @@ def all_manga():
     # Itera sulle pagine specificate
     for page_num in range(page, end_page):
         print(f"Elaborazione pagina {page_num}")
-        page_url = f'https://www.mangaworld.nz/archive?page={page_num}'
+        page_url = f'https://www.mangaworld.cx/archive?page={page_num}'
         page_response = requests.get(page_url)
         if page_response.status_code == 200:
             page_soup = BeautifulSoup(page_response.content, 'html.parser')

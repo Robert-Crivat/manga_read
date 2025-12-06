@@ -1,10 +1,55 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:manga_read/model/manga/dataMangager.dart';
-import 'package:manga_read/main.dart';
 
 class MangaWorldApi {
-  String get baseUrl => "http://${sharedPrefs.url}:8000";
+  String get baseUrl => "http://80.97.160.102:8000";
+  //String get baseUrl => "http://192.168.2.50:8000";
+  //String get baseUrl => "http://${sharedPrefs.url}:8000";
+
+  Future<DataManager> latestRelease() async {
+    DataManager dataManager = DataManager();
+    Uri uri = Uri.parse('$baseUrl/new_manga_releases?max_pages=3');
+    try {
+      final response = await http.get(
+        uri,
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (response.statusCode == 200) {
+        Map<String, dynamic> data = json.decode(response.body);
+        dataManager = DataManager.fromJson(data);
+      } else {
+        throw Exception('Failed to search manga: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Error searching manga: $e');
+    }
+    return dataManager;
+  }
+
+  Future<DataManager> progressiveLatestRelease(int page) async {
+    DataManager dataManager = DataManager();
+    Uri uri = Uri.parse('$baseUrl/new_manga_releases?page=$page');
+    try {
+      final response = await http.get(
+        uri,
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (response.statusCode == 200) {
+        Map<String, dynamic> data = json.decode(response.body);
+        dataManager = DataManager.fromJson(data);
+      } else {
+        throw Exception('Failed to search manga: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Error searching manga: $e');
+    }
+    return dataManager;
+  }
+
+
 
   Future<DataManager> searchManga(String keyword) async {
     DataManager dataManager = DataManager();

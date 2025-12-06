@@ -23,15 +23,15 @@ class MangaSearchModel {
 
   factory MangaSearchModel.fromJson(Map<String, dynamic> json) {
     return MangaSearchModel(
-      title: json['title'],
-      url: json['url'],
-      img: json['thumbnail'],
-      story: json['story'],
-      status: json['status'],
-      type: json['main_genre'],
-      genres: json['genres'],
-      author: json['author'],
-      artist: json['artist'],
+      title: json['title'] ?? '',
+      url: json['url'] ?? '',
+      img: json['thumbnail'] ?? '',
+      story: json['story'] ?? '',
+      status: json['status'] ?? '',
+      type: json['main_genre'] ?? '',
+      genres: json['genres'] ?? '',
+      author: json['author'] ?? '',
+      artist: json['artist'] ?? '',
     );
   }
 }
