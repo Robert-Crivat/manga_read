@@ -73,6 +73,8 @@ class _NovelReadingScreenState extends State<NovelReadingScreen> with SingleTick
 
   _loadSettings() async {
     bool darkMode = await _prefs.getDarkMode();
+    if (!mounted) return;
+    
     setState(() {
       isDarkMode = darkMode;
       // Default font size, could be stored in SharedPrefs as well
@@ -207,6 +209,8 @@ class _NovelReadingScreenState extends State<NovelReadingScreen> with SingleTick
             onPressed: () async {
               bool newMode = !isDarkMode;
               await _prefs.setDarkMode(newMode);
+              if (!mounted) return;
+              
               setState(() {
                 isDarkMode = newMode;
               });

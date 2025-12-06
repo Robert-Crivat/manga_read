@@ -8,8 +8,10 @@ import os
 import time
 import base64
 import logging
+import cloudscraper
+import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
-import cloudscraper  # Importa questa libreria aggiuntiva
+import cloudscraper 
 
 app = Flask(__name__)
 CORS(app)  # Abilita CORS per permettere chiamate da Flutter
@@ -33,7 +35,7 @@ def remove_words_before_keyword(s, keyword):
         return s[index + len(keyword):]
     return s
 
-def extract_manga_info_from_entry(entry):
+def mangaWorldExtraction(entry):
     manga = {}
     # Thumbnail
     thumb_element = entry.select_one('a.thumb img')
@@ -70,6 +72,164 @@ def extract_manga_info_from_entry(entry):
         manga['story'] = story_element.text.strip()
     return manga
 
+def mangaKatanaExtraction(entry):
+    manga = {}
+    
+    # Thumbnail
+    thumb_element = entry.select_one('div.wrap_img img')
+    if thumb_element and 'src' in thumb_element.attrs:
+        manga['thumbnail'] = thumb_element['src']
+    
+    # Status (Ongoing/Completed)
+    status_element = entry.select_one('div.status')
+    if status_element:
+        manga['status'] = status_element.text.strip()
+    
+    # Titolo e link
+    title_element = entry.select_one('h3.title a')
+    if title_element:
+        manga['title'] = title_element.text.strip()
+        manga['url'] = title_element.get('href', '')
+    
+    # Ultimo capitolo
+    chapter_element = entry.select_one('div.chapter a')
+    if chapter_element:
+        manga['latest_chapter'] = {
+            'title': chapter_element.text.strip(),
+            'url': chapter_element.get('href', '')
+        }
+    
+    # Generi (dal data-genre attribute)
+    parent_div = entry
+    if parent_div.has_attr('data-genre'):
+        manga['genre_ids'] = parent_div.get('data-genre', '')
+    
+    # ID manga (dal data-id attribute)
+    if parent_div.has_attr('data-id'):
+        manga['manga_id'] = parent_div.get('data-id', '')
+    
+    return manga
+
+def mangaKatanaHotUpdatesExtraction(entry):
+    """
+    Estrazione specifica per il carousel Hot Updates di MangaKatana.
+    Struttura HTML diversa rispetto alla lista principale.
+    """
+    manga = {}
+    
+    # Thumbnail
+    thumb_element = entry.select_one('div.wrap_img img')
+    if thumb_element and 'src' in thumb_element.attrs:
+        manga['thumbnail'] = thumb_element['src']
+    
+    # Titolo e link
+    title_element = entry.select_one('h3.title a')
+    if title_element:
+        manga['title'] = title_element.text.strip()
+        manga['url'] = title_element.get('href', '')
+    
+    # Ultimo capitolo (rimuove l'icona se presente)
+    chapter_element = entry.select_one('div.chapter a')
+    if chapter_element:
+        chapter_text = chapter_element.text.strip()
+        # Rimuove il carattere dell'icona
+        chapter_text = chapter_text.replace('', '').strip()
+        manga['latest_chapter'] = {
+            'title': chapter_text,
+            'url': chapter_element.get('href', '')
+        }
+    
+    # Generi (dal data-genre attribute)
+    if entry.has_attr('data-genre'):
+        manga['genre_ids'] = entry.get('data-genre', '')
+    
+    # ID manga (dal data-id attribute)
+    if entry.has_attr('data-id'):
+        manga['manga_id'] = entry.get('data-id', '')
+    
+    return manga
+
+@app.route('/new_manga_releases')
+def new_manga_releases():
+    # Ottieni parametri opzionali dalla richiesta
+    page = request.args.get('page', default=1, type=int)
+    max_pages = request.args.get('max_pages', default=1, type=int)
+    
+    # Calcola direttamente il numero di pagine da elaborare
+    end_page = page + max_pages
+    all_manga = []
+    
+    # Itera sulle pagine specificate
+    for page_num in range(page, end_page):
+        print(f"Elaborazione pagina {page_num}")
+        if page_num == 1:
+            # Pagina principale
+            page_url = 'https://www.mangaworld.cx/'
+        else:
+            # Pagine successive
+            page_url = f'https://www.mangaworld.cx/?page={page_num}/'
+        
+        response = requests.get(page_url)
+        
+        if response.status_code == 200:
+            soup = BeautifulSoup(response.content, 'html.parser')
+            # Find the comics-grid container that holds the manga entries
+            comics_grid = soup.find('div', {'class': 'comics-grid'})
+            if comics_grid:
+                manga_entries = comics_grid.find_all('div', {'class': 'entry'})
+                for entry in manga_entries:
+                    manga_info = mangaWorldExtraction(entry)
+                    if manga_info:
+                        all_manga.append(manga_info)
+                    
+    response_data = {
+        "status": "ok",
+        "messaggio": f"chiamata eseguita correttamente - new_manga_releases (pagine {page}-{end_page-1})",
+        "pagina_corrente": page,
+        "pagine_elaborate": max_pages,
+        "totale_manga": len(all_manga),
+        "data": all_manga,
+    }
+    return jsonify(response_data)
+
+@app.route('/getMKlastRelease')
+def getMKlastRelease():
+    page = request.args.get('page', default=1, type=int)
+    max_pages = request.args.get('max_pages', default=1, type=int)
+    
+    end_page = page + max_pages
+    all_manga = []
+    
+    for page_num in range(page, end_page):
+        print(f"Elaborazione pagina {page_num}")
+        if page_num == 1:
+            page_url = 'https://mangakatana.com/'
+        else:
+            page_url = f'https://mangakatana.com/page/{page_num}'
+            
+        response = requests.get(page_url)
+        
+        if response.status_code == 200:
+            soup = BeautifulSoup(response.content, 'html.parser')
+            book_list = soup.find('div', {'id': 'book_list'})
+            if book_list:
+                manga_entries = book_list.find_all('div', {'class': 'item'})
+                print(f"Trovati {len(manga_entries)} manga nella pagina {page_num}")
+                for entry in manga_entries:
+                    manga_info = mangaKatanaExtraction(entry)
+                    if manga_info:
+                        all_manga.append(manga_info)
+    
+    response_data = {
+        "status": "ok",
+        "messaggio": f"chiamata eseguita correttamente - getMKlastRelease (pagine {page}-{end_page-1})",
+        "pagina_corrente": page,
+        "pagine_elaborate": max_pages,
+        "totale_manga": len(all_manga),
+        "data": all_manga
+    }
+    return jsonify(response_data)
+
 @app.route('/search_manga')
 def search_manga():
     keyword = request.args.get('keyword', '')
@@ -79,7 +239,7 @@ def search_manga():
         soup = BeautifulSoup(response.content, 'html.parser')
         manga_entries = soup.find_all('div', {'class': 'entry'})
         for entry in manga_entries:
-            manga_info = extract_manga_info_from_entry(entry)
+            manga_info = mangaWorldExtraction(entry)
             if manga_info:
                 result_list.append(manga_info)
     
@@ -93,20 +253,51 @@ def search_manga():
 @app.route('/manga_chapters')
 def manga_chapters():
     url = request.args.get('link', '')
-    response = requests.get(url)
+    html_content = request.args.get('html_content', '')
     result_list = []
-    if response.status_code == 200:
-        soup = BeautifulSoup(response.content, 'html.parser')
-        Manga = soup.find_all('a', {'class': 'chap'})
-        for item in Manga:
-            link = re.search('href="(.+?)"', str(item)).group(1)
-            alt = re.search('title="(.+?)"', str(item)).group(1)
-            if "read" in link:
-                result_list.append({'link': link, 'alt': alt})
+    
+    if html_content:
+        # Parse provided HTML content directly
+        soup = BeautifulSoup(html_content, 'html.parser')
+        manga_entries = soup.find_all('div', {'class': 'entry'})
+        
+        for entry in manga_entries:
+            # Extract manga title and URL
+            title_elem = entry.find('h3', {'class': 'entry-title'})
+            if title_elem:
+                manga_link = title_elem.find('a')
+                if manga_link:
+                    manga_title = manga_link.get_text(strip=True)
+                    manga_url = manga_link.get('href', '')
+                    
+                    # Find all chapter links within this entry
+                    chapter_links = entry.find_all('a', {'class': 'chap'})
+                    for chap_link in chapter_links:
+                        link = chap_link.get('href', '')
+                        alt = chap_link.get('title', '')
+                        if "read" in link:
+                            result_list.append({
+                                'manga_title': manga_title,
+                                'manga_url': manga_url,
+                                'chapter_link': link,
+                                'chapter_title': alt
+                            })
+    else:
+        # Original behavior: make HTTP request
+        response = requests.get(url)
+        if response.status_code == 200:
+            soup = BeautifulSoup(response.content, 'html.parser')
+            Manga = soup.find_all('a', {'class': 'chap'})
+            for item in Manga:
+                link = re.search('href="(.+?)"', str(item)).group(1)
+                alt = re.search('title="(.+?)"', str(item)).group(1)
+                if "read" in link:
+                    result_list.append({'link': link, 'alt': alt})
+    
     result_list.reverse()
     response_data = {
         "status": "ok",
-        "messaggio": f"chiamata eseguita correttamente - manga_chapters(link={url})",
+        "messaggio": f"chiamata eseguita correttamente - manga_chapters(link={url}, html_content={'provided' if html_content else 'not provided'})",
         "data": result_list
     }
     
@@ -157,6 +348,10 @@ def chapter_pages():
     
     return jsonify(response_data)
 
+@app.route('/all_manga')
+def all_manga():
+    urls_str = request.args.get('urls', '[]')
+
 @app.route('/download_single_image')
 def download_single_image():
     image_url = request.args.get('url', '')
@@ -198,7 +393,6 @@ def download_single_image():
 
 @app.route('/download_image')
 def download_image():
-    urls_str = request.args.get('urls', '[]')
     logger.info(f"Richiesta ricevuta con: {urls_str}")
     try:
         urls = json.loads(urls_str)
@@ -266,9 +460,6 @@ def download_image():
     }
     logger.info(f"Richiesta completata: {len(urls)} URL, {response_data['data']['successful_downloads']} successi")
     return jsonify(response_data)
-
-@app.route('/all_manga')
-def all_manga():
     # Ottieni parametri opzionali dalla richiesta
     page = request.args.get('page', default=1, type=int)
     max_pages = request.args.get('max_pages', default=1, type=int)
@@ -286,7 +477,7 @@ def all_manga():
             page_soup = BeautifulSoup(page_response.content, 'html.parser')
             manga_entries = page_soup.find_all('div', {'class': 'entry'})
             for entry in manga_entries:
-                manga_info = extract_manga_info_from_entry(entry)
+                manga_info = mangaWorldExtraction(entry)
                 if manga_info:
                     all_manga.append(manga_info)
                     
@@ -550,10 +741,6 @@ def getnovelsfire():
         }
     
     return jsonify(response_data)
-
-import cloudscraper
-import time  # Importiamo il modulo time per gestire i ritardi tra le richieste
-
 @app.route('/get_novelfire_chapters')
 def get_novelfire_chapters():
     """

@@ -70,22 +70,27 @@ class _LetturaScreenMangaState extends State<LetturaScreenManga> with SingleTick
   }
 
   getChaptersImg() async {
+    if (!mounted) return;
     setState(() {
       isLoading = true;
     });
     try {
       var results = await mangaWorldApi.getChapterPages(widget.capitolo.url);
+      if (!mounted) return;
+      
       setState(() {
         capitoliList = results.parametri.cast<String>();
         isLoading = false;
       });
     } catch (e) {
       print("Error searching manga: $e");
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text("Errore nella ricerca: $e")));
-      setState(() {
-        isLoading = false;
-      });
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text("Errore nella ricerca: $e")));
+        setState(() {
+          isLoading = false;
+        });
+      }
     }
   }
 
