@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:manga_read/api/manga_world_api.dart';
 import 'package:manga_read/api/web_novels_api.dart';
 import 'package:manga_read/model/manga/manga_search_model.dart';
@@ -12,7 +13,10 @@ final sharedPrefs = SharedPrefs();
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await sharedPrefs.init();
-  runApp(const MyApp());
+  SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+  ]).then((fn){runApp(const MyApp());});
+  
 }
 
 class MyApp extends StatefulWidget {
