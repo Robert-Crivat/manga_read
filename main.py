@@ -72,6 +72,116 @@ def mangaWorldExtraction(entry):
         manga['story'] = story_element.text.strip()
     return manga
 
+def mangaWorldMetaExtraction(meta_div):
+    """
+    Estrae informazioni dettagliate dal div.meta-data del manga
+    Gestisce la nuova struttura HTML con titoli alternativi, generi multipli, ecc.
+    """
+    manga_info = {}
+    
+    if not meta_div:
+        return manga_info
+    
+    # Trova tutti i div col-12 e col-md-6 che contengono le informazioni
+    info_divs = meta_div.find_all('div', class_=re.compile(r'col-12|col-md-6'))
+    
+    for div in info_divs:
+        text_content = div.get_text(strip=True)
+        
+        # Titoli alternativi
+        if 'Titoli alternativi:' in text_content:
+            alt_titles = text_content.replace('Titoli alternativi:', '').strip()
+            if alt_titles:
+                manga_info['alternative_titles'] = alt_titles
+        
+        # Generi (estrae i link dei badge)
+        elif 'Generi:' in text_content:
+            genre_badges = div.find_all('a', class_='badge')
+            if genre_badges:
+                genres = [badge.get_text(strip=True) for badge in genre_badges]
+                manga_info['genres'] = genres
+                manga_info['genres_text'] = ', '.join(genres)
+        
+        # Autore
+        elif 'Autore:' in text_content:
+            author_link = div.find('a')
+            if author_link:
+                manga_info['author'] = author_link.get_text(strip=True)
+                manga_info['author_url'] = author_link.get('href', '')
+            else:
+                author_text = text_content.replace('Autore:', '').strip()
+                if author_text:
+                    manga_info['author'] = author_text
+        
+        # Artista
+        elif 'Artista:' in text_content:
+            artist_link = div.find('a')
+            if artist_link:
+                manga_info['artist'] = artist_link.get_text(strip=True)
+                manga_info['artist_url'] = artist_link.get('href', '')
+            else:
+                artist_text = text_content.replace('Artista:', '').strip()
+                if artist_text:
+                    manga_info['artist'] = artist_text
+        
+        # Tipo
+        elif 'Tipo:' in text_content:
+            type_link = div.find('a')
+            if type_link:
+                manga_info['type'] = type_link.get_text(strip=True)
+                manga_info['type_url'] = type_link.get('href', '')
+            else:
+                type_text = text_content.replace('Tipo:', '').strip()
+                if type_text:
+                    manga_info['type'] = type_text
+        
+        # Stato
+        elif 'Stato:' in text_content:
+            status_link = div.find('a')
+            if status_link:
+                manga_info['status'] = status_link.get_text(strip=True)
+                manga_info['status_url'] = status_link.get('href', '')
+            else:
+                status_text = text_content.replace('Stato:', '').strip()
+                if status_text:
+                    manga_info['status'] = status_text
+        
+        # Visualizzazioni
+        elif 'Visualizzazioni:' in text_content:
+            views_span = div.find('span')
+            if views_span and views_span.get_text(strip=True).isdigit():
+                manga_info['views'] = int(views_span.get_text(strip=True))
+            else:
+                views_text = text_content.replace('Visualizzazioni:', '').strip()
+                if views_text.isdigit():
+                    manga_info['views'] = int(views_text)
+        
+        # Anno di uscita
+        elif 'Anno di uscita:' in text_content:
+            year_link = div.find('a')
+            if year_link:
+                year_text = year_link.get_text(strip=True)
+                if year_text.isdigit():
+                    manga_info['release_year'] = int(year_text)
+                manga_info['release_year_url'] = year_link.get('href', '')
+            else:
+                year_text = text_content.replace('Anno di uscita:', '').strip()
+                if year_text.isdigit():
+                    manga_info['release_year'] = int(year_text)
+        
+        # Fansub
+        elif 'Fansub:' in text_content:
+            fansub_link = div.find('a')
+            if fansub_link:
+                manga_info['fansub'] = fansub_link.get_text(strip=True)
+                manga_info['fansub_url'] = fansub_link.get('href', '')
+            else:
+                fansub_text = text_content.replace('Fansub:', '').strip()
+                if fansub_text:
+                    manga_info['fansub'] = fansub_text
+    
+    return manga_info
+
 def mangaKatanaExtraction(entry):
     manga = {}
     
@@ -293,12 +403,65 @@ def manga_chapters():
                 alt = re.search('title="(.+?)"', str(item)).group(1)
                 if "read" in link:
                     result_list.append({'link': link, 'alt': alt})
-    
     result_list.reverse()
+    
+    # Cerca di estrarre informazioni manga dall'HTML se disponibile
+    manga_info = None
+    if html_content:
+        soup = BeautifulSoup(html_content, 'html.parser')
+        
+        # Cerca prima il nuovo formato con meta-data
+        meta_data_div = soup.find('div', class_='meta-data row px-1')
+        if meta_data_div:
+            manga_info = mangaWorldMetaExtraction(meta_data_div)
+        else:
+            # Fallback al vecchio formato
+            # Cerca il contenitore con le informazioni del manga
+            manga_info_div = soup.find('div', class_='has-shadow comic-info d-block d-sm-flex')
+            if not manga_info_div:
+                # Prova con un selettore più generico
+                manga_info_div = soup.find('div', class_='comic-info')
+            if manga_info_div:
+                manga_info = mangaWorldExtraction(manga_info_div)
+    
+    # Se non abbiamo trovato le info manga nell'HTML e abbiamo un URL, facciamo una richiesta separata
+    if not manga_info and url and not html_content:
+        try:
+            print(f"Tentativo di ottenere informazioni manga da: {url}")
+            manga_response = requests.get(url)
+            if manga_response.status_code == 200:
+                manga_soup = BeautifulSoup(manga_response.content, 'html.parser')
+                
+                # Cerca prima il nuovo formato con meta-data
+                meta_data_div = manga_soup.find('div', class_='meta-data row px-1')
+                if meta_data_div:
+                    manga_info = mangaWorldMetaExtraction(meta_data_div)
+                    print(f"Informazioni manga estratte con nuovo formato: {len(manga_info)} campi")
+                else:
+                    # Fallback al vecchio formato
+                    manga_info_div = manga_soup.find('div', class_='has-shadow comic-info d-block d-sm-flex')
+                    if not manga_info_div:
+                        manga_info_div = manga_soup.find('div', class_='comic-info')
+                    if manga_info_div:
+                        manga_info = mangaWorldExtraction(manga_info_div)
+                        print(f"Informazioni manga estratte con vecchio formato: {len(manga_info)} campi")
+        except Exception as e:
+            print(f"Errore nell'estrazione delle informazioni manga: {str(e)}")
+            manga_info = None
+    
+    # Prepara la risposta con le informazioni del manga e i capitoli
+    response_data_content = {}
+    if manga_info:
+        # Aggiungi tutte le informazioni del manga direttamente all'oggetto principale
+        response_data_content.update(manga_info)
+    
+    # Aggiungi i capitoli come chiave separata
+    response_data_content['chapters'] = result_list
+    
     response_data = {
         "status": "ok",
         "messaggio": f"chiamata eseguita correttamente - manga_chapters(link={url}, html_content={'provided' if html_content else 'not provided'})",
-        "data": result_list
+        "data": response_data_content
     }
     
     return jsonify(response_data)
@@ -1134,4 +1297,29 @@ def get_novelfire_chapter_content():
         }), 500
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8000, debug=True)
+    import ssl
+    import os
+    
+    # Configurazione HTTPS
+    use_https = os.getenv('FLASK_HTTPS', 'false').lower() == 'true'
+    
+    if use_https:
+        # Crea certificati auto-firmati se non esistono
+        cert_file = 'server.crt'
+        key_file = 'server.key'
+        
+        if not os.path.exists(cert_file) or not os.path.exists(key_file):
+            print("Creazione certificati auto-firmati...")
+            os.system(f"""
+openssl req -x509 -newkey rsa:4096 -keyout {key_file} -out {cert_file} -days 365 -nodes -subj '/C=IT/ST=Italy/L=Rome/O=MangaReader/CN=localhost'
+            """)
+        
+        # Crea contesto SSL
+        context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
+        context.load_cert_chain(cert_file, key_file)
+        
+        print("Avvio server HTTPS su https://localhost:8000")
+        app.run(host='0.0.0.0', port=8000, debug=True, ssl_context=context)
+    else:
+        print("Avvio server HTTP su http://localhost:8000")
+        app.run(host='0.0.0.0', port=8000, debug=True)

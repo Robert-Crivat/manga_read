@@ -27,7 +27,7 @@ class MangaDetailScreen extends StatefulWidget {
 
 class _MangaDetailScreenState extends State<MangaDetailScreen> {
   final MangaWorldApi mangaWorldApi = MangaWorldApi();
-  List<ChapterModel> capitoliList = [];
+  MangaCompleteInfo? mangaInfo;
   List<DownloadedImage> downloadedImages = [];
   List<String> image = [];
   List<bool> capitoliScaricati = [];
@@ -113,12 +113,46 @@ Future<void> saveImageLocallyBackground(Uint8List bytes, String mangaName, int c
       var results = await mangaWorldApi.getMangaChapters(widget.manga.url);
       if (!mounted) return;
       
-      setState(() {
-        for (var capitolo in results.parametri) {
-          capitoliList.add(ChapterModel.fromJson(capitolo));
+      // Gestisce la nuova struttura della risposta con MangaChaptersResponse
+      if (results.parametri is List && results.parametri.isNotEmpty) {
+        final data = results.parametri as List;
+        
+        // Cerca le informazioni del manga e i capitoli
+        Map<String, dynamic>? mangaData;
+        List<dynamic>? chaptersData;
+        
+        for (var item in data) {
+          if (item is Map<String, dynamic>) {
+            if (item.containsKey('chapters')) {
+              chaptersData = item['chapters'] as List<dynamic>?;
+            } else {
+              mangaData = item;
+            }
+          }
         }
-      });
-      await checkDownloadedChapters(); // Controlla i capitoli scaricati dopo aver ottenuto la lista dei capitoli
+        
+        setState(() {
+          if (mangaData != null) {
+            // Aggiungi i capitoli al manga data se trovati
+            if (chaptersData != null) {
+              mangaData['chapters'] = chaptersData;
+            }
+            mangaInfo = MangaCompleteInfo.fromJson(mangaData);
+          } else {
+            // Fallback se non troviamo info manga
+            mangaInfo = MangaCompleteInfo(
+              chapters: chaptersData?.map((e) => ChapterModel.fromJson(e)).toList() ?? [],
+            );
+          }
+        });
+      } else {
+        // Fallback per vecchia struttura
+        setState(() {
+          mangaInfo = MangaCompleteInfo.fromJson(results.parametri);
+        });
+      }
+      
+      await checkDownloadedChapters();
     } catch (e) {
       print("Error searching manga: $e");
       if (mounted) {
@@ -307,9 +341,12 @@ Future<void> saveImageLocallyBackground(Uint8List bytes, String mangaName, int c
 
   Future<void> checkDownloadedChapters() async {
     List<bool> scaricati = [];
-    for (int i = 0; i < capitoliList.length; i++) {
-      bool isScaricato = await isChapterDownloaded(widget.manga.title, i + 1);
-      scaricati.add(isScaricato);
+    final chapters = mangaInfo?.chapters;
+    if (chapters != null) {
+      for (int i = 0; i < chapters.length; i++) {
+        bool isScaricato = await isChapterDownloaded(widget.manga.title, i + 1);
+        scaricati.add(isScaricato);
+      }
     }
     setState(() {
       capitoliScaricati = scaricati;
@@ -343,10 +380,13 @@ Future<void> saveImageLocallyBackground(Uint8List bytes, String mangaName, int c
   void selectAllChapters() {
     setState(() {
       // Seleziona solo i capitoli non ancora scaricati
-      selectedChapters = Set.from(
-        List.generate(capitoliList.length, (i) => i)
-            .where((i) => !(capitoliScaricati.length > i && capitoliScaricati[i]))
-      );
+      final chapters = mangaInfo?.chapters;
+      if (chapters != null) {
+        selectedChapters = Set.from(
+          List.generate(chapters.length, (i) => i)
+              .where((i) => !(capitoliScaricati.length > i && capitoliScaricati[i]))
+        );
+      }
     });
   }
 
@@ -359,10 +399,13 @@ Future<void> saveImageLocallyBackground(Uint8List bytes, String mangaName, int c
   Future<void> downloadAllChapters() async {
     setState(() {
       // Seleziona solo i capitoli non ancora scaricati
-      selectedChapters = Set.from(
-        List.generate(capitoliList.length, (i) => i)
-            .where((i) => !(capitoliScaricati.length > i && capitoliScaricati[i]))
-      );
+      final chapters = mangaInfo?.chapters;
+      if (chapters != null) {
+        selectedChapters = Set.from(
+          List.generate(chapters.length, (i) => i)
+              .where((i) => !(capitoliScaricati.length > i && capitoliScaricati[i]))
+        );
+      }
     });
     await downloadSelectedChapters();
   }
@@ -413,7 +456,7 @@ Future<void> saveImageLocallyBackground(Uint8List bytes, String mangaName, int c
         await _downloadAndSaveCover();
       }
 
-      var cap = capitoliList[index];
+      var cap = mangaInfo!.chapters![index];
       
       // Ottieni le immagini del capitolo
       var results = await mangaWorldApi.getChapterPages(cap.url);
@@ -601,7 +644,8 @@ Future<void> saveImageLocallyBackground(Uint8List bytes, String mangaName, int c
         children: [
           if (isDownloadingBulk)
             LinearProgressIndicator(),
-          ShowCaseMangaDetail(manga: widget.manga),
+          if (mangaInfo != null)
+            ShowCaseMangaDetail(manga: mangaInfo!, mangaBasicInfo: widget.manga),
           // Section header
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -625,7 +669,7 @@ Future<void> saveImageLocallyBackground(Uint8List bytes, String mangaName, int c
                   ),
                 ),
                 const Spacer(),
-                if (capitoliList.isNotEmpty)
+                if (mangaInfo?.chapters?.isNotEmpty == true)
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
@@ -633,7 +677,7 @@ Future<void> saveImageLocallyBackground(Uint8List bytes, String mangaName, int c
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
-                      '${capitoliList.length}',
+                      '${mangaInfo?.chapters?.length ?? 0}',
                       style: TextStyle(
                         color: Colors.deepPurple[700],
                         fontWeight: FontWeight.w600,
@@ -645,16 +689,19 @@ Future<void> saveImageLocallyBackground(Uint8List bytes, String mangaName, int c
           ),
           // Chapters list (scrollable)
           Expanded(
-            child: capitoliList.isEmpty
+            child: mangaInfo?.chapters?.isEmpty != false
                 ? const Center(child: CircularProgressIndicator())
                 : ListView.builder(
                     padding: const EdgeInsets.symmetric(horizontal: 12),
-                    itemCount: ((capitoliList.length - 1) ~/ 100) + 1,
+                    itemCount: (((mangaInfo?.chapters?.length ?? 0) - 1) ~/ 100) + 1,
                     itemBuilder: (context, groupIndex) {
+                      final chapters = mangaInfo?.chapters;
+                      if (chapters == null) return const SizedBox.shrink();
+                      
                       int startIndex = groupIndex * 100;
                       int endIndex = (groupIndex + 1) * 100;
-                      if (endIndex > capitoliList.length)
-                        endIndex = capitoliList.length;
+                      if (endIndex > chapters.length)
+                        endIndex = chapters.length;
 
                 return Card(
                   margin: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -672,7 +719,10 @@ Future<void> saveImageLocallyBackground(Uint8List bytes, String mangaName, int c
                     collapsedShape: const Border(),
                     children: List.generate(endIndex - startIndex, (i) {
                       int index = startIndex + i;
-                      var cap = capitoliList[index];
+                      final chapters = mangaInfo?.chapters;
+                      if (chapters == null || index >= chapters.length) return const SizedBox.shrink();
+                      
+                      var cap = chapters[index];
                       bool isDownloaded = capitoliScaricati.length > index && capitoliScaricati[index];
                       bool isDownloading = downloadingChapters[index] == true;
                       
@@ -771,16 +821,19 @@ Future<void> saveImageLocallyBackground(Uint8List bytes, String mangaName, int c
                           onTap: isSelectionMode
                               ? () => toggleChapterSelection(index)
                               : () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => LetturaScreenManga(
-                                        capitolo: cap,
-                                        manga: widget.manga,
-                                        allChapters: capitoliList,
+                                  final chapters = mangaInfo?.chapters;
+                                  if (chapters != null) {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => LetturaScreenManga(
+                                          capitolo: cap,
+                                          manga: widget.manga,
+                                          allChapters: chapters,
+                                        ),
                                       ),
-                                    ),
-                                  );
+                                    );
+                                  }
                                 },
                         ),
                       );

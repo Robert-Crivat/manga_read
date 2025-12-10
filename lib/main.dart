@@ -27,7 +27,6 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  bool _isDarkMode = true;
   bool isLoading = true;
   List<MangaSearchModel> mangaList = [];
   final MangaWorldApi mangaWorldApi = MangaWorldApi();
@@ -41,14 +40,6 @@ class _MyAppState extends State<MyApp> {
   }
 
   _initializeApp() async {
-    // Carica preferenze tema
-    bool isDark = await sharedPrefs.getDarkMode();
-    if (!mounted) return;
-    
-    setState(() {
-      _isDarkMode = isDark;
-    });
-
     // Carica dati API in parallelo
     try {
       await Future.wait([
@@ -79,13 +70,6 @@ class _MyAppState extends State<MyApp> {
     setState(() {
       isLoading = false;
     });
-  }
-
-  void _toggleTheme() async {
-    setState(() {
-      _isDarkMode = !_isDarkMode;
-    });
-    await sharedPrefs.setDarkMode(_isDarkMode);
   }
 
   Future<void> _reloadManga() async {
@@ -122,33 +106,6 @@ class _MyAppState extends State<MyApp> {
         useMaterial3: true,
         colorScheme: ColorScheme.fromSeed(
           seedColor: Colors.deepPurple,
-          brightness: Brightness.light,
-          primary: Colors.deepPurple,
-          surface: Colors.white,
-          background: const Color(0xFFF5F5F5),
-        ),
-        appBarTheme: AppBarTheme(
-          backgroundColor: Colors.transparent,
-          foregroundColor: Colors.white,
-          elevation: 0,
-        ),
-        scaffoldBackgroundColor: const Color(0xFFF5F5F5),
-        cardColor: Colors.white,
-        elevatedButtonTheme: ElevatedButtonThemeData(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.deepPurple,
-            foregroundColor: Colors.white,
-            elevation: 3,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-          ),
-        ),
-      ),
-      darkTheme: ThemeData(
-        useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.deepPurple,
           brightness: Brightness.dark,
           primary: Colors.deepPurple[300],
           surface: const Color(0xFF1A1A1A),
@@ -175,7 +132,7 @@ class _MyAppState extends State<MyApp> {
           ),
         ),
       ),
-      themeMode: _isDarkMode ? ThemeMode.dark : ThemeMode.light,
+      themeMode: ThemeMode.dark,
       home: isLoading
           ? Scaffold(
               body: Container(
@@ -271,8 +228,6 @@ class _MyAppState extends State<MyApp> {
               novelList: novelList,
               mangaList: mangaList,
               title: 'Manga Reader',
-              toggleTheme: _toggleTheme,
-              isDarkMode: _isDarkMode,
               reloadManga: _reloadManga,
             ),
     );
@@ -281,8 +236,6 @@ class _MyAppState extends State<MyApp> {
 
 class MyHomePage extends StatefulWidget {
   final String title;
-  final Function toggleTheme;
-  final bool isDarkMode;
   final List<MangaSearchModel> mangaList;
   final List<NovelModels> novelList;
   final Future<void> Function() reloadManga;
@@ -290,8 +243,6 @@ class MyHomePage extends StatefulWidget {
   const MyHomePage({
     super.key,
     required this.title,
-    required this.toggleTheme,
-    required this.isDarkMode,
     required this.mangaList,
     required this.novelList,
     required this.reloadManga,
@@ -307,8 +258,6 @@ class _MyHomePageState extends State<MyHomePage> {
     return Homepage(
       novels: widget.novelList,
       mangalist: widget.mangaList,
-      toggleTheme: widget.toggleTheme,
-      isDarkMode: widget.isDarkMode,
       reloadManga: widget.reloadManga,
     );
   }

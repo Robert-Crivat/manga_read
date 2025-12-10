@@ -167,6 +167,28 @@ class SharedPrefs {
     await _sharedPrefs?.setBool('darkMode', isDarkMode);
   }
 
+  // METODI PER LE PREFERENZE DI LETTURA
+
+  /// Ottiene il modo di visualizzazione preferito (true = ListView, false = PageView)
+  bool getReadingMode() {
+    return _sharedPrefs?.getBool('isListView') ?? false;
+  }
+
+  /// Salva il modo di visualizzazione preferito
+  Future<void> setReadingMode(bool isListView) async {
+    await _sharedPrefs?.setBool('isListView', isListView);
+  }
+
+  /// Ottiene la preferenza di visibilità del bottom panel
+  bool getBottomPanelVisibility() {
+    return _sharedPrefs?.getBool('showBottomPanel') ?? true;
+  }
+
+  /// Salva la preferenza di visibilità del bottom panel
+  Future<void> setBottomPanelVisibility(bool showBottomPanel) async {
+    await _sharedPrefs?.setBool('showBottomPanel', showBottomPanel);
+  }
+
   // METODI DI UTILITÀ
 
   /// Verifica se SharedPreferences è inizializzato
