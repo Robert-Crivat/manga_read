@@ -35,6 +35,76 @@ def remove_words_before_keyword(s, keyword):
         return s[index + len(keyword):]
     return s
 
+def get_chapter_images_base64(chapter_url):
+    """
+    Estrae tutte le immagini di un capitolo e le converte in base64
+    """
+    try:
+        # Ottieni gli URL delle immagini del capitolo
+        status = requests.get(str(chapter_url) + '/1?style=list', timeout=15)
+        image_urls = []
+        total_pages = 0
+        
+        if status.status_code == 200:
+            soup = BeautifulSoup(status.content, 'html.parser')
+            
+            # Estrai il numero totale di pagine dal link "last"
+            last_page_element = soup.select_one('li.page-item.last a.page-link')
+            if last_page_element:
+                last_page_text = last_page_element.get_text().strip()
+                last_page_match = re.search(r'>(\d+)<', str(last_page_element))
+                
+                if last_page_match:
+                    total_pages = int(last_page_match.group(1))
+                elif last_page_text.isdigit():
+                    total_pages = int(last_page_text)
+            
+            # Se non riusciamo a trovare il totale, usa un valore di default
+            if total_pages == 0:
+                total_pages = 100
+                
+            # Ottieni tutti gli URL delle immagini
+            for i in range(1, total_pages + 1):
+                lettura = soup.find_all('img', {'id': 'page-'+str(i)})
+                match = re.search(r'src="(.*)"', str(lettura))
+                if match:
+                    src = match.group(1)
+                    image_urls.append(src)
+        
+        # Converti tutte le immagini in base64
+        images_base64 = []
+        for img_url in image_urls:
+            try:
+                img_response = requests.get(img_url, timeout=10)
+                if img_response.status_code == 200:
+                    img_base64 = base64.b64encode(img_response.content).decode('utf-8')
+                    content_type = img_response.headers.get('Content-Type', 'image/jpeg')
+                    images_base64.append({
+                        'url': img_url,
+                        'base64': img_base64,
+                        'mime_type': content_type,
+                        'size_bytes': len(img_response.content)
+                    })
+                else:
+                    images_base64.append({
+                        'url': img_url,
+                        'error': f'HTTP {img_response.status_code}',
+                        'base64': None
+                    })
+            except Exception as e:
+                images_base64.append({
+                    'url': img_url,
+                    'error': str(e),
+                    'base64': None
+                })
+                logger.error(f"Errore nel download dell'immagine {img_url}: {str(e)}")
+        
+        return images_base64
+        
+    except Exception as e:
+        logger.error(f"Errore nell'estrazione delle immagini del capitolo {chapter_url}: {str(e)}")
+        return []
+
 def mangaWorldExtraction(entry):
     manga = {}
     # Thumbnail
@@ -364,6 +434,7 @@ def search_manga():
 def manga_chapters():
     url = request.args.get('link', '')
     html_content = request.args.get('html_content', '')
+    include_base64 = request.args.get('include_base64', 'false').lower() == 'true'
     result_list = []
     
     if html_content:
@@ -386,12 +457,16 @@ def manga_chapters():
                         link = chap_link.get('href', '')
                         alt = chap_link.get('title', '')
                         if "read" in link:
-                            result_list.append({
+                            chapter_data = {
                                 'manga_title': manga_title,
                                 'manga_url': manga_url,
                                 'chapter_link': link,
                                 'chapter_title': alt
-                            })
+                            }
+                            # Aggiungi immagini in base64 se richiesto
+                            if include_base64:
+                                chapter_data['images_base64'] = get_chapter_images_base64(link)
+                            result_list.append(chapter_data)
     else:
         # Original behavior: make HTTP request
         response = requests.get(url)
@@ -402,7 +477,11 @@ def manga_chapters():
                 link = re.search('href="(.+?)"', str(item)).group(1)
                 alt = re.search('title="(.+?)"', str(item)).group(1)
                 if "read" in link:
-                    result_list.append({'link': link, 'alt': alt})
+                    chapter_data = {'link': link, 'alt': alt}
+                    # Aggiungi immagini in base64 se richiesto
+                    if include_base64:
+                        chapter_data['images_base64'] = get_chapter_images_base64(link)
+                    result_list.append(chapter_data)
     result_list.reverse()
     
     # Cerca di estrarre informazioni manga dall'HTML se disponibile
@@ -469,8 +548,10 @@ def manga_chapters():
 @app.route('/chapter_pages')
 def chapter_pages():
     link = request.args.get('link', '')
+    include_base64 = request.args.get('include_base64', 'false').lower() == 'true'
     status = requests.get(str(link) + '/1?style=list')
     linkLetturaCapitolo = []
+    images_base64 = []
     total_pages = 0
     
     if status.status_code == 200:
@@ -494,13 +575,45 @@ def chapter_pages():
             
         print(f"Totale pagine rilevate: {total_pages}")
             
-        # Ottieni tutte le immagini
-        for i in range(1, total_pages + 1):
-            lettura = soup.find_all('img', {'id': 'page-'+str(i)})
-            match = re.search(r'src="(.*)"', str(lettura))
-            if match:
-                src = match.group(1)
+        # Ottieni tutte le immagini in una volta sola
+        all_images = soup.find_all('img', id=re.compile(r'^page-\d+$'))
+        
+        # Estrai i link delle immagini
+        for img in all_images:
+            src = img.get('src')
+            if src:
                 linkLetturaCapitolo.append(src)
+                
+                # Se richiesto, converti anche in base64
+                if include_base64:
+                    page_num = len(linkLetturaCapitolo)  # Usa la posizione corrente
+                    try:
+                        img_response = requests.get(src, timeout=10)
+                        if img_response.status_code == 200:
+                            img_base64 = base64.b64encode(img_response.content).decode('utf-8')
+                            content_type = img_response.headers.get('Content-Type', 'image/jpeg')
+                            images_base64.append({
+                                'page': page_num,
+                                'url': src,
+                                'base64': img_base64,
+                                'mime_type': content_type,
+                                'size_bytes': len(img_response.content)
+                            })
+                        else:
+                            images_base64.append({
+                                'page': page_num,
+                                'url': src,
+                                'error': f'HTTP {img_response.status_code}',
+                                'base64': None
+                            })
+                    except Exception as e:
+                        images_base64.append({
+                            'page': page_num,
+                            'url': src,
+                            'error': str(e),
+                            'base64': None
+                        })
+                        logger.error(f"Errore nel download dell'immagine {src}: {str(e)}")
     
     response_data = {
         "status": "ok",
@@ -508,6 +621,10 @@ def chapter_pages():
         "total_pages": total_pages,
         "data": linkLetturaCapitolo
     }
+    
+    # Aggiungi le immagini base64 se richieste
+    if include_base64:
+        response_data["images_base64"] = images_base64
     
     return jsonify(response_data)
 

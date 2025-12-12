@@ -109,6 +109,25 @@ class MangaWorldApi {
     }
   }
 
+  Future<DataManager> getChapterPagesWithBase64(String link) async {
+    DataManager dataManager = DataManager();
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/chapter_pages?link=$link&include_base64=true'),
+        headers: {'Content-Type': 'application/json'},
+      );
+      if (response.statusCode == 200) {
+        Map<String, dynamic> data = json.decode(response.body);
+        dataManager = DataManager.fromJson(data);
+        return dataManager;
+      } else {
+        throw Exception('Failed to get pages with base64: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Error getting pages with base64: $e');
+    }
+  }
+
   Future<DataManager> getAllManga() async {
     DataManager dataManager = DataManager();
     try {
