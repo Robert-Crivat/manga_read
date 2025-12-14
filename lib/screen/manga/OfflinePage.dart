@@ -13,7 +13,7 @@ class OfflinePage extends StatefulWidget {
 
 class _OfflinePageState extends State<OfflinePage> {
   List<String> mangaList = [];
-  Map<String, File?> mangaCovers = {}; // Mappa per le copertine
+  Map<String, File?> mangaCovers = {};
   String? selectedManga;
   List<String> chapterList = [];
   String? selectedChapter;
@@ -36,7 +36,6 @@ class _OfflinePageState extends State<OfflinePage> {
       String mangaName = mangaDir.path.split('/').last;
       mangas.add(mangaName);
       
-      // Cerca la copertina
       final coverFile = File('${mangaDir.path}/cover.png');
       if (coverFile.existsSync()) {
         covers[mangaName] = coverFile;
@@ -75,11 +74,10 @@ class _OfflinePageState extends State<OfflinePage> {
     });
   }
 
-    Future<void> deleteDownloadedChapter(String mangaName, int chapterNumber) async {
+  Future<void> deleteDownloadedChapter(String mangaName, int chapterNumber) async {
     final directory = await getApplicationDocumentsDirectory();
     final mangaDir = Directory('${directory.path}/$mangaName');
     
-    // Elimina l'intera cartella del manga con tutti i capitoli
     if (mangaDir.existsSync()) {
       await mangaDir.delete(recursive: true);
     }
@@ -87,6 +85,17 @@ class _OfflinePageState extends State<OfflinePage> {
     await loadMangaList();
     if (!mounted) return;
     setState(() {});
+    _showSnackBar('$mangaName eliminato con successo');
+  }
+
+  void _showSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        duration: Duration(seconds: 2),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
   }
 
   void resetToMangaList() {
@@ -98,32 +107,415 @@ class _OfflinePageState extends State<OfflinePage> {
     });
   }
 
+  Widget _buildMangaList() {
+    if (mangaList.isEmpty) {
+      return _buildEmptyState(
+        icon: Icons.cloud_off,
+        title: 'Nessun manga offline',
+        subtitle: 'Scarica alcuni manga per leggerli offline',
+        actionText: 'Torna Online',
+        onAction: () {
+          if (widget.onBackToOnline != null) {
+            widget.onBackToOnline!();
+          }
+          Navigator.pop(context);
+        },
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(left: 16, bottom: 16),
+          child: Text(
+            'Manga Salvati (${mangaList.length})',
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.bold,
+              color: Colors.deepPurple,
+            ),
+          ),
+        ),
+        Expanded(
+          child: GridView.builder(
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              crossAxisSpacing: 16,
+              mainAxisSpacing: 16,
+              childAspectRatio: 0.7,
+            ),
+            itemCount: mangaList.length,
+            itemBuilder: (context, index) {
+              final manga = mangaList[index];
+              final cover = mangaCovers[manga];
+              
+              return _buildMangaCard(manga, cover);
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildMangaCard(String manga, File? cover) {
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: () {
+          setState(() {
+            selectedManga = manga;
+          });
+          loadChapterList(manga);
+        },
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Expanded(
+              flex: 3,
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+                  color: Colors.grey[100],
+                ),
+                child: cover != null
+                    ? ClipRRect(
+                        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+                        child: Image.file(
+                          cover,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return _buildPlaceholderIcon();
+                          },
+                        ),
+                      )
+                    : _buildPlaceholderIcon(),
+              ),
+            ),
+            Expanded(
+              flex: 1,
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        manga,
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    PopupMenuButton<String>(
+                      icon: Icon(Icons.more_vert, size: 20),
+                      onSelected: (value) {
+                        if (value == 'delete') {
+                          _showDeleteDialog(manga);
+                        }
+                      },
+                      itemBuilder: (context) => [
+                        PopupMenuItem(
+                          value: 'delete',
+                          child: Row(
+                            children: [
+                              Icon(Icons.delete, color: Colors.red),
+                              SizedBox(width: 8),
+                              Text('Elimina'),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPlaceholderIcon() {
+    return Center(
+      child: Icon(
+        Icons.book,
+        size: 40,
+        color: Colors.grey[400],
+      ),
+    );
+  }
+
+  Widget _buildChapterList() {
+    if (chapterList.isEmpty) {
+      return _buildEmptyState(
+        icon: Icons.folder_open,
+        title: 'Nessun capitolo trovato',
+        subtitle: 'Questo manga non ha capitoli salvati',
+        actionText: 'Torna indietro',
+        onAction: resetToMangaList,
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildBackButton('Seleziona Capitolo'),
+        Padding(
+          padding: const EdgeInsets.only(left: 16, bottom: 16),
+          child: Text(
+            'Capitoli (${chapterList.length})',
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+        Expanded(
+          child: ListView.builder(
+            itemCount: chapterList.length,
+            itemBuilder: (context, index) {
+              final chapter = chapterList[index];
+              return Card(
+                margin: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                elevation: 2,
+                child: ListTile(
+                  leading: Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: Colors.deepPurple.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Icon(Icons.article, color: Colors.deepPurple),
+                  ),
+                  title: Text(
+                    chapter,
+                    style: Theme.of(context).textTheme.bodyLarge,
+                  ),
+                  trailing: Icon(Icons.chevron_right, color: Colors.deepPurple),
+                  onTap: () {
+                    setState(() {
+                      selectedChapter = chapter;
+                    });
+                    loadImages(selectedManga!, chapter);
+                  },
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildImageReader() {
+    if (images.isEmpty) {
+      return _buildEmptyState(
+        icon: Icons.image_not_supported,
+        title: 'Nessuna immagine',
+        subtitle: 'Impossibile caricare le immagini del capitolo',
+        actionText: 'Torna indietro',
+        onAction: () {
+          setState(() {
+            images = [];
+            selectedChapter = null;
+          });
+        },
+      );
+    }
+
+    return Column(
+      children: [
+        _buildBackButton('Lettore Manga'),
+        Expanded(
+          child: PageView.builder(
+            itemCount: images.length,
+            itemBuilder: (context, index) {
+              return Container(
+                margin: EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black26,
+                      blurRadius: 8,
+                      offset: Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: Image.file(
+                    images[index],
+                    fit: BoxFit.contain,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        color: Colors.grey[200],
+                        child: Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.error, size: 50, color: Colors.grey),
+                              SizedBox(height: 8),
+                              Text('Errore nel caricamento'),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Text(
+            'Pagina ${images.isEmpty ? 0 : 1} di ${images.length}',
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              fontWeight: FontWeight.w500,
+              color: Colors.grey[600],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBackButton(String title) {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.deepPurple.withOpacity(0.05),
+        border: Border(bottom: BorderSide(color: Colors.grey[200]!)),
+      ),
+      child: Row(
+        children: [
+          IconButton(
+            icon: Icon(Icons.arrow_back, color: Colors.deepPurple),
+            onPressed: () {
+              if (images.isNotEmpty) {
+                setState(() {
+                  images = [];
+                  selectedChapter = null;
+                });
+              } else if (chapterList.isNotEmpty) {
+                resetToMangaList();
+              }
+            },
+          ),
+          SizedBox(width: 8),
+          Text(
+            title,
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.bold,
+              color: Colors.deepPurple,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyState({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required String actionText,
+    required VoidCallback onAction,
+  }) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              icon,
+              size: 80,
+              color: Colors.grey[400],
+            ),
+            SizedBox(height: 24),
+            Text(
+              title,
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: Colors.grey[600],
+              ),
+              textAlign: TextAlign.center,
+            ),
+            SizedBox(height: 8),
+            Text(
+              subtitle,
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                color: Colors.grey[500],
+              ),
+              textAlign: TextAlign.center,
+            ),
+            SizedBox(height: 32),
+            ElevatedButton.icon(
+              onPressed: onAction,
+              icon: Icon(Icons.refresh),
+              label: Text(actionText),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.deepPurple,
+                foregroundColor: Colors.white,
+                padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showDeleteDialog(String mangaName) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Elimina Manga'),
+        content: Text('Sei sicuro di voler eliminare "$mangaName" e tutti i suoi capitoli?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Annulla'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              deleteDownloadedChapter(mangaName, 0);
+            },
+            child: Text(
+              'Elimina',
+              style: TextStyle(color: Colors.red),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Offline Manga'),
-        leading: (selectedManga != null)
-            ? IconButton(
-                icon: Icon(Icons.arrow_back),
-                onPressed: () {
-                  if (images.isNotEmpty) {
-                    setState(() {
-                      images = [];
-                      selectedChapter = null;
-                    });
-                  } else if (chapterList.isNotEmpty) {
-                    resetToMangaList();
-                  }
-                },
-              )
-            : null,
+        title: Text(
+          'Offline Manga',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        backgroundColor: Colors.deepPurple,
+        foregroundColor: Colors.white,
+        elevation: 0,
         actions: [
           IconButton(
-            icon: Icon(Icons.cloud),
+            icon: Icon(Icons.cloud, size: 28),
             tooltip: 'Torna online',
             onPressed: () {
-              // Chiama il callback e torna indietro
               if (widget.onBackToOnline != null) {
                 widget.onBackToOnline!();
               }
@@ -132,105 +524,21 @@ class _OfflinePageState extends State<OfflinePage> {
           ),
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Builder(
-          builder: (context) {
-            // Step 1: Show manga list
-            if (selectedManga == null) {
-              return mangaList.isEmpty
-                  ? Center(child: Text('Nessun manga offline'))
-                  : ListView.separated(
-                      itemCount: mangaList.length,
-                      separatorBuilder: (_, __) => Divider(),
-                      itemBuilder: (context, index) {
-                        final manga = mangaList[index];
-                        final cover = mangaCovers[manga];
-                        
-                        return Card(
-                          elevation: 2,
-                          margin: const EdgeInsets.symmetric(vertical: 8),
-                          child: ListTile(
-                            contentPadding: const EdgeInsets.all(8),
-                            leading: Container(
-                              width: 60,
-                              height: 80,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(8),
-                                color: Colors.grey[300],
-                              ),
-                              child: cover != null
-                                  ? ClipRRect(
-                                      borderRadius: BorderRadius.circular(8),
-                                      child: Image.file(
-                                        cover,
-                                        fit: BoxFit.cover,
-                                        errorBuilder: (context, error, stackTrace) {
-                                          return Icon(Icons.book, size: 40);
-                                        },
-                                      ),
-                                    )
-                                  : Icon(Icons.book, size: 40),
-                            ),
-                            title: Text(manga,
-                                style: Theme.of(context).textTheme.titleMedium),
-                            trailing: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                IconButton(
-                                  icon: Icon(Icons.delete, color: Colors.red),
-                                  onPressed: () {
-                                    deleteDownloadedChapter(manga, index);
-                                  },
-                                ),
-                                Icon(Icons.chevron_right),
-                              ],
-                            ),
-                            onTap: () {
-                              setState(() {
-                                selectedManga = manga;
-                              });
-                              loadChapterList(manga);
-                            },
-                          ),
-                        );
-                      },
-                    );
-            }
-            // Step 2: Show chapter list
-            if (selectedChapter == null) {
-              return chapterList.isEmpty
-                  ? Center(child: Text('Nessun capitolo trovato'))
-                  : ListView.separated(
-                      itemCount: chapterList.length,
-                      separatorBuilder: (_, __) => Divider(),
-                      itemBuilder: (context, index) {
-                        final chapter = chapterList[index];
-                        return ListTile(
-                          title: Text(chapter,
-                              style: Theme.of(context).textTheme.titleMedium),
-                          trailing: Icon(Icons.chevron_right),
-                          onTap: () {
-                            setState(() {
-                              selectedChapter = chapter;
-                            });
-                            loadImages(selectedManga!, chapter);
-                          },
-                        );
-                      },
-                    );
-            }
-            // Step 3: Show images
-            return images.isEmpty
-                ? Center(child: Text('Nessuna immagine'))
-                : ListView.builder(
-                    itemCount: images.length,
-                    itemBuilder: (context, index) => Card(
-                      margin: EdgeInsets.symmetric(vertical: 8),
-                      child: Image.file(images[index]),
-                    ),
-                  );
-          },
+      body: AnimatedSwitcher(
+        duration: Duration(milliseconds: 300),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Builder(
+            builder: (context) {
+              if (selectedManga == null) {
+                return _buildMangaList();
+              }
+              if (selectedChapter == null) {
+                return _buildChapterList();
+              }
+              return _buildImageReader();
+            },
+          ),
         ),
       ),
       floatingActionButton: mangaList.isEmpty
