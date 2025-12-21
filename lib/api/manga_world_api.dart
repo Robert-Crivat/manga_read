@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:manga_read/model/manga/dataMangager.dart';
 
 class MangaWorldApi {
-  String get baseUrl => "http://80.97.160.102:8000";
+  String get baseUrl => "http://192.168.2.50:8000";
 
   Future<DataManager> latestRelease() async {
     DataManager dataManager = DataManager();

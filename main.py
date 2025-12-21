@@ -634,37 +634,42 @@ def all_manga():
 
 @app.route('/download_single_image')
 def download_single_image():
-    image_url = request.args.get('url', '')
+    """Scarica una singola immagine dall'URL specificato"""
+    image_url = request.args.get('url')
+    
     if not image_url:
         return jsonify({
             "status": "error",
-            "messaggio": "Parametro 'url' mancante",
+            "messaggio": "Parametro 'url' richiesto",
             "data": {}
         }), 400
-    logger.info(f"Richiesta ricevuta per: {image_url}")
+    
     try:
-        response = requests.get(image_url, timeout=10)
+        response = requests.get(image_url, timeout=15)
         if response.status_code != 200:
             return jsonify({
                 "status": "error",
                 "messaggio": f"Immagine non trovata (HTTP {response.status_code})",
                 "data": {}
-            }), 404
+            }), 400
+        
         image_base64 = base64.b64encode(response.content).decode('utf-8')
         content_type = response.headers.get('Content-Type', 'image/jpeg')
-        response_data = {
+        
+        return jsonify({
             "status": "ok",
-            "messaggio": "Immagine scaricata correttamente",
+            "messaggio": "Download completato",
             "data": {
                 "url": image_url,
+                "success": True,
                 "mime_type": content_type,
                 "uint8list_base64": image_base64,
                 "size_bytes": len(response.content)
             }
-        }
-        return jsonify(response_data)
+        })
+        
     except Exception as e:
-        logger.error(f"Errore durante il download: {str(e)}")
+        logger.error(f"Errore nel download dell'immagine {image_url}: {str(e)}")
         return jsonify({
             "status": "error",
             "messaggio": f"Errore durante il download: {str(e)}",
@@ -673,7 +678,11 @@ def download_single_image():
 
 @app.route('/download_image')
 def download_image():
-    logger.info(f"Richiesta ricevuta con: {urls_str}")
+    # Ottieni la lista degli URL dal parametro della richiesta
+    urls_str = request.args.get('urls', '[]')
+    sequential = request.args.get('sequential', 'false').lower() == 'true'
+    logger.info(f"Richiesta ricevuta con: {urls_str}, sequenziale: {sequential}")
+    
     try:
         urls = json.loads(urls_str)
         if not isinstance(urls, list) or len(urls) == 0:
@@ -682,6 +691,7 @@ def download_image():
                 "messaggio": "Parametro 'urls' deve essere una lista non vuota",
                 "data": []
             }), 400
+            
         MAX_URLS = 5000
         if len(urls) > MAX_URLS:
             urls = urls[:MAX_URLS]
@@ -689,6 +699,7 @@ def download_image():
             logger.warning(warning)
         else:
             warning = None
+            
     except Exception as e:
         logger.error(f"Errore nel parsing degli URL: {str(e)}")
         return jsonify({
@@ -696,8 +707,10 @@ def download_image():
             "messaggio": f"Errore nel parsing degli URL: {str(e)}",
             "data": []
         }), 400
+
     results = []
-    def download_single_image(image_url):
+    
+    def download_single_image_internal(image_url):
         try:
             response = requests.get(image_url, timeout=10)
             if response.status_code != 200:
@@ -706,8 +719,10 @@ def download_image():
                     "success": False,
                     "error": f"Immagine non trovata (HTTP {response.status_code})"
                 }
+            
             image_base64 = base64.b64encode(response.content).decode('utf-8')
             content_type = response.headers.get('Content-Type', 'image/jpeg')
+            
             return {
                 "url": image_url,
                 "success": True,
@@ -721,54 +736,37 @@ def download_image():
                 "success": False,
                 "error": f"Errore durante il download: {str(e)}"
             }
-    with ThreadPoolExecutor(max_workers=5) as executor:
-        future_to_url = {executor.submit(download_single_image, url): url for url in urls}
-        for future in as_completed(future_to_url):
-            result = future.result()
+
+    if sequential:
+        # Download sequenziale delle immagini
+        for i, url in enumerate(urls):
+            logger.info(f"Download sequenziale: {i+1}/{len(urls)} - {url}")
+            result = download_single_image_internal(url)
             results.append(result)
-    url_to_result = {result['url']: result for result in results}
-    sorted_results = [url_to_result[url] for url in urls if url in url_to_result]
+    else:
+        # Download parallelo delle immagini (comportamento originale)
+        with ThreadPoolExecutor(max_workers=5) as executor:
+            future_to_url = {executor.submit(download_single_image_internal, url): url for url in urls}
+            for future in as_completed(future_to_url):
+                result = future.result()
+                results.append(result)
+
+        # Ordina i risultati secondo l'ordine originale degli URL
+        url_to_result = {result['url']: result for result in results}
+        results = [url_to_result[url] for url in urls if url in url_to_result]
+
     response_data = {
         "status": "ok",
         "messaggio": "Download immagini completato",
         "data": {
             "total_urls": len(urls),
-            "successful_downloads": sum(1 for r in sorted_results if r.get("success")),
-            "results": sorted_results,
+            "successful_downloads": sum(1 for r in results if r.get("success")),
+            "results": results,
             "warning": warning if warning else None
         }
     }
+    
     logger.info(f"Richiesta completata: {len(urls)} URL, {response_data['data']['successful_downloads']} successi")
-    return jsonify(response_data)
-    # Ottieni parametri opzionali dalla richiesta
-    page = request.args.get('page', default=1, type=int)
-    max_pages = request.args.get('max_pages', default=1, type=int)
-    
-    # Calcola direttamente il numero di pagine da elaborare
-    end_page = page + max_pages
-    all_manga = []
-    
-    # Itera sulle pagine specificate
-    for page_num in range(page, end_page):
-        print(f"Elaborazione pagina {page_num}")
-        page_url = f'https://www.mangaworld.cx/archive?page={page_num}'
-        page_response = requests.get(page_url)
-        if page_response.status_code == 200:
-            page_soup = BeautifulSoup(page_response.content, 'html.parser')
-            manga_entries = page_soup.find_all('div', {'class': 'entry'})
-            for entry in manga_entries:
-                manga_info = mangaWorldExtraction(entry)
-                if manga_info:
-                    all_manga.append(manga_info)
-                    
-    response_data = {
-        "status": "ok",
-        "messaggio": f"chiamata eseguita correttamente - all_manga (pagine {page}-{end_page-1})",
-        "pagina_corrente": page,
-        "pagine_elaborate": max_pages,
-        "totale_manga": len(all_manga),
-        "data": all_manga,
-    }
     return jsonify(response_data)
 
 @app.route('/getnovelsfire')

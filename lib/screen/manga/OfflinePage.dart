@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:manga_read/screen/manga/manga_lettura_screen.dart';
 
 class OfflinePage extends StatefulWidget {
   final VoidCallback? onBackToOnline;
@@ -18,6 +19,7 @@ class _OfflinePageState extends State<OfflinePage> {
   List<String> chapterList = [];
   String? selectedChapter;
   List<File> images = [];
+  int _currentImageIndex = 0;
 
   @override
   void initState() {
@@ -27,7 +29,10 @@ class _OfflinePageState extends State<OfflinePage> {
 
   Future<void> loadMangaList() async {
     final dir = await getApplicationDocumentsDirectory();
+    print('DEBUG OfflinePage: Directory Documents: ${dir.path}');
+    
     final mangaDirs = Directory(dir.path).listSync().whereType<Directory>();
+    print('DEBUG OfflinePage: Directory trovate: ${mangaDirs.map((d) => d.path.split('/').last).toList()}');
     
     List<String> mangas = [];
     Map<String, File?> covers = {};
@@ -54,7 +59,26 @@ class _OfflinePageState extends State<OfflinePage> {
     final dir = await getApplicationDocumentsDirectory();
     final chapters = Directory('${dir.path}/$manga')
         .listSync()
-        .whereType<Directory>();
+        .whereType<Directory>()
+        .where((d) => d.path.split('/').last.startsWith('capitolo_'))
+        .toList();
+    
+    // Ordina i capitoli in base al numero del capitolo
+    chapters.sort((a, b) {
+      final RegExp regExp = RegExp(r'capitolo_(\d+)$');
+      final matchA = regExp.firstMatch(a.path.split('/').last);
+      final matchB = regExp.firstMatch(b.path.split('/').last);
+      
+      if (matchA != null && matchB != null) {
+        final numA = int.parse(matchA.group(1)!);
+        final numB = int.parse(matchB.group(1)!);
+        return numA.compareTo(numB);
+      }
+      
+      // Fallback per ordinamento alfabetico
+      return a.path.compareTo(b.path);
+    });
+    
     setState(() {
       chapterList = chapters.map((d) => d.path.split('/').last).toList();
       selectedChapter = null;
@@ -69,8 +93,27 @@ class _OfflinePageState extends State<OfflinePage> {
         .whereType<File>()
         .where((f) => f.path.endsWith('.png'))
         .toList();
+    
+    // Ordina i file in base al numero nell'immagine (image_001.png, image_002.png, etc.)
+    files.sort((a, b) {
+      // Estrai il numero dal nome del file
+      final RegExp regExp = RegExp(r'image_(\d+)\.png$');
+      final matchA = regExp.firstMatch(a.path.split('/').last);
+      final matchB = regExp.firstMatch(b.path.split('/').last);
+      
+      if (matchA != null && matchB != null) {
+        final numA = int.parse(matchA.group(1)!);
+        final numB = int.parse(matchB.group(1)!);
+        return numA.compareTo(numB);
+      }
+      
+      // Fallback per ordinamento alfabetico se il pattern non corrisponde
+      return a.path.compareTo(b.path);
+    });
+    
     setState(() {
       images = files;
+      _currentImageIndex = 0;
     });
   }
 
@@ -104,6 +147,7 @@ class _OfflinePageState extends State<OfflinePage> {
       chapterList = [];
       selectedChapter = null;
       images = [];
+      _currentImageIndex = 0;
     });
   }
 
@@ -297,10 +341,16 @@ class _OfflinePageState extends State<OfflinePage> {
                   ),
                   trailing: Icon(Icons.chevron_right, color: Colors.deepPurple),
                   onTap: () {
-                    setState(() {
-                      selectedChapter = chapter;
-                    });
-                    loadImages(selectedManga!, chapter);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => LetturaScreenManga(
+                          offlineMangaName: selectedManga,
+                          offlineChapterName: chapter,
+                          isOfflineMode: true,
+                        ),
+                      ),
+                    );
                   },
                 ),
               );
@@ -322,6 +372,7 @@ class _OfflinePageState extends State<OfflinePage> {
           setState(() {
             images = [];
             selectedChapter = null;
+            _currentImageIndex = 0;
           });
         },
       );
@@ -333,6 +384,11 @@ class _OfflinePageState extends State<OfflinePage> {
         Expanded(
           child: PageView.builder(
             itemCount: images.length,
+            onPageChanged: (index) {
+              setState(() {
+                _currentImageIndex = index;
+              });
+            },
             itemBuilder: (context, index) {
               return Container(
                 margin: EdgeInsets.all(8),
@@ -361,6 +417,10 @@ class _OfflinePageState extends State<OfflinePage> {
                               Icon(Icons.error, size: 50, color: Colors.grey),
                               SizedBox(height: 8),
                               Text('Errore nel caricamento'),
+                              SizedBox(height: 4),
+                              Text('Immagine ${index + 1}',
+                                style: TextStyle(fontSize: 12, color: Colors.grey),
+                              ),
                             ],
                           ),
                         ),
@@ -372,14 +432,36 @@ class _OfflinePageState extends State<OfflinePage> {
             },
           ),
         ),
-        Padding(
+        Container(
           padding: const EdgeInsets.all(16.0),
-          child: Text(
-            'Pagina ${images.isEmpty ? 0 : 1} di ${images.length}',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              fontWeight: FontWeight.w500,
-              color: Colors.grey[600],
-            ),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black12,
+                blurRadius: 4,
+                offset: Offset(0, -2),
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Pagina ${_currentImageIndex + 1} di ${images.length}',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.w500,
+                  color: Colors.grey[600],
+                ),
+              ),
+              Text(
+                selectedChapter ?? '',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: Colors.deepPurple,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
           ),
         ),
       ],

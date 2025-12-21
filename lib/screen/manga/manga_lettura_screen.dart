@@ -1,22 +1,40 @@
 import 'dart:convert';
+import 'dart:io';
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:manga_read/api/manga_world_api.dart';
 import 'package:manga_read/main.dart';
 import 'package:manga_read/model/manga/capitoli_model.dart';
 import 'package:manga_read/model/manga/manga_search_model.dart';
 import 'package:widget_zoom/widget_zoom.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:path_provider/path_provider.dart';
 
 class LetturaScreenManga extends StatefulWidget {
-  final MangaSearchModel manga;
-  final ChapterModel capitolo;
-  final List<ChapterModel> allChapters;
+  // Parametri per modalità online
+  final MangaSearchModel? manga;
+  final ChapterModel? capitolo;
+  final List<ChapterModel>? allChapters;
+  
+  // Parametri per modalità offline
+  final String? offlineMangaName;
+  final String? offlineChapterName;
+  
+  // Modalità di funzionamento
+  final bool isOfflineMode;
 
-  const LetturaScreenManga(
-      {Key? key,
-      required this.manga,
-      required this.capitolo,
-      required this.allChapters})
-      : super(key: key);
+  const LetturaScreenManga({
+      Key? key,
+      // Online parameters
+      this.manga,
+      this.capitolo,
+      this.allChapters,
+      // Offline parameters
+      this.offlineMangaName,
+      this.offlineChapterName,
+      // Mode
+      this.isOfflineMode = false,
+      }) : super(key: key);
 
   @override
   State<LetturaScreenManga> createState() => _LetturaScreenMangaState();
@@ -31,6 +49,14 @@ class _LetturaScreenMangaState extends State<LetturaScreenManga>
   List<Map<String, dynamic>> imagesBase64 = []; // Dati base64 delle immagini
   Map<int, ImageProvider> imageCache = {}; // Cache delle immagini precaricate
   List<ChapterModel> allChapters = [];
+  
+  // Variabili per modalità offline
+  List<File> offlineImages = [];
+  List<String> availableOfflineChapters = [];
+  List<String> offlineChapters = []; // Lista dei capitoli offline disponibili
+  String? currentOfflineChapter;
+  bool isConnected = true;
+  
   bool isLoading = false;
   bool isLoadingChapters = false;
   int currentPage = 0;
@@ -55,8 +81,80 @@ class _LetturaScreenMangaState extends State<LetturaScreenManga>
     );
     _controlsAnimationController.forward();
     _loadPreferences();
-    getChaptersImg();
-    allChapters = widget.allChapters;
+    _checkConnectivity();
+    _initializeContent();
+    
+    // Timeout di sicurezza per evitare caricamento infinito
+    Timer(const Duration(seconds: 10), () {
+      if (mounted && isLoading) {
+        print('DEBUG: Timeout inizializzazione - forzo stop loading');
+        setState(() {
+          isLoading = false;
+        });
+      }
+    });
+  }
+  
+  Future<void> _checkConnectivity() async {
+    try {
+      print('DEBUG: Tentativo controllo connettività...');
+      final connectivityResult = await Connectivity().checkConnectivity();
+      print('DEBUG: Controllo connettività completato: $connectivityResult');
+      
+      setState(() {
+        isConnected = connectivityResult.isNotEmpty && connectivityResult.first != ConnectivityResult.none;
+      });
+      
+      print('DEBUG: Stato connessione impostato: $isConnected');
+      
+      // Listener per cambiamenti di connettività
+      Connectivity().onConnectivityChanged.listen((List<ConnectivityResult> results) {
+        print('DEBUG: Cambio connettività rilevato: $results');
+        setState(() {
+          isConnected = results.isNotEmpty && results.first != ConnectivityResult.none;
+        });
+      });
+    } catch (e) {
+      print('DEBUG: Plugin connectivity_plus non disponibile: $e');
+      // Fallback: assume connessione disponibile
+      setState(() {
+        isConnected = true;
+      });
+      print('DEBUG: Fallback attivato - connessione assunta come disponibile: $isConnected');
+    }
+  }
+  
+  void _initializeContent() {
+    print('DEBUG: Inizializzazione contenuto...');
+    print('DEBUG: widget.isOfflineMode: ${widget.isOfflineMode}');
+    print('DEBUG: widget.offlineMangaName: ${widget.offlineMangaName}');
+    print('DEBUG: widget.offlineChapterName: ${widget.offlineChapterName}');
+    print('DEBUG: widget.manga: ${widget.manga}');
+    print('DEBUG: widget.capitolo: ${widget.capitolo}');
+    print('DEBUG: isConnected: $isConnected');
+    
+    // Se specificatamente in modalità offline o parametri offline forniti, usa modalità offline
+    if (widget.isOfflineMode || (widget.offlineMangaName != null && widget.offlineChapterName != null)) {
+      print('DEBUG: Caricamento modalità OFFLINE (parametri espliciti)');
+      currentOfflineChapter = widget.offlineChapterName;
+      _loadOfflineContent();
+    } else if (!isConnected && widget.offlineMangaName != null && widget.offlineChapterName != null) {
+      // Fallback a offline se disconnesso ma dati offline disponibili
+      print('DEBUG: Caricamento modalità OFFLINE (fallback per disconnessione)');
+      currentOfflineChapter = widget.offlineChapterName;
+      _loadOfflineContent();
+    } else if (widget.manga != null && widget.capitolo != null) {
+      // Modalità online
+      print('DEBUG: Caricamento modalità ONLINE');
+      allChapters = widget.allChapters ?? [];
+      getChaptersImg();
+    } else {
+      // Nessun dato valido
+      print('DEBUG: Nessun dato valido per inizializzazione');
+      setState(() {
+        isLoading = false;
+      });
+    }
   }
 
   /// Carica le preferenze salvate
@@ -110,57 +208,59 @@ class _LetturaScreenMangaState extends State<LetturaScreenManga>
     });
     try {
       // Chiamata al nuovo endpoint con base64
-      var results = await mangaWorldApi.getChapterPagesWithBase64(widget.capitolo.url);
-      if (!mounted) return;
+      if (widget.capitolo?.url != null) {
+        var results = await mangaWorldApi.getChapterPagesWithBase64(widget.capitolo!.url);
+        if (!mounted) return;
 
-      print('DEBUG: Risposta API ricevuta');
-      print('DEBUG: results.status: ${results.status}');
-      print('DEBUG: results.parametri type: ${results.parametri.runtimeType}');
-      print('DEBUG: results.data type: ${results.data.runtimeType}');
+        print('DEBUG: Risposta API ricevuta');
+        print('DEBUG: results.status: ${results.status}');
+        print('DEBUG: results.parametri type: ${results.parametri.runtimeType}');
+        print('DEBUG: results.data type: ${results.data.runtimeType}');
 
-      // Prima estrai i dati
-      if (results.parametri != null) {
-        capitoliList = results.parametri.cast<String>();
-      }
-      
-      // Gestisci i dati base64 se disponibili
-      bool hasBase64 = false;
-      try {
-        if (results.data != null && results.data is Map) {
-          print('DEBUG: results.data keys: ${results.data.keys}');
-          if (results.data['images_base64'] != null) {
-            print('DEBUG: images_base64 found, type: ${results.data['images_base64'].runtimeType}');
-            var base64List = results.data['images_base64'];
-            if (base64List is List) {
-              imagesBase64 = List<Map<String, dynamic>>.from(base64List);
-              hasBase64 = true;
-              print('DEBUG: Successfully extracted ${imagesBase64.length} base64 images');
+        // Prima estrai i dati
+        if (results.parametri != null) {
+          capitoliList = results.parametri.cast<String>();
+        }
+        
+        // Gestisci i dati base64 se disponibili
+        bool hasBase64 = false;
+        try {
+          if (results.data != null && results.data is Map) {
+            print('DEBUG: results.data keys: ${results.data.keys}');
+            if (results.data['images_base64'] != null) {
+              print('DEBUG: images_base64 found, type: ${results.data['images_base64'].runtimeType}');
+              var base64List = results.data['images_base64'];
+              if (base64List is List) {
+                imagesBase64 = List<Map<String, dynamic>>.from(base64List);
+                hasBase64 = true;
+                print('DEBUG: Successfully extracted ${imagesBase64.length} base64 images');
+              }
             }
           }
+        } catch (e) {
+          print('DEBUG: Error processing base64 data: $e');
+          hasBase64 = false;
         }
-      } catch (e) {
-        print('DEBUG: Error processing base64 data: $e');
-        hasBase64 = false;
-      }
 
-      // Aggiorna lo stato
-      setState(() {
-        // I dati sono già stati estratti sopra
-      });
+        // Aggiorna lo stato
+        setState(() {
+          // I dati sono già stati estratti sopra
+        });
 
-      // Precarica le immagini dopo aver aggiornato lo stato
-      if (hasBase64) {
-        await _preloadBase64Images();
-        if (mounted) {
-          setState(() {
-            loadedImagesCount = imagesBase64.length;
-            allImagesLoaded = true;
-            isLoading = false;
-          });
+        // Precarica le immagini dopo aver aggiornato lo stato
+        if (hasBase64) {
+          await _preloadBase64Images();
+          if (mounted) {
+            setState(() {
+              loadedImagesCount = imagesBase64.length;
+              allImagesLoaded = true;
+              isLoading = false;
+            });
+          }
+        } else {
+          // Fallback al precaricamento tradizionale
+          _preloadAllImages();
         }
-      } else {
-        // Fallback al precaricamento tradizionale
-        _preloadAllImages();
       }
     } catch (e) {
       print("Error searching manga: $e");
@@ -171,6 +271,209 @@ class _LetturaScreenMangaState extends State<LetturaScreenManga>
           isLoading = false;
           allImagesLoaded = false;
         });
+      }
+    }
+  }
+
+  Future<void> _loadOfflineContent() async {
+    print('DEBUG: _loadOfflineContent chiamato');
+    
+    if (widget.offlineMangaName == null || currentOfflineChapter == null) {
+      print('DEBUG: Parametri offline mancanti in _loadOfflineContent');
+      setState(() {
+        isLoading = false;
+      });
+      return;
+    }
+    
+    setState(() {
+      isLoading = true;
+      allImagesLoaded = false;
+      loadedImagesCount = 0;
+    });
+
+    try {
+      await _loadOfflineImages();
+      await _loadOfflineChaptersList();
+    } catch (e) {
+      print('DEBUG: Errore nel caricamento contenuto offline: $e');
+      
+      // Assicurati che loading sia disabilitato anche in caso di errore
+      setState(() {
+        isLoading = false;
+      });
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Errore nel caricamento offline: $e')),
+        );
+      }
+    }
+  }
+
+  Future<void> _loadOfflineImages() async {
+    print('DEBUG: _loadOfflineImages chiamato');
+    print('DEBUG: offlineMangaName: ${widget.offlineMangaName}');
+    print('DEBUG: currentOfflineChapter: $currentOfflineChapter');
+    
+    if (widget.offlineMangaName == null || currentOfflineChapter == null) {
+      print('DEBUG: Parametri offline mancanti, uscita anticipata');
+      return;
+    }
+    
+    try {
+      final dir = await getApplicationDocumentsDirectory();
+      final mangaDir = '${dir.path}/${widget.offlineMangaName}/$currentOfflineChapter';
+      print('DEBUG: Cercando immagini in: $mangaDir');
+      
+      // Controlla se la directory esiste
+      final directory = Directory(mangaDir);
+      if (!directory.existsSync()) {
+        print('DEBUG: Directory non esiste: $mangaDir');
+        setState(() {
+          isLoading = false;
+          allImagesLoaded = true;
+          loadedImagesCount = 0;
+          offlineImages = [];
+        });
+        return;
+      }
+      
+      final files = directory
+          .listSync()
+          .whereType<File>()
+          .where((f) => f.path.endsWith('.png'))
+          .toList();
+      
+      print('DEBUG: Trovati ${files.length} file PNG');
+      
+      if (files.isEmpty) {
+        print('DEBUG: Nessuna immagine PNG trovata');
+        setState(() {
+          isLoading = false;
+          allImagesLoaded = true;
+          loadedImagesCount = 0;
+          offlineImages = [];
+        });
+        return;
+      }
+      
+      for (var file in files) {
+        print('DEBUG: File trovato: ${file.path}');
+      }
+      
+      // Ordina i file per numero sequenziale
+      files.sort((a, b) {
+        final RegExp regExp = RegExp(r'image_(\d+)\.png$');
+        final matchA = regExp.firstMatch(a.path.split('/').last);
+        final matchB = regExp.firstMatch(b.path.split('/').last);
+        
+        if (matchA != null && matchB != null) {
+          final numA = int.parse(matchA.group(1)!);
+          final numB = int.parse(matchB.group(1)!);
+          return numA.compareTo(numB);
+        }
+        return a.path.compareTo(b.path);
+      });
+      
+      print('DEBUG: File ordinati: ${files.map((f) => f.path.split('/').last).toList()}');
+      
+      setState(() {
+        offlineImages = files;
+        isLoading = false;
+        allImagesLoaded = true;
+        loadedImagesCount = files.length;
+      });
+      
+      print('DEBUG: Stato aggiornato - offlineImages: ${offlineImages.length}');
+      
+      // Precarica le immagini offline
+      await _preloadOfflineImages();
+    } catch (e) {
+      print('DEBUG: Errore nel caricamento immagini offline: $e');
+      setState(() {
+        isLoading = false;
+        offlineImages = [];
+        allImagesLoaded = true;
+        loadedImagesCount = 0;
+      });
+      // Non fare throw, lascia che l'app continui a funzionare
+    }
+  }
+
+  Future<void> _loadOfflineChaptersList() async {
+    print('DEBUG: _loadOfflineChaptersList chiamato');
+    
+    if (widget.offlineMangaName == null) {
+      print('DEBUG: offlineMangaName è null, uscita anticipata');
+      return;
+    }
+
+    try {
+      final dir = await getApplicationDocumentsDirectory();
+      final mangaMainDir = '${dir.path}/${widget.offlineMangaName}';
+      print('DEBUG: Cercando capitoli in: $mangaMainDir');
+      
+      // Controlla se la directory principale esiste
+      final mainDirectory = Directory(mangaMainDir);
+      if (!mainDirectory.existsSync()) {
+        print('DEBUG: Directory principale non esiste: $mangaMainDir');
+        setState(() {
+          offlineChapters = [];
+        });
+        return;
+      }
+      
+      final chapters = mainDirectory
+          .listSync()
+          .whereType<Directory>()
+          .where((d) => d.path.split('/').last.startsWith('capitolo_'))
+          .toList();
+      
+      print('DEBUG: Trovati ${chapters.length} capitoli offline');
+      for (var chapter in chapters) {
+        print('DEBUG: Capitolo trovato: ${chapter.path.split('/').last}');
+      }
+      
+      // Ordina i capitoli per numero
+      chapters.sort((a, b) {
+        final RegExp regExp = RegExp(r'capitolo_(\d+)$');
+        final matchA = regExp.firstMatch(a.path.split('/').last);
+        final matchB = regExp.firstMatch(b.path.split('/').last);
+        
+        if (matchA != null && matchB != null) {
+          final numA = int.parse(matchA.group(1)!);
+          final numB = int.parse(matchB.group(1)!);
+          return numA.compareTo(numB);
+        }
+        return a.path.compareTo(b.path);
+      });
+      
+      setState(() {
+        availableOfflineChapters = chapters.map((d) => d.path.split('/').last).toList();
+      });
+    } catch (e) {
+      print('Errore nel caricamento lista capitoli offline: $e');
+    }
+  }
+
+  Future<void> _preloadOfflineImages() async {
+    if (offlineImages.isEmpty) return;
+    
+    for (int i = 0; i < offlineImages.length; i++) {
+      if (!mounted) return;
+      try {
+        final imageProvider = FileImage(offlineImages[i]);
+        await precacheImage(imageProvider, context);
+        imageCache[i] = imageProvider;
+        
+        if (mounted) {
+          setState(() {
+            loadedImagesCount = i + 1;
+          });
+        }
+      } catch (e) {
+        print('Errore nel precaricamento immagine offline $i: $e');
       }
     }
   }
@@ -263,6 +566,8 @@ class _LetturaScreenMangaState extends State<LetturaScreenManga>
     print('DEBUG: imageCache.length: ${imageCache.length}');
     print('DEBUG: imagesBase64.length: ${imagesBase64.length}');
     print('DEBUG: capitoliList.length: ${capitoliList.length}');
+    print('DEBUG: offlineImages.length: ${offlineImages.length}');
+    print('DEBUG: isOfflineMode: ${widget.isOfflineMode}, isConnected: $isConnected');
     
     // Prima controlla la cache
     if (imageCache.containsKey(index)) {
@@ -275,7 +580,32 @@ class _LetturaScreenMangaState extends State<LetturaScreenManga>
       );
     }
     
-    // Fallback: usa base64 se disponibile, altrimenti network
+    // Se siamo in modalità offline o senza connessione (o plugin non disponibile)
+    if (widget.isOfflineMode || !isConnected || widget.offlineMangaName != null) {
+      print('DEBUG: Modalità offline rilevata per index: $index');
+      print('DEBUG: offlineImages.length: ${offlineImages.length}');
+      
+      if (offlineImages.isNotEmpty && index < offlineImages.length) {
+        print('DEBUG: Caricamento immagine offline: ${offlineImages[index].path}');
+        final imageProvider = FileImage(offlineImages[index]);
+        // Aggiungi alla cache per la prossima volta
+        imageCache[index] = imageProvider;
+        return Image(
+          image: imageProvider,
+          fit: BoxFit.contain,
+          errorBuilder: (context, error, stackTrace) {
+            print('DEBUG: Errore caricamento immagine offline: $error');
+            return _buildErrorWidget();
+          },
+          gaplessPlayback: true,
+        );
+      } else {
+        print('DEBUG: Nessuna immagine offline disponibile per index: $index');
+        return _buildErrorWidget();
+      }
+    }
+    
+    // Modalità online: usa base64 se disponibile, altrimenti network
     if (imagesBase64.isNotEmpty && index < imagesBase64.length) {
       final imageData = imagesBase64[index];
       print('DEBUG: imageData type: ${imageData.runtimeType}');
@@ -341,52 +671,123 @@ class _LetturaScreenMangaState extends State<LetturaScreenManga>
     );
   }
 
-  void navigateToChapter(ChapterModel chapter) {
-    Navigator.pushReplacement(
-      context,
-      PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) =>
-            LetturaScreenManga(
-          allChapters: allChapters,
-          manga: widget.manga,
-          capitolo: chapter,
+  void navigateToChapter(dynamic chapter) {
+    // Usa modalità offline se esplicitamente offline o se dati offline disponibili
+    if (widget.isOfflineMode || !isConnected || widget.offlineMangaName != null) {
+      // Navigazione per modalità offline
+      Navigator.pushReplacement(
+        context,
+        PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              LetturaScreenManga(
+            offlineMangaName: widget.offlineMangaName,
+            offlineChapterName: chapter as String, // chapter è String per offline
+            isOfflineMode: true,
+          ),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return FadeTransition(
+              opacity: animation,
+              child: child,
+            );
+          },
+          transitionDuration: const Duration(milliseconds: 300),
         ),
-        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          return FadeTransition(
-            opacity: animation,
-            child: child,
-          );
-        },
-        transitionDuration: const Duration(milliseconds: 300),
-      ),
-    );
+      );
+    } else {
+      // Navigazione per modalità online
+      Navigator.pushReplacement(
+        context,
+        PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              LetturaScreenManga(
+            allChapters: allChapters,
+            manga: widget.manga,
+            capitolo: chapter as ChapterModel, // chapter è ChapterModel per online
+            isOfflineMode: false,
+          ),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return FadeTransition(
+              opacity: animation,
+              child: child,
+            );
+          },
+          transitionDuration: const Duration(milliseconds: 300),
+        ),
+      );
+    }
   }
 
   bool _canGoPrevious() {
-    final currentIndex =
-        allChapters.indexWhere((ch) => ch.url == widget.capitolo.url);
-    return currentIndex > 0;
+    if (widget.isOfflineMode || !isConnected || widget.offlineMangaName != null) {
+      if (currentOfflineChapter == null) return false;
+      final currentIndex = availableOfflineChapters.indexOf(currentOfflineChapter!);
+      return currentIndex > 0;
+    } else {
+      if (widget.capitolo == null) return false;
+      final currentIndex = allChapters.indexWhere((ch) => ch.url == widget.capitolo!.url);
+      return currentIndex > 0;
+    }
   }
 
   bool _canGoNext() {
-    final currentIndex =
-        allChapters.indexWhere((ch) => ch.url == widget.capitolo.url);
-    return currentIndex < allChapters.length - 1;
+    if (widget.isOfflineMode || !isConnected || widget.offlineMangaName != null) {
+      if (currentOfflineChapter == null) return false;
+      final currentIndex = availableOfflineChapters.indexOf(currentOfflineChapter!);
+      return currentIndex < availableOfflineChapters.length - 1;
+    } else {
+      if (widget.capitolo == null) return false;
+      final currentIndex = allChapters.indexWhere((ch) => ch.url == widget.capitolo!.url);
+      return currentIndex < allChapters.length - 1;
+    }
   }
 
   void _goToPreviousChapter() {
-    final currentIndex =
-        allChapters.indexWhere((ch) => ch.url == widget.capitolo.url);
-    if (currentIndex > 0) {
-      navigateToChapter(allChapters[currentIndex - 1]);
+    if (widget.isOfflineMode || !isConnected || widget.offlineMangaName != null) {
+      if (currentOfflineChapter == null) return;
+      final currentIndex = availableOfflineChapters.indexOf(currentOfflineChapter!);
+      if (currentIndex > 0) {
+        navigateToChapter(availableOfflineChapters[currentIndex - 1]);
+      }
+    } else {
+      if (widget.capitolo == null) return;
+      final currentIndex = allChapters.indexWhere((ch) => ch.url == widget.capitolo!.url);
+      if (currentIndex > 0) {
+        navigateToChapter(allChapters[currentIndex - 1]);
+      }
     }
   }
 
   void _goToNextChapter() {
-    final currentIndex =
-        allChapters.indexWhere((ch) => ch.url == widget.capitolo.url);
-    if (currentIndex < allChapters.length - 1) {
-      navigateToChapter(allChapters[currentIndex + 1]);
+    if (widget.isOfflineMode || !isConnected || widget.offlineMangaName != null) {
+      if (currentOfflineChapter == null) return;
+      final currentIndex = availableOfflineChapters.indexOf(currentOfflineChapter!);
+      if (currentIndex < availableOfflineChapters.length - 1) {
+        navigateToChapter(availableOfflineChapters[currentIndex + 1]);
+      }
+    } else {
+      if (widget.capitolo == null) return;
+      final currentIndex = allChapters.indexWhere((ch) => ch.url == widget.capitolo!.url);
+      if (currentIndex < allChapters.length - 1) {
+        navigateToChapter(allChapters[currentIndex + 1]);
+      }
+    }
+  }
+
+  int _getCurrentImageCount() {
+    if (widget.isOfflineMode || !isConnected || widget.offlineMangaName != null) {
+      return offlineImages.length;
+    } else {
+      return imagesBase64.isNotEmpty ? imagesBase64.length : capitoliList.length;
+    }
+  }
+
+  bool _shouldShowLoading() {
+    if (widget.isOfflineMode || !isConnected || widget.offlineMangaName != null) {
+      // Modalità offline: mostra loading se non ci sono immagini offline caricate
+      return offlineImages.isEmpty && isLoading;
+    } else {
+      // Modalità online: usa la logica originale
+      return !allImagesLoaded || capitoliList.isEmpty;
     }
   }
 
@@ -435,7 +836,7 @@ class _LetturaScreenMangaState extends State<LetturaScreenManga>
                   itemCount: allChapters.length,
                   itemBuilder: (context, index) {
                     final chapter = allChapters[index];
-                    final isCurrentChapter = chapter.url == widget.capitolo.url;
+                    final isCurrentChapter = chapter.url == (widget.capitolo?.url ?? '');
 
                     return Container(
                       margin: const EdgeInsets.symmetric(
@@ -542,7 +943,7 @@ class _LetturaScreenMangaState extends State<LetturaScreenManga>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  widget.manga.title,
+                  widget.manga?.title ?? widget.offlineMangaName ?? 'Manga Reader',
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 16,
@@ -550,15 +951,31 @@ class _LetturaScreenMangaState extends State<LetturaScreenManga>
                   ),
                   overflow: TextOverflow.ellipsis,
                 ),
-                if ((imagesBase64.isNotEmpty || capitoliList.isNotEmpty) && !isListView)
-                  Text(
-                    'Pagina ${currentPage + 1} di ${imagesBase64.isNotEmpty ? imagesBase64.length : capitoliList.length}',
-                    style: TextStyle(
-                      color: Colors.grey[300],
-                      fontSize: 12,
-                      fontWeight: FontWeight.w400,
-                    ),
-                  ),
+                Row(
+                  children: [
+                    if (_getCurrentImageCount() > 0 && !isListView)
+                      Text(
+                        'Pagina ${currentPage + 1} di ${_getCurrentImageCount()}',
+                        style: TextStyle(
+                          color: Colors.grey[300],
+                          fontSize: 12,
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                    if (widget.isOfflineMode || !isConnected) ...[
+                      if (_getCurrentImageCount() > 0 && !isListView)
+                        const Text(' • ', style: TextStyle(color: Colors.grey)),
+                      Text(
+                        'OFFLINE',
+                        style: TextStyle(
+                          color: Colors.orange,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
               ],
             ),
             actions: [
@@ -635,7 +1052,7 @@ class _LetturaScreenMangaState extends State<LetturaScreenManga>
         children: [
           // Main content area for reading
           Expanded(
-            child: (!allImagesLoaded || capitoliList.isEmpty)
+            child: isLoading || _shouldShowLoading()
                 ? Center(
                     child: TweenAnimationBuilder(
                       duration: const Duration(milliseconds: 800),
@@ -678,11 +1095,13 @@ class _LetturaScreenMangaState extends State<LetturaScreenManga>
                           ),
                           const SizedBox(height: 24),
                           Text(
-                            capitoliList.isEmpty
+                            _shouldShowLoading()
                                 ? 'Caricamento capitolo...'
-                                : imagesBase64.isNotEmpty
-                                    ? 'Immagini caricate!'
-                                    : 'Precaricamento immagini...',
+                                : (widget.isOfflineMode || !isConnected || widget.offlineMangaName != null)
+                                    ? 'Immagini offline caricate!'
+                                    : imagesBase64.isNotEmpty
+                                        ? 'Immagini caricate!'
+                                        : 'Precaricamento immagini...',
                             style: const TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.w600,
@@ -690,7 +1109,7 @@ class _LetturaScreenMangaState extends State<LetturaScreenManga>
                             ),
                             textAlign: TextAlign.center,
                           ),
-                          if (capitoliList.isNotEmpty && imagesBase64.isEmpty) ...[
+                          if (!_shouldShowLoading() && !(widget.isOfflineMode || !isConnected || widget.offlineMangaName != null) && capitoliList.isNotEmpty && imagesBase64.isEmpty) ...[
                             const SizedBox(height: 16),
                             SizedBox(
                               width: 200,
@@ -723,6 +1142,17 @@ class _LetturaScreenMangaState extends State<LetturaScreenManga>
                               ),
                             ),
                           ],
+                          if (widget.isOfflineMode || !isConnected || widget.offlineMangaName != null) ...[
+                            const SizedBox(height: 8),
+                            Text(
+                              '${offlineImages.length} immagini offline',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.orange[300],
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
                         ],
                       ),
                     ),
@@ -734,7 +1164,7 @@ class _LetturaScreenMangaState extends State<LetturaScreenManga>
                         child: ListView.builder(
                           controller: _scrollController,
                           physics: const BouncingScrollPhysics(),
-                          itemCount: imagesBase64.isNotEmpty ? imagesBase64.length : capitoliList.length,
+                          itemCount: _getCurrentImageCount(),
                           itemBuilder: (context, index) {
                             return Container(
                               color: Colors.black,
@@ -769,7 +1199,7 @@ class _LetturaScreenMangaState extends State<LetturaScreenManga>
                               currentPage = page;
                             });
                           },
-                          itemCount: imagesBase64.isNotEmpty ? imagesBase64.length : capitoliList.length,
+                          itemCount: _getCurrentImageCount(),
                           itemBuilder: (context, index) {
                             return Container(
                               color: Colors.black,
@@ -785,17 +1215,15 @@ class _LetturaScreenMangaState extends State<LetturaScreenManga>
                       ),
           ),
           // Page progress indicator (solo in PageView mode)
-          if ((imagesBase64.isNotEmpty || capitoliList.isNotEmpty) && !isListView)
+          if (_getCurrentImageCount() > 0 && !isListView)
             FadeTransition(
               opacity: _controlsAnimation,
               child: Container(
                 height: 4,
                 child: LinearProgressIndicator(
-                  value: imagesBase64.isNotEmpty
-                      ? (currentPage + 1) / imagesBase64.length
-                      : capitoliList.isNotEmpty
-                          ? (currentPage + 1) / capitoliList.length
-                          : 0,
+                  value: _getCurrentImageCount() > 0
+                      ? (currentPage + 1) / _getCurrentImageCount()
+                      : 0,
                   backgroundColor: Colors.grey[800],
                   valueColor:
                       const AlwaysStoppedAnimation<Color>(Colors.deepPurple),
@@ -874,7 +1302,7 @@ class _LetturaScreenMangaState extends State<LetturaScreenManga>
                                 ),
                                 const SizedBox(width: 8),
                                 Text(
-                                  'Capitolo ${allChapters.indexWhere((ch) => ch.url == widget.capitolo.url) + 1} di ${allChapters.length}',
+                                  'Capitolo ${(widget.isOfflineMode || !isConnected) ? (availableOfflineChapters.indexOf(currentOfflineChapter ?? '') + 1) : (allChapters.indexWhere((ch) => ch.url == (widget.capitolo?.url ?? '')) + 1)} di ${(widget.isOfflineMode || !isConnected) ? availableOfflineChapters.length : allChapters.length}',
                                   style: const TextStyle(
                                     color: Colors.white,
                                     fontSize: 14,
