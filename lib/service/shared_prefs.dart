@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:manga_read/model/manga/manga_search_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -197,5 +198,111 @@ class SharedPrefs {
   /// Rimuove tutte le preferenze (per debug/reset)
   Future<void> clearAll() async {
     await _sharedPrefs?.clear();
+  }
+
+  // GESTIONE PROFILI SERVER
+  
+  /// Ottiene tutti i profili server salvati
+  Map<String, String> getServerProfiles() {
+    final profilesJson = _sharedPrefs?.getString('server_profiles') ?? '{}';
+    try {
+      final Map<String, dynamic> decoded = Map<String, dynamic>.from(
+        json.decode(profilesJson) as Map
+      );
+      return decoded.map((key, value) => MapEntry(key, value.toString()));
+    } catch (e) {
+      // Se c'è un errore, ritorna profili di default
+      return {
+        'Locale': 'http://192.168.1.100:8000',
+        'Remoto': 'http://100.70.187.3:8000',
+      };
+    }
+  }
+  
+  /// Salva tutti i profili server
+  Future<bool> setServerProfiles(Map<String, String> profiles) async {
+    final profilesJson = json.encode(profiles);
+    return await _sharedPrefs?.setString('server_profiles', profilesJson) ?? false;
+  }
+  
+  /// Ottiene il profilo attualmente attivo
+  String getActiveServerProfile() {
+    return _sharedPrefs?.getString('active_server_profile') ?? 'Remoto';
+  }
+  
+  /// Imposta il profilo attivo
+  Future<bool> setActiveServerProfile(String profileName) async {
+    return await _sharedPrefs?.setString('active_server_profile', profileName) ?? false;
+  }
+  
+  /// Ottiene l'URL del server corrente (basato sul profilo attivo)
+  String getServerUrl() {
+    final profiles = getServerProfiles();
+    final activeProfile = getActiveServerProfile();
+    
+    // Prima prova a ottenere l'URL dal profilo attivo
+    if (profiles.containsKey(activeProfile)) {
+      return profiles[activeProfile]!;
+    }
+    
+    // Se il profilo attivo non esiste, prova a usare il primo disponibile
+    if (profiles.isNotEmpty) {
+      return profiles.values.first;
+    }
+    
+    // Se non ci sono profili, restituisce URL di default
+    return 'http://100.70.187.3:8000';
+  }
+
+  /// Salva l'URL del server (mantenuto per compatibilità)
+  Future<bool> setServerUrl(String url) async {
+    return await _sharedPrefs?.setString('server_url', url) ?? false;
+  }
+  
+  /// Aggiunge un nuovo profilo server
+  Future<bool> addServerProfile(String name, String url) async {
+    final profiles = getServerProfiles();
+    profiles[name] = url;
+    return await setServerProfiles(profiles);
+  }
+  
+  /// Rimuove un profilo server
+  Future<bool> removeServerProfile(String name) async {
+    final profiles = getServerProfiles();
+    if (profiles.length <= 1) return false; // Non eliminare l'ultimo profilo
+    
+    profiles.remove(name);
+    
+    // Se il profilo attivo è stato eliminato, seleziona il primo disponibile
+    if (getActiveServerProfile() == name) {
+      if (profiles.isNotEmpty) {
+        await setActiveServerProfile(profiles.keys.first);
+      } else {
+        // Se non ci sono più profili, crea un profilo predefinito
+        profiles['Remoto'] = 'http://100.70.187.3:8000';
+        await setActiveServerProfile('Remoto');
+      }
+    }
+    
+    return await setServerProfiles(profiles);
+  }
+  
+  /// Modifica un profilo server esistente
+  Future<bool> updateServerProfile(String oldName, String newName, String newUrl) async {
+    final profiles = getServerProfiles();
+    
+    // Rimuovi il vecchio profilo
+    final oldUrl = profiles.remove(oldName);
+    if (oldUrl == null) return false; // Profilo non trovato
+    
+    // Aggiungi il nuovo profilo
+    profiles[newName] = newUrl;
+    
+    // Se il profilo modificato era quello attivo, aggiorna il riferimento
+    if (getActiveServerProfile() == oldName) {
+      await setActiveServerProfile(newName);
+    }
+    
+    return await setServerProfiles(profiles);
   }
 }

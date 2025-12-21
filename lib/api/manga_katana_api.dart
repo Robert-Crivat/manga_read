@@ -1,9 +1,10 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:manga_read/model/manga/dataMangager.dart';
+import 'package:manga_read/main.dart';
 
 class MangaKatanaApi {
-  String get baseUrl => "http://192.168.2.50:8000";
+  String get baseUrl => "http://80.97.160.102:8000/";
 
   static const String getLastRelease = "";
   static const String getProgressiveLastRelease = "";
@@ -144,7 +145,10 @@ class MangaKatanaApi {
   }
 
   Future<DataManager> downloadMultipleImages(List<String> imageUrls) async {
-    const String baseUrl = 'http://100.70.187.3:8000';
+    // Ottieni l'URL del server dalle SharedPreferences
+    final String baseUrl = sharedPrefs.isInitialized 
+        ? sharedPrefs.getServerUrl() 
+        : 'http://100.70.187.3:8000';
 
     // Codifica la lista di URL come stringa JSON
     final encodedUrls = json.encode(imageUrls);

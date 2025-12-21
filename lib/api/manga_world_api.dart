@@ -1,9 +1,17 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:manga_read/model/manga/dataMangager.dart';
+import 'package:manga_read/main.dart';
 
 class MangaWorldApi {
-  String get baseUrl => "http://192.168.2.50:8000";
+  String get baseUrl {
+    // Usa l'URL dal sistema di profili server
+    if (sharedPrefs.isInitialized) {
+      return sharedPrefs.getServerUrl();
+    }
+    // Fallback per quando SharedPrefs non è inizializzato
+    return "http://80.97.160.102:8000";
+  }
 
   Future<DataManager> latestRelease() async {
     DataManager dataManager = DataManager();
@@ -159,7 +167,10 @@ class MangaWorldApi {
   }
 
   Future<DataManager> downloadMultipleImages(List<String> imageUrls) async {
-    const String baseUrl = 'http://100.70.187.3:8000';
+    // Ottieni l'URL del server dalle SharedPreferences
+    final String baseUrl = sharedPrefs.isInitialized 
+        ? sharedPrefs.getServerUrl() 
+        : 'http://100.70.187.3:8000';
 
     // Codifica la lista di URL come stringa JSON
     final encodedUrls = json.encode(imageUrls);
@@ -195,7 +206,13 @@ class MangaWorldApi {
 
   Future<DataManager> downloadSingleImage(String imageUrl) async {
     DataManager dataManager = DataManager();
-    final uri = Uri.parse('$baseUrl/download_single_image?url=$imageUrl');
+    
+    // Ottieni l'URL del server dalle SharedPreferences (coerente con downloadMultipleImages)
+    final String serverUrl = sharedPrefs.isInitialized 
+        ? sharedPrefs.getServerUrl() 
+        : 'http://100.70.187.3:8000';
+        
+    final uri = Uri.parse('$serverUrl/download_single_image?url=$imageUrl');
     try {
       final response = await http.get(
         uri,

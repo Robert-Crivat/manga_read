@@ -2,10 +2,11 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:manga_read/screen/manga/manga_lettura_screen.dart';
+import 'package:manga_read/main.dart';
 
 class OfflinePage extends StatefulWidget {
   final VoidCallback? onBackToOnline;
-  
+
   const OfflinePage({super.key, this.onBackToOnline});
 
   @override
@@ -30,17 +31,18 @@ class _OfflinePageState extends State<OfflinePage> {
   Future<void> loadMangaList() async {
     final dir = await getApplicationDocumentsDirectory();
     print('DEBUG OfflinePage: Directory Documents: ${dir.path}');
-    
+
     final mangaDirs = Directory(dir.path).listSync().whereType<Directory>();
-    print('DEBUG OfflinePage: Directory trovate: ${mangaDirs.map((d) => d.path.split('/').last).toList()}');
-    
+    print(
+        'DEBUG OfflinePage: Directory trovate: ${mangaDirs.map((d) => d.path.split('/').last).toList()}');
+
     List<String> mangas = [];
     Map<String, File?> covers = {};
-    
+
     for (var mangaDir in mangaDirs) {
       String mangaName = mangaDir.path.split('/').last;
       mangas.add(mangaName);
-      
+
       final coverFile = File('${mangaDir.path}/cover.png');
       if (coverFile.existsSync()) {
         covers[mangaName] = coverFile;
@@ -48,7 +50,7 @@ class _OfflinePageState extends State<OfflinePage> {
         covers[mangaName] = null;
       }
     }
-    
+
     setState(() {
       mangaList = mangas;
       mangaCovers = covers;
@@ -62,23 +64,23 @@ class _OfflinePageState extends State<OfflinePage> {
         .whereType<Directory>()
         .where((d) => d.path.split('/').last.startsWith('capitolo_'))
         .toList();
-    
+
     // Ordina i capitoli in base al numero del capitolo
     chapters.sort((a, b) {
       final RegExp regExp = RegExp(r'capitolo_(\d+)$');
       final matchA = regExp.firstMatch(a.path.split('/').last);
       final matchB = regExp.firstMatch(b.path.split('/').last);
-      
+
       if (matchA != null && matchB != null) {
         final numA = int.parse(matchA.group(1)!);
         final numB = int.parse(matchB.group(1)!);
         return numA.compareTo(numB);
       }
-      
+
       // Fallback per ordinamento alfabetico
       return a.path.compareTo(b.path);
     });
-    
+
     setState(() {
       chapterList = chapters.map((d) => d.path.split('/').last).toList();
       selectedChapter = null;
@@ -93,34 +95,35 @@ class _OfflinePageState extends State<OfflinePage> {
         .whereType<File>()
         .where((f) => f.path.endsWith('.png'))
         .toList();
-    
+
     // Ordina i file in base al numero nell'immagine (image_001.png, image_002.png, etc.)
     files.sort((a, b) {
       // Estrai il numero dal nome del file
       final RegExp regExp = RegExp(r'image_(\d+)\.png$');
       final matchA = regExp.firstMatch(a.path.split('/').last);
       final matchB = regExp.firstMatch(b.path.split('/').last);
-      
+
       if (matchA != null && matchB != null) {
         final numA = int.parse(matchA.group(1)!);
         final numB = int.parse(matchB.group(1)!);
         return numA.compareTo(numB);
       }
-      
+
       // Fallback per ordinamento alfabetico se il pattern non corrisponde
       return a.path.compareTo(b.path);
     });
-    
+
     setState(() {
       images = files;
       _currentImageIndex = 0;
     });
   }
 
-  Future<void> deleteDownloadedChapter(String mangaName, int chapterNumber) async {
+  Future<void> deleteDownloadedChapter(
+      String mangaName, int chapterNumber) async {
     final directory = await getApplicationDocumentsDirectory();
     final mangaDir = Directory('${directory.path}/$mangaName');
-    
+
     if (mangaDir.existsSync()) {
       await mangaDir.delete(recursive: true);
     }
@@ -175,24 +178,25 @@ class _OfflinePageState extends State<OfflinePage> {
           child: Text(
             'Manga Salvati (${mangaList.length})',
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: Colors.deepPurple,
-            ),
+                  fontWeight: FontWeight.bold,
+                  color: Colors.deepPurple,
+                ),
           ),
         ),
         Expanded(
           child: GridView.builder(
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              crossAxisSpacing: 16,
-              mainAxisSpacing: 16,
-              childAspectRatio: 0.7,
+              crossAxisCount: MediaQuery.of(context).size.width > 600 ? 4 : 2,
+              crossAxisSpacing: 12,
+              mainAxisSpacing: 12,
+              childAspectRatio:
+                  0.725, // Ridotto ulteriormente per dare più spazio verticale
             ),
             itemCount: mangaList.length,
             itemBuilder: (context, index) {
               final manga = mangaList[index];
               final cover = mangaCovers[manga];
-              
+
               return _buildMangaCard(manga, cover);
             },
           ),
@@ -225,7 +229,8 @@ class _OfflinePageState extends State<OfflinePage> {
                 ),
                 child: cover != null
                     ? ClipRRect(
-                        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+                        borderRadius:
+                            BorderRadius.vertical(top: Radius.circular(16)),
                         child: Image.file(
                           cover,
                           fit: BoxFit.cover,
@@ -247,8 +252,8 @@ class _OfflinePageState extends State<OfflinePage> {
                       child: Text(
                         manga,
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          fontWeight: FontWeight.w600,
-                        ),
+                              fontWeight: FontWeight.w600,
+                            ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -313,8 +318,8 @@ class _OfflinePageState extends State<OfflinePage> {
           child: Text(
             'Capitoli (${chapterList.length})',
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
+                  fontWeight: FontWeight.bold,
+                ),
           ),
         ),
         Expanded(
@@ -418,8 +423,10 @@ class _OfflinePageState extends State<OfflinePage> {
                               SizedBox(height: 8),
                               Text('Errore nel caricamento'),
                               SizedBox(height: 4),
-                              Text('Immagine ${index + 1}',
-                                style: TextStyle(fontSize: 12, color: Colors.grey),
+                              Text(
+                                'Immagine ${index + 1}',
+                                style:
+                                    TextStyle(fontSize: 12, color: Colors.grey),
                               ),
                             ],
                           ),
@@ -450,16 +457,16 @@ class _OfflinePageState extends State<OfflinePage> {
               Text(
                 'Pagina ${_currentImageIndex + 1} di ${images.length}',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  fontWeight: FontWeight.w500,
-                  color: Colors.grey[600],
-                ),
+                      fontWeight: FontWeight.w500,
+                      color: Colors.grey[600],
+                    ),
               ),
               Text(
                 selectedChapter ?? '',
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Colors.deepPurple,
-                  fontWeight: FontWeight.w500,
-                ),
+                      color: Colors.deepPurple,
+                      fontWeight: FontWeight.w500,
+                    ),
               ),
             ],
           ),
@@ -495,9 +502,9 @@ class _OfflinePageState extends State<OfflinePage> {
           Text(
             title,
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: Colors.deepPurple,
-            ),
+                  fontWeight: FontWeight.bold,
+                  color: Colors.deepPurple,
+                ),
           ),
         ],
       ),
@@ -526,17 +533,17 @@ class _OfflinePageState extends State<OfflinePage> {
             Text(
               title,
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: Colors.grey[600],
-              ),
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey[600],
+                  ),
               textAlign: TextAlign.center,
             ),
             SizedBox(height: 8),
             Text(
               subtitle,
               style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                color: Colors.grey[500],
-              ),
+                    color: Colors.grey[500],
+                  ),
               textAlign: TextAlign.center,
             ),
             SizedBox(height: 32),
@@ -561,7 +568,8 @@ class _OfflinePageState extends State<OfflinePage> {
       context: context,
       builder: (context) => AlertDialog(
         title: Text('Elimina Manga'),
-        content: Text('Sei sicuro di voler eliminare "$mangaName" e tutti i suoi capitoli?'),
+        content: Text(
+            'Sei sicuro di voler eliminare "$mangaName" e tutti i suoi capitoli?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -582,6 +590,410 @@ class _OfflinePageState extends State<OfflinePage> {
     );
   }
 
+  void _showSettingsDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            final profiles = sharedPrefs.isInitialized
+                ? sharedPrefs.getServerProfiles()
+                : {'Remoto': 'http://100.70.187.3:8000'};
+            
+            // Assicuriamoci che profiles non sia vuoto
+            if (profiles.isEmpty) {
+              profiles['Remoto'] = 'http://100.70.187.3:8000';
+            }
+            
+            final activeProfile = sharedPrefs.isInitialized
+                ? sharedPrefs.getActiveServerProfile()
+                : 'Remoto';
+            
+            return AlertDialog(
+              title: Row(
+                children: [
+                  Icon(Icons.settings, color: Colors.deepPurple),
+                  SizedBox(width: 8),
+                  Text(
+                    'Profili Server',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ],
+              ),
+              content: Container(
+                width: double.maxFinite,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Profili Salvati:',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    SizedBox(height: 4),
+                    Text(
+                      'Tap per attivare, usa i pulsanti per modificare/eliminare',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey[600],
+                        fontStyle: FontStyle.italic,
+                      ),
+                    ),
+                    SizedBox(height: 12),
+                    Container(
+                      height: 200,
+                      child: ListView.builder(
+                        itemCount: profiles.length,
+                        itemBuilder: (context, index) {
+                          if (index >= profiles.length) {
+                            return SizedBox.shrink(); // Sicurezza extra
+                          }
+                          final entries = profiles.entries.toList();
+                          if (index >= entries.length) {
+                            return SizedBox.shrink();
+                          }
+                          final entry = entries[index];
+                          final isActive = entry.key == activeProfile;
+                          
+                          return Container(
+                            margin: EdgeInsets.only(bottom: 8),
+                            decoration: BoxDecoration(
+                              border: Border.all(
+                                color: isActive ? Colors.deepPurple : Colors.grey[300]!,
+                                width: isActive ? 2 : 1,
+                              ),
+                              borderRadius: BorderRadius.circular(8),
+                              color: isActive ? Colors.deepPurple.withOpacity(0.1) : null,
+                            ),
+                            child: ListTile(
+                              leading: CircleAvatar(
+                                backgroundColor: isActive ? Colors.deepPurple : Colors.grey[400],
+                                child: Text(
+                                  entry.key[0].toUpperCase(),
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                              title: Text(
+                                entry.key,
+                                style: TextStyle(
+                                  fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
+                                ),
+                              ),
+                              subtitle: Text(
+                                entry.value,
+                                style: TextStyle(fontSize: 12),
+                              ),
+                              trailing: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  if (isActive)
+                                    Container(
+                                      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                      decoration: BoxDecoration(
+                                        color: Colors.green,
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: Text(
+                                        'Attivo',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                  if (!isActive)
+                                    TextButton(
+                                      onPressed: () {
+                                        _setActiveProfile(entry.key);
+                                        setState(() {});
+                                      },
+                                      child: Text('Usa', style: TextStyle(fontSize: 12)),
+                                    ),
+                                  IconButton(
+                                    icon: Icon(Icons.edit, color: Colors.blue, size: 20),
+                                    onPressed: () {
+                                      _showEditProfileDialog(entry.key, entry.value);
+                                    },
+                                    tooltip: 'Modifica profilo',
+                                  ),
+                                  if (profiles.length > 1)
+                                    IconButton(
+                                      icon: Icon(Icons.delete, color: Colors.red, size: 20),
+                                      onPressed: () {
+                                        _removeProfile(entry.key);
+                                        setState(() {});
+                                      },
+                                      tooltip: 'Elimina profilo',
+                                    ),
+                                ],
+                              ),
+                              onTap: () {
+                                if (!isActive) {
+                                  _setActiveProfile(entry.key);
+                                  setState(() {});
+                                }
+                              },
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: Text('Chiudi'),
+                ),
+                ElevatedButton(
+                  onPressed: () => _showAddProfileDialog(),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.deepPurple,
+                    foregroundColor: Colors.white,
+                  ),
+                  child: Text('Nuovo Profilo'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _showAddProfileDialog() {
+    final TextEditingController nameController = TextEditingController();
+    final TextEditingController urlController = TextEditingController();
+    
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Row(
+            children: [
+              Icon(Icons.add, color: Colors.deepPurple),
+              SizedBox(width: 8),
+              Text('Nuovo Profilo Server'),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: nameController,
+                decoration: InputDecoration(
+                  labelText: 'Nome Profilo',
+                  hintText: 'es. Locale, Casa, Ufficio',
+                  prefixIcon: Icon(Icons.label, color: Colors.deepPurple),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                ),
+              ),
+              SizedBox(height: 16),
+              TextField(
+                controller: urlController,
+                decoration: InputDecoration(
+                  labelText: 'URL Server',
+                  hintText: 'http://192.168.1.100:8000',
+                  prefixIcon: Icon(Icons.language, color: Colors.deepPurple),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                ),
+                keyboardType: TextInputType.url,
+              ),
+              SizedBox(height: 12),
+              Container(
+                padding: EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.blue[50],
+                  borderRadius: BorderRadius.circular(6),
+                  border: Border.all(color: Colors.blue[200]!),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.lightbulb, size: 16, color: Colors.blue[700]),
+                    SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        'Esempi:\n• Locale: http://192.168.1.100:8000\n• Remoto: http://100.70.187.3:8000',
+                        style: TextStyle(fontSize: 11, color: Colors.blue[700]),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text('Annulla'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                _addNewProfile(nameController.text.trim(), urlController.text.trim());
+                Navigator.pop(context);
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.deepPurple,
+                foregroundColor: Colors.white,
+              ),
+              child: Text('Aggiungi'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showEditProfileDialog(String currentName, String currentUrl) {
+    final TextEditingController nameController = TextEditingController(text: currentName);
+    final TextEditingController urlController = TextEditingController(text: currentUrl);
+    
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Row(
+            children: [
+              Icon(Icons.edit, color: Colors.deepPurple),
+              SizedBox(width: 8),
+              Text('Modifica Profilo'),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: nameController,
+                decoration: InputDecoration(
+                  labelText: 'Nome Profilo',
+                  hintText: 'es. Locale, Casa, Ufficio',
+                  prefixIcon: Icon(Icons.label, color: Colors.deepPurple),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                ),
+              ),
+              SizedBox(height: 16),
+              TextField(
+                controller: urlController,
+                decoration: InputDecoration(
+                  labelText: 'URL Server',
+                  hintText: 'http://192.168.1.100:8000',
+                  prefixIcon: Icon(Icons.language, color: Colors.deepPurple),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                ),
+                keyboardType: TextInputType.url,
+              ),
+              SizedBox(height: 12),
+              Container(
+                padding: EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.orange[50],
+                  borderRadius: BorderRadius.circular(6),
+                  border: Border.all(color: Colors.orange[200]!),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.info, size: 16, color: Colors.orange[700]),
+                    SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        'Stai modificando il profilo "$currentName".\nLe modifiche saranno applicate immediatamente.',
+                        style: TextStyle(fontSize: 11, color: Colors.orange[700]),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text('Annulla'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                _updateProfile(currentName, nameController.text.trim(), urlController.text.trim());
+                Navigator.pop(context);
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.deepPurple,
+                foregroundColor: Colors.white,
+              ),
+              child: Text('Salva'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _setActiveProfile(String profileName) {
+    if (sharedPrefs.isInitialized) {
+      sharedPrefs.setActiveServerProfile(profileName);
+      final url = sharedPrefs.getServerUrl();
+      _showSnackBar('Profilo attivo: $profileName ($url)');
+      setState(() {}); // Aggiorna l'UI
+    } else {
+      _showSnackBar('Errore: SharedPreferences non inizializzato');
+    }
+  }
+
+  void _addNewProfile(String name, String url) {
+    if (name.isEmpty || url.isEmpty) {
+      _showSnackBar('Nome e URL sono obbligatori');
+      return;
+    }
+    
+    // Aggiunge http:// se mancante
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      url = 'http://$url';
+    }
+    
+    if (sharedPrefs.isInitialized) {
+      sharedPrefs.addServerProfile(name, url);
+      _showSnackBar('Profilo "$name" aggiunto con successo');
+    } else {
+      _showSnackBar('Errore: SharedPreferences non inizializzato');
+    }
+  }
+
+  void _removeProfile(String profileName) {
+    if (sharedPrefs.isInitialized) {
+      sharedPrefs.removeServerProfile(profileName);
+      _showSnackBar('Profilo "$profileName" eliminato');
+    } else {
+      _showSnackBar('Errore: SharedPreferences non inizializzato');
+    }
+  }
+
+  void _updateProfile(String oldName, String newName, String newUrl) {
+    if (newName.isEmpty || newUrl.isEmpty) {
+      _showSnackBar('Nome e URL sono obbligatori');
+      return;
+    }
+    
+    // Aggiunge http:// se mancante
+    if (!newUrl.startsWith('http://') && !newUrl.startsWith('https://')) {
+      newUrl = 'http://$newUrl';
+    }
+    
+    if (sharedPrefs.isInitialized) {
+      sharedPrefs.updateServerProfile(oldName, newName, newUrl);
+      _showSnackBar('Profilo aggiornato: "$newName"');
+      setState(() {}); // Aggiorna l'UI
+    } else {
+      _showSnackBar('Errore: SharedPreferences non inizializzato');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -594,6 +1006,145 @@ class _OfflinePageState extends State<OfflinePage> {
         foregroundColor: Colors.white,
         elevation: 0,
         actions: [
+          PopupMenuButton<String>(
+            icon: Container(
+              padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.dns, size: 16, color: Colors.white),
+                  SizedBox(width: 4),
+                  Text(
+                    sharedPrefs.isInitialized 
+                        ? sharedPrefs.getActiveServerProfile()
+                        : 'Remoto',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.white,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  Icon(Icons.arrow_drop_down, size: 16, color: Colors.white),
+                ],
+              ),
+            ),
+            tooltip: 'Cambia profilo server',
+            onSelected: (String profileName) {
+              _setActiveProfile(profileName);
+            },
+            itemBuilder: (BuildContext context) {
+              final profiles = sharedPrefs.isInitialized 
+                  ? sharedPrefs.getServerProfiles()
+                  : {'Remoto': 'http://100.70.187.3:8000'};
+              
+              // Assicuriamoci che profiles non sia vuoto
+              if (profiles.isEmpty) {
+                profiles['Remoto'] = 'http://100.70.187.3:8000';
+              }
+              
+              final activeProfile = sharedPrefs.isInitialized 
+                  ? sharedPrefs.getActiveServerProfile()
+                  : 'Remoto';
+              
+              return profiles.entries.map((entry) {
+                return PopupMenuItem<String>(
+                  value: entry.key,
+                  child: Row(
+                    children: [
+                      CircleAvatar(
+                        radius: 12,
+                        backgroundColor: entry.key == activeProfile 
+                            ? Colors.deepPurple 
+                            : Colors.grey[400],
+                        child: Text(
+                          entry.key[0].toUpperCase(),
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    entry.key,
+                                    style: TextStyle(
+                                      fontWeight: entry.key == activeProfile 
+                                          ? FontWeight.bold 
+                                          : FontWeight.normal,
+                                    ),
+                                  ),
+                                ),
+                                if (entry.key == activeProfile) ...[
+                                  Container(
+                                    padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                    decoration: BoxDecoration(
+                                      color: Colors.green,
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Text(
+                                      'ATTIVO',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 8,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                                SizedBox(width: 8),
+                                GestureDetector(
+                                  onTap: () {
+                                    Navigator.pop(context); // Chiudi il popup
+                                    _showEditProfileDialog(entry.key, entry.value);
+                                  },
+                                  child: Container(
+                                    padding: EdgeInsets.all(4),
+                                    decoration: BoxDecoration(
+                                      color: Colors.blue.withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                    child: Icon(
+                                      Icons.edit,
+                                      size: 14,
+                                      color: Colors.blue,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            Text(
+                              entry.value,
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: Colors.grey[600],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }).toList();
+            },
+          ),
+          IconButton(
+            icon: Icon(Icons.settings, size: 28),
+            tooltip: 'Gestisci profili',
+            onPressed: _showSettingsDialog,
+          ),
           IconButton(
             icon: Icon(Icons.cloud, size: 28),
             tooltip: 'Torna online',

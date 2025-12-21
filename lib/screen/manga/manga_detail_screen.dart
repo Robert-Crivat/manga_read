@@ -546,7 +546,7 @@ class _MangaDetailScreenState extends State<MangaDetailScreen> {
           });
 
           // Chiamata API per singola immagine
-          final uri = Uri.parse('http://192.168.2.50:8000').replace(
+          final uri = Uri.parse('http://80.97.160.102:8000/').replace(
             path: '/download_single_image',
             queryParameters: {'url': imageUrl},
           );

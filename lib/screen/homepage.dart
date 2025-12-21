@@ -760,12 +760,13 @@ class _HomepageState extends State<Homepage>
           : (isSearching && mangaWorldList.isNotEmpty)
               ? GridView.builder(
                   padding: const EdgeInsets.all(16),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    crossAxisSpacing: 16,
-                    mainAxisSpacing: 16,
-                    childAspectRatio: 0.65,
-                  ),
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: MediaQuery.of(context).size.width > 600 ? 4 : 2,
+                crossAxisSpacing: 12,
+                mainAxisSpacing: 12,
+                childAspectRatio:
+                  0.725, // Ridotto ulteriormente per dare più spazio verticale
+                ),
                   itemCount: mangaWorldList.length,
                   itemBuilder: (context, index) {
                     return _buildMangaCard(mangaWorldList[index], index);
