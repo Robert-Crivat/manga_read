@@ -148,7 +148,7 @@ class MangaKatanaApi {
     // Ottieni l'URL del server dalle SharedPreferences
     final String baseUrl = sharedPrefs.isInitialized 
         ? sharedPrefs.getServerUrl() 
-        : 'http://100.70.187.3:8000';
+        : 'http://80.97.160.102:8000';
 
     // Codifica la lista di URL come stringa JSON
     final encodedUrls = json.encode(imageUrls);

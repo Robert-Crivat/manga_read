@@ -214,7 +214,7 @@ class SharedPrefs {
       // Se c'è un errore, ritorna profili di default
       return {
         'Locale': 'http://192.168.1.100:8000',
-        'Remoto': 'http://100.70.187.3:8000',
+        'Remoto': 'http://80.97.160.102:8000',
       };
     }
   }
@@ -251,7 +251,7 @@ class SharedPrefs {
     }
     
     // Se non ci sono profili, restituisce URL di default
-    return 'http://100.70.187.3:8000';
+    return 'http://80.97.160.102:8000';
   }
 
   /// Salva l'URL del server (mantenuto per compatibilità)
@@ -279,7 +279,7 @@ class SharedPrefs {
         await setActiveServerProfile(profiles.keys.first);
       } else {
         // Se non ci sono più profili, crea un profilo predefinito
-        profiles['Remoto'] = 'http://100.70.187.3:8000';
+        profiles['Remoto'] = 'http://80.97.160.102:8000';
         await setActiveServerProfile('Remoto');
       }
     }

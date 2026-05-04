@@ -84,6 +84,8 @@ class _LetturaScreenMangaState extends State<LetturaScreenManga>
     _checkConnectivity();
     _initializeContent();
     
+    // Non serve più setup di precaricamento scroll - tutte le immagini sono già precaricate
+    
     // Timeout di sicurezza per evitare caricamento infinito
     Timer(const Duration(seconds: 10), () {
       if (mounted && isLoading) {
@@ -247,9 +249,9 @@ class _LetturaScreenMangaState extends State<LetturaScreenManga>
           // I dati sono già stati estratti sopra
         });
 
-        // Precarica le immagini dopo aver aggiornato lo stato
+        // Precarica TUTTE le immagini prima di permettere visualizzazione
         if (hasBase64) {
-          await _preloadBase64Images();
+          await _preloadAllBase64Images();
           if (mounted) {
             setState(() {
               loadedImagesCount = imagesBase64.length;
@@ -258,8 +260,15 @@ class _LetturaScreenMangaState extends State<LetturaScreenManga>
             });
           }
         } else {
-          // Fallback al precaricamento tradizionale
-          _preloadAllImages();
+          // Fallback al precaricamento completo tradizionale
+          await _preloadAllNetworkImages();
+          if (mounted) {
+            setState(() {
+              loadedImagesCount = capitoliList.length;
+              allImagesLoaded = true;
+              isLoading = false;
+            });
+          }
         }
       }
     } catch (e) {
@@ -380,15 +389,26 @@ class _LetturaScreenMangaState extends State<LetturaScreenManga>
       
       setState(() {
         offlineImages = files;
-        isLoading = false;
-        allImagesLoaded = true;
-        loadedImagesCount = files.length;
+        // Mantieni isLoading = true finché tutte le immagini non sono precaricate
+        allImagesLoaded = false;
+        loadedImagesCount = 0;
       });
       
       print('DEBUG: Stato aggiornato - offlineImages: ${offlineImages.length}');
+      print('DEBUG: Iniziando precaricamento COMPLETO di tutte le immagini...');
       
-      // Precarica le immagini offline
-      await _preloadOfflineImages();
+      // Precarica TUTTE le immagini prima di permettere la visualizzazione
+      await _preloadAllOfflineImages();
+      
+      // Solo ora che TUTTE le immagini sono precaricate, permettiamo la visualizzazione
+      if (mounted) {
+        print('DEBUG: Precaricamento completato - ${imageCache.length} immagini in cache');
+        setState(() {
+          isLoading = false;
+          allImagesLoaded = true;
+          loadedImagesCount = offlineImages.length;
+        });
+      }
     } catch (e) {
       print('DEBUG: Errore nel caricamento immagini offline: $e');
       setState(() {
@@ -457,193 +477,175 @@ class _LetturaScreenMangaState extends State<LetturaScreenManga>
     }
   }
 
-  Future<void> _preloadOfflineImages() async {
+  Future<void> _preloadAllOfflineImages() async {
     if (offlineImages.isEmpty) return;
     
-    for (int i = 0; i < offlineImages.length; i++) {
+    print('DEBUG: Iniziando precaricamento PARALLELO di ${offlineImages.length} immagini offline');
+    
+    // Dividi in batch per non sovraccaricare la memoria
+    const int batchSize = 10;
+    
+    for (int startIndex = 0; startIndex < offlineImages.length; startIndex += batchSize) {
       if (!mounted) return;
-      try {
-        final imageProvider = FileImage(offlineImages[i]);
-        await precacheImage(imageProvider, context);
-        imageCache[i] = imageProvider;
-        
-        if (mounted) {
-          setState(() {
-            loadedImagesCount = i + 1;
-          });
-        }
-      } catch (e) {
-        print('Errore nel precaricamento immagine offline $i: $e');
+      
+      final int endIndex = (startIndex + batchSize < offlineImages.length) 
+          ? startIndex + batchSize 
+          : offlineImages.length;
+      
+      print('DEBUG: Precaricando batch ${startIndex + 1}-$endIndex di ${offlineImages.length}');
+      
+      // Precarica batch in parallelo
+      List<Future> batchFutures = [];
+      
+      for (int i = startIndex; i < endIndex; i++) {
+        final future = _preloadSingleOfflineImage(i);
+        batchFutures.add(future);
       }
+      
+      // Aspetta che tutto il batch sia completato
+      await Future.wait(batchFutures);
+      
+      // Aggiorna progress
+      if (mounted) {
+        setState(() {
+          loadedImagesCount = endIndex;
+        });
+      }
+      
+      print('DEBUG: Batch ${startIndex + 1}-$endIndex completato');
+    }
+    
+    print('DEBUG: Precaricamento COMPLETO di ${offlineImages.length} immagini terminato!');
+  }
+  
+  Future<void> _preloadSingleOfflineImage(int index) async {
+    try {
+      final imageProvider = FileImage(offlineImages[index]);
+      await precacheImage(imageProvider, context);
+      imageCache[index] = imageProvider;
+    } catch (e) {
+      print('Errore nel precaricamento immagine offline $index: $e');
+      // Anche in caso di errore, aggiungi comunque alla cache per evitare ricaricamenti
+      imageCache[index] = FileImage(offlineImages[index]);
     }
   }
+  
+  // Precaricamento predittivo basato su scroll rimosso - ora tutte le immagini sono già precaricate
 
-  Future<void> _preloadBase64Images() async {
+  Future<void> _preloadAllBase64Images() async {
     if (imagesBase64.isEmpty) return;
     
-    for (int i = 0; i < imagesBase64.length; i++) {
+    print('DEBUG: Precaricando TUTTE le ${imagesBase64.length} immagini base64...');
+    
+    // Precarica tutte le immagini base64 in batch
+    const int batchSize = 5;
+    
+    for (int startIndex = 0; startIndex < imagesBase64.length; startIndex += batchSize) {
       if (!mounted) return;
-      try {
-        final imageData = imagesBase64[i];
-        if (imageData['base64'] != null) {
-          final bytes = base64Decode(imageData['base64']);
-          final imageProvider = MemoryImage(bytes);
-          
-          // Precarica l'immagine
-          await precacheImage(imageProvider, context);
-          imageCache[i] = imageProvider;
-          
-          if (mounted) {
-            setState(() {
-              loadedImagesCount = i + 1;
-            });
-          }
-        }
-      } catch (e) {
-        print('Errore nel precaricamento immagine base64 $i: $e');
+      
+      final int endIndex = (startIndex + batchSize < imagesBase64.length) 
+          ? startIndex + batchSize 
+          : imagesBase64.length;
+      
+      List<Future> batchFutures = [];
+      
+      for (int i = startIndex; i < endIndex; i++) {
+        final future = _preloadSingleBase64Image(i);
+        batchFutures.add(future);
+      }
+      
+      await Future.wait(batchFutures);
+      
+      if (mounted) {
+        setState(() {
+          loadedImagesCount = endIndex;
+        });
       }
     }
+    
+    print('DEBUG: Precaricamento base64 completato!');
   }
-
-  Future<void> _preloadAllImages() async {
-    if (capitoliList.isEmpty && imagesBase64.isEmpty) return;
-    
-    final int totalImages = imagesBase64.isNotEmpty ? imagesBase64.length : capitoliList.length;
-    
-    for (int i = 0; i < totalImages; i++) {
-      if (!mounted) return;
-      try {
-        ImageProvider imageProvider;
-        
-        // Usa base64 se disponibile, altrimenti network
-        if (imagesBase64.isNotEmpty && i < imagesBase64.length) {
-          final imageData = imagesBase64[i];
-          if (imageData['base64'] != null) {
-            final bytes = base64Decode(imageData['base64']);
-            imageProvider = MemoryImage(bytes);
-          } else {
-            imageProvider = NetworkImage(capitoliList[i]);
-          }
-        } else {
-          imageProvider = NetworkImage(capitoliList[i]);
-        }
-        
-        // Precarica l'immagine e la mette in cache
+  
+  Future<void> _preloadSingleBase64Image(int index) async {
+    try {
+      final imageData = imagesBase64[index];
+      if (imageData['base64'] != null) {
+        final bytes = base64Decode(imageData['base64']);
+        final imageProvider = MemoryImage(bytes);
         await precacheImage(imageProvider, context);
-        imageCache[i] = imageProvider;
-        
-        if (mounted) {
-          setState(() {
-            loadedImagesCount = i + 1;
-          });
-        }
-      } catch (e) {
-        print('Errore nel precaricamento immagine $i: $e');
-        // In caso di errore, usa comunque network image come fallback
-        if (i < capitoliList.length) {
-          try {
-            final fallbackProvider = NetworkImage(capitoliList[i]);
-            await precacheImage(fallbackProvider, context);
-            imageCache[i] = fallbackProvider;
-          } catch (fallbackError) {
-            print('Errore anche nel fallback per immagine $i: $fallbackError');
-          }
-        }
+        imageCache[index] = imageProvider;
       }
-    }
-
-    if (mounted) {
-      setState(() {
-        isLoading = false;
-        allImagesLoaded = true;
-      });
+    } catch (e) {
+      print('Errore nel precaricamento immagine base64 $index: $e');
     }
   }
+  
+  Future<void> _preloadAllNetworkImages() async {
+    if (capitoliList.isEmpty) return;
+    
+    print('DEBUG: Precaricando TUTTE le ${capitoliList.length} immagini di rete...');
+    
+    const int batchSize = 3; // Batch più piccoli per network images
+    
+    for (int startIndex = 0; startIndex < capitoliList.length; startIndex += batchSize) {
+      if (!mounted) return;
+      
+      final int endIndex = (startIndex + batchSize < capitoliList.length) 
+          ? startIndex + batchSize 
+          : capitoliList.length;
+      
+      List<Future> batchFutures = [];
+      
+      for (int i = startIndex; i < endIndex; i++) {
+        final future = _preloadSingleNetworkImage(i);
+        batchFutures.add(future);
+      }
+      
+      await Future.wait(batchFutures);
+      
+      if (mounted) {
+        setState(() {
+          loadedImagesCount = endIndex;
+        });
+      }
+    }
+    
+    print('DEBUG: Precaricamento network completato!');
+  }
+  
+  Future<void> _preloadSingleNetworkImage(int index) async {
+    try {
+      final imageProvider = NetworkImage(capitoliList[index]);
+      await precacheImage(imageProvider, context);
+      imageCache[index] = imageProvider;
+    } catch (e) {
+      print('Errore nel precaricamento immagine network $index: $e');
+      // In caso di errore, mantieni il provider per tentativi successivi
+      imageCache[index] = NetworkImage(capitoliList[index]);
+    }
+  }
+
+  // Funzione _preloadAllImages rimossa - sostituita con precaricamento specifico per tipo
 
   Widget _buildImageWidget(int index) {
-    // Debug info
-    print('DEBUG: _buildImageWidget chiamato con index: $index');
-    print('DEBUG: imageCache.length: ${imageCache.length}');
-    print('DEBUG: imagesBase64.length: ${imagesBase64.length}');
-    print('DEBUG: capitoliList.length: ${capitoliList.length}');
-    print('DEBUG: offlineImages.length: ${offlineImages.length}');
-    print('DEBUG: isOfflineMode: ${widget.isOfflineMode}, isConnected: $isConnected');
-    
-    // Prima controlla la cache
+    // Usa SOLO la cache precaricata - tutte le immagini dovrebbero essere già caricate
     if (imageCache.containsKey(index)) {
       return Image(
         image: imageCache[index]!,
         fit: BoxFit.contain,
         errorBuilder: (context, error, stackTrace) => _buildErrorWidget(),
-        // Evita il rebuild inutile
         gaplessPlayback: true,
       );
     }
     
-    // Se siamo in modalità offline o senza connessione (o plugin non disponibile)
-    if (widget.isOfflineMode || !isConnected || widget.offlineMangaName != null) {
-      print('DEBUG: Modalità offline rilevata per index: $index');
-      print('DEBUG: offlineImages.length: ${offlineImages.length}');
-      
-      if (offlineImages.isNotEmpty && index < offlineImages.length) {
-        print('DEBUG: Caricamento immagine offline: ${offlineImages[index].path}');
-        final imageProvider = FileImage(offlineImages[index]);
-        // Aggiungi alla cache per la prossima volta
-        imageCache[index] = imageProvider;
-        return Image(
-          image: imageProvider,
-          fit: BoxFit.contain,
-          errorBuilder: (context, error, stackTrace) {
-            print('DEBUG: Errore caricamento immagine offline: $error');
-            return _buildErrorWidget();
-          },
-          gaplessPlayback: true,
-        );
-      } else {
-        print('DEBUG: Nessuna immagine offline disponibile per index: $index');
-        return _buildErrorWidget();
-      }
-    }
-    
-    // Modalità online: usa base64 se disponibile, altrimenti network
-    if (imagesBase64.isNotEmpty && index < imagesBase64.length) {
-      final imageData = imagesBase64[index];
-      print('DEBUG: imageData type: ${imageData.runtimeType}');
-      print('DEBUG: imageData keys: ${imageData.keys}');
-      
-      if (imageData['base64'] != null) {
-        try {
-          final bytes = base64Decode(imageData['base64']);
-          final imageProvider = MemoryImage(bytes);
-          // Aggiungi alla cache per la prossima volta
-          imageCache[index] = imageProvider;
-          return Image(
-            image: imageProvider,
-            fit: BoxFit.contain,
-            errorBuilder: (context, error, stackTrace) => _buildErrorWidget(),
-            gaplessPlayback: true,
-          );
-        } catch (e) {
-          print('Errore decodifica base64 per immagine $index: $e');
-        }
-      }
-    }
-    
-    // Ultimo fallback: network image
-    if (index < capitoliList.length) {
-      final imageProvider = NetworkImage(capitoliList[index]);
-      // Aggiungi alla cache per la prossima volta
-      imageCache[index] = imageProvider;
-      return Image(
-        image: imageProvider,
-        fit: BoxFit.contain,
-        errorBuilder: (context, error, stackTrace) => _buildErrorWidget(),
-        gaplessPlayback: true,
-      );
-    }
-    
+    // Se l'immagine non è in cache e dovrebbe esserlo, mostra errore
+    print('ERRORE: Immagine $index non trovata in cache - questo non dovrebbe succedere!');
     return _buildErrorWidget();
   }
+
+  // Precaricamento adiacente rimosso - tutte le immagini sono già precaricate
+
+  // Funzioni di scroll preloading rimosse - tutte le immagini sono già precaricate
 
   Widget _buildErrorWidget() {
     return Center(
@@ -783,8 +785,8 @@ class _LetturaScreenMangaState extends State<LetturaScreenManga>
 
   bool _shouldShowLoading() {
     if (widget.isOfflineMode || !isConnected || widget.offlineMangaName != null) {
-      // Modalità offline: mostra loading se non ci sono immagini offline caricate
-      return offlineImages.isEmpty && isLoading;
+      // Modalità offline: mostra loading se non tutte le immagini sono precaricate
+      return isLoading || !allImagesLoaded;
     } else {
       // Modalità online: usa la logica originale
       return !allImagesLoaded || capitoliList.isEmpty;
@@ -1095,13 +1097,13 @@ class _LetturaScreenMangaState extends State<LetturaScreenManga>
                           ),
                           const SizedBox(height: 24),
                           Text(
-                            _shouldShowLoading()
-                                ? 'Caricamento capitolo...'
+                            isLoading
+                                ? 'Precaricamento di tutte le immagini...'
                                 : (widget.isOfflineMode || !isConnected || widget.offlineMangaName != null)
-                                    ? 'Immagini offline caricate!'
+                                    ? 'Tutte le immagini offline caricate!'
                                     : imagesBase64.isNotEmpty
-                                        ? 'Immagini caricate!'
-                                        : 'Precaricamento immagini...',
+                                        ? 'Tutte le immagini caricate!'
+                                        : 'Precaricamento completo immagini...',
                             style: const TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.w600,
@@ -1152,44 +1154,66 @@ class _LetturaScreenMangaState extends State<LetturaScreenManga>
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
+                            if (!allImagesLoaded && offlineImages.isNotEmpty) ...[
+                              const SizedBox(height: 16),
+                              SizedBox(
+                                width: 200,
+                                child: LinearProgressIndicator(
+                                  value: offlineImages.isNotEmpty
+                                      ? loadedImagesCount / offlineImages.length
+                                      : 0,
+                                  backgroundColor: Colors.grey[700],
+                                  valueColor: const AlwaysStoppedAnimation<Color>(
+                                      Colors.orange),
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                '$loadedImagesCount / ${offlineImages.length} immagini precaricate',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.grey[300],
+                                ),
+                              ),
+                            ],
                           ],
                         ],
                       ),
                     ),
                   )
                 : isListView
-                    // ListView mode - scorrimento continuo
+                    // ListView mode - scorrimento continuo (senza zoom) - TUTTE le immagini precaricate
                     ? GestureDetector(
                         onTap: _toggleControls,
-                        child: ListView.builder(
+                        child: SingleChildScrollView(
                           controller: _scrollController,
                           physics: const BouncingScrollPhysics(),
-                          itemCount: _getCurrentImageCount(),
-                          itemBuilder: (context, index) {
-                            return Container(
-                              color: Colors.black,
-                              padding: const EdgeInsets.symmetric(vertical: 4),
-                              child: Column(
-                                children: [
-                                  // Immagine
-                                  WidgetZoom(
-                                    zoomWidget: _buildImageWidget(index),
-                                    heroAnimationTag: "image$index",
+                          child: Column(
+                            children: [
+                              // Genera TUTTE le immagini in una volta - nessun caricamento dinamico
+                              for (int index = 0; index < _getCurrentImageCount(); index++)
+                                Container(
+                                  color: Colors.black,
+                                  padding: const EdgeInsets.symmetric(vertical: 4),
+                                  child: Column(
+                                    children: [
+                                      // Immagine (senza zoom in modalità lista) - già precaricata
+                                      _buildImageWidget(index),
+                                      // Separatore
+                                      if (index < _getCurrentImageCount() - 1) // Non mostrare separatore dopo l'ultima immagine
+                                        Container(
+                                          margin: const EdgeInsets.symmetric(vertical: 8),
+                                          height: 2,
+                                          color: Colors.grey[900],
+                                        ),
+                                    ],
                                   ),
-                                  // Separatore
-                                  Container(
-                                    margin:
-                                        const EdgeInsets.symmetric(vertical: 8),
-                                    height: 2,
-                                    color: Colors.grey[900],
-                                  ),
-                                ],
-                              ),
-                            );
-                          },
+                                ),
+                            ],
+                          ),
                         ),
                       )
-                    // PageView mode - una pagina alla volta
+                    // PageView mode - una pagina alla volta (con zoom)
                     : GestureDetector(
                         onTap: _toggleControls,
                         child: PageView.builder(
@@ -1204,6 +1228,7 @@ class _LetturaScreenMangaState extends State<LetturaScreenManga>
                             return Container(
                               color: Colors.black,
                               child: Center(
+                                // Solo in modalità PageView abilitiamo lo zoom
                                 child: WidgetZoom(
                                   zoomWidget: _buildImageWidget(index),
                                   heroAnimationTag: "image$index",

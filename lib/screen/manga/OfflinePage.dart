@@ -134,6 +134,203 @@ class _OfflinePageState extends State<OfflinePage> {
     _showSnackBar('$mangaName eliminato con successo');
   }
 
+  /// Elimina fisicamente un singolo capitolo offline dal dispositivo
+  Future<bool> deleteOfflineChapterReal(String mangaName, String chapterName) async {
+    try {
+      final dir = await getApplicationDocumentsDirectory();
+      final chapterPath = '${dir.path}/$mangaName/$chapterName';
+      final chapterDir = Directory(chapterPath);
+      
+      if (!chapterDir.existsSync()) {
+        print('DEBUG: ❌ Capitolo non esistente: $chapterPath');
+        return false;
+      }
+      
+      // Calcola spazio prima dell'eliminazione
+      int totalSize = 0;
+      int fileCount = 0;
+      
+      final files = chapterDir.listSync(recursive: true).whereType<File>();
+      for (var file in files) {
+        totalSize += await file.length();
+        fileCount++;
+      }
+      
+      final sizeMB = totalSize / (1024 * 1024);
+      print('DEBUG: 📊 Trovati $fileCount file, ${sizeMB.toStringAsFixed(2)} MB');
+      
+      // ELIMINAZIONE FISICA
+      await chapterDir.delete(recursive: true);
+      
+      // Verifica eliminazione
+      bool reallyDeleted = !chapterDir.existsSync();
+      
+      if (reallyDeleted) {
+        print('DEBUG: ✅ ELIMINATO FISICAMENTE: $chapterPath');
+        print('DEBUG: 💾 MEMORIA LIBERATA: ${sizeMB.toStringAsFixed(2)} MB');
+        
+        // Aggiorna UI
+        await loadChapterList(mangaName);
+        
+        return true;
+      } else {
+        print('DEBUG: ❌ ERRORE: File non eliminati fisicamente!');
+        return false;
+      }
+      
+    } catch (e) {
+      print('DEBUG: ❌ ERRORE eliminazione: $e');
+      return false;
+    }
+  }
+
+  /// Calcola la dimensione in MB di un capitolo offline
+  Future<double> getChapterSizeMB(String mangaName, String chapterName) async {
+    try {
+      final dir = await getApplicationDocumentsDirectory();
+      final chapterDir = Directory('${dir.path}/$mangaName/$chapterName');
+      
+      if (!chapterDir.existsSync()) return 0.0;
+      
+      int totalSize = 0;
+      final files = chapterDir.listSync(recursive: true).whereType<File>();
+      
+      for (var file in files) {
+        totalSize += await file.length();
+      }
+      
+      return totalSize / (1024 * 1024); // Ritorna MB
+      
+    } catch (e) {
+      print('DEBUG: Errore calcolo dimensione: $e');
+      return 0.0;
+    }
+  }
+
+  /// Test completo di eliminazione con verifica
+  Future<void> testChapterDeletion(String mangaName, String chapterName) async {
+    print('DEBUG: 🧪 === INIZIO TEST ELIMINAZIONE ===');
+    print('DEBUG: Manga: $mangaName, Capitolo: $chapterName');
+    
+    // 1. Verifica esistenza prima
+    final dir = await getApplicationDocumentsDirectory();
+    final chapterPath = '${dir.path}/$mangaName/$chapterName';
+    final chapterDir = Directory(chapterPath);
+    bool existsBefore = chapterDir.existsSync();
+    
+    print('DEBUG: 📁 Esistenza prima: $existsBefore');
+    
+    if (!existsBefore) {
+      print('DEBUG: ❌ Capitolo non esiste, test terminato');
+      if (mounted) {
+        _showSnackBar('❌ Capitolo non trovato sul dispositivo');
+      }
+      return;
+    }
+    
+    // 2. Dimensione prima
+    double sizeBefore = await getChapterSizeMB(mangaName, chapterName);
+    print('DEBUG: 📊 Dimensione prima: ${sizeBefore.toStringAsFixed(2)} MB');
+    
+    // 3. Lista file prima
+    final filesBefore = chapterDir.listSync(recursive: true).whereType<File>().length;
+    print('DEBUG: 📄 File prima: $filesBefore');
+    
+    // 4. Eliminazione
+    print('DEBUG: 🗑️ Eliminando...');
+    bool deleted = await deleteOfflineChapterReal(mangaName, chapterName);
+    print('DEBUG: ✅ Risultato eliminazione: $deleted');
+    
+    // 5. Verifica dopo eliminazione
+    bool existsAfter = chapterDir.existsSync();
+    double sizeAfter = await getChapterSizeMB(mangaName, chapterName);
+    
+    print('DEBUG: 📁 Esistenza dopo: $existsAfter');
+    print('DEBUG: 📊 Dimensione dopo: ${sizeAfter.toStringAsFixed(2)} MB');
+    print('DEBUG: 💾 Memoria liberata: ${(sizeBefore - sizeAfter).toStringAsFixed(2)} MB');
+    
+    // 6. Risultato finale
+    if (!existsAfter && sizeAfter == 0.0) {
+      print('DEBUG: ✅ TEST PASSATO: Capitolo eliminato fisicamente!');
+      
+      if (mounted) {
+        _showSnackBar('✅ Capitolo eliminato! Liberati ${sizeBefore.toStringAsFixed(2)} MB');
+      }
+    } else {
+      print('DEBUG: ❌ TEST FALLITO: Capitolo non eliminato completamente!');
+      
+      if (mounted) {
+        _showSnackBar('❌ Errore: Capitolo non eliminato completamente!');
+      }
+    }
+    
+    print('DEBUG: 🧪 === FINE TEST ELIMINAZIONE ===');
+  }
+
+  /// Ottieni informazioni complete su storage offline
+  Future<Map<String, dynamic>> getOfflineStorageInfo(String mangaName) async {
+    try {
+      final dir = await getApplicationDocumentsDirectory();
+      final mangaDir = Directory('${dir.path}/$mangaName');
+      
+      if (!mangaDir.existsSync()) {
+        return {
+          'exists': false,
+          'totalSize': 0,
+          'totalFiles': 0,
+          'chapters': <Map<String, dynamic>>[]
+        };
+      }
+      
+      int totalSize = 0;
+      int totalFiles = 0;
+      List<Map<String, dynamic>> chaptersInfo = [];
+      
+      // Analizza ogni capitolo
+      final chapters = mangaDir.listSync().whereType<Directory>();
+      for (var chapterDir in chapters) {
+        final chapterName = chapterDir.path.split('/').last;
+        
+        int chapterSize = 0;
+        int chapterFiles = 0;
+        
+        final files = chapterDir.listSync().whereType<File>();
+        for (var file in files) {
+          final size = await file.length();
+          chapterSize += size;
+          chapterFiles++;
+        }
+        
+        totalSize += chapterSize;
+        totalFiles += chapterFiles;
+        
+        chaptersInfo.add({
+          'name': chapterName,
+          'size': chapterSize,
+          'files': chapterFiles,
+          'sizeMB': chapterSize / (1024 * 1024),
+        });
+      }
+      
+      return {
+        'exists': true,
+        'totalSize': totalSize,
+        'totalFiles': totalFiles,
+        'totalSizeMB': totalSize / (1024 * 1024),
+        'chapters': chaptersInfo,
+      };
+      
+    } catch (e) {
+      print('DEBUG: Errore nel calcolo spazio storage: $e');
+      return {
+        'exists': false,
+        'totalSize': 0,
+        'totalFiles': 0,
+        'error': e.toString()
+      };
+    }
+  }
+
   void _showSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -344,7 +541,107 @@ class _OfflinePageState extends State<OfflinePage> {
                     chapter,
                     style: Theme.of(context).textTheme.bodyLarge,
                   ),
-                  trailing: Icon(Icons.chevron_right, color: Colors.deepPurple),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Info storage button
+                      IconButton(
+                        icon: const Icon(Icons.storage, color: Colors.orange, size: 20),
+                        onPressed: () async {
+                          final size = await getChapterSizeMB(selectedManga!, chapter);
+                          if (!mounted) return;
+                          
+                          showDialog(
+                            context: context,
+                            builder: (context) => AlertDialog(
+                              backgroundColor: const Color(0xFF2A2A2A),
+                              title: const Text('📊 Info Capitolo', style: TextStyle(color: Colors.white)),
+                              content: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Manga: $selectedManga',
+                                    style: const TextStyle(color: Colors.orange, fontWeight: FontWeight.bold),
+                                  ),
+                                  Text(
+                                    'Capitolo: $chapter',
+                                    style: const TextStyle(color: Colors.orange, fontWeight: FontWeight.bold),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  Text(
+                                    '💾 Spazio occupato: ${size.toStringAsFixed(2)} MB',
+                                    style: const TextStyle(color: Colors.green),
+                                  ),
+                                ],
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.of(context).pop(),
+                                  child: const Text('Chiudi', style: TextStyle(color: Colors.grey)),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+                      // Test delete button
+                      IconButton(
+                        icon: const Icon(Icons.delete_forever, color: Colors.red, size: 20),
+                        onPressed: () async {
+                          // Dialog di conferma
+                          final bool? confirm = await showDialog<bool>(
+                            context: context,
+                            builder: (context) => AlertDialog(
+                              backgroundColor: const Color(0xFF2A2A2A),
+                              title: const Text('🧪 Test Eliminazione', style: TextStyle(color: Colors.white)),
+                              content: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    'Vuoi testare l\'eliminazione del capitolo?',
+                                    style: TextStyle(color: Colors.white),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    'Manga: $selectedManga',
+                                    style: const TextStyle(color: Colors.orange, fontWeight: FontWeight.bold),
+                                  ),
+                                  Text(
+                                    'Capitolo: $chapter',
+                                    style: const TextStyle(color: Colors.orange, fontWeight: FontWeight.bold),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  Text(
+                                    '⚠️ ATTENZIONE: Questo eliminerà FISICAMENTE il capitolo dal dispositivo!',
+                                    style: TextStyle(color: Colors.red[300], fontSize: 12),
+                                  ),
+                                ],
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.of(context).pop(false),
+                                  child: const Text('Annulla', style: TextStyle(color: Colors.grey)),
+                                ),
+                                ElevatedButton(
+                                  onPressed: () => Navigator.of(context).pop(true),
+                                  style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                                  child: const Text('🧪 Test Elimina', style: TextStyle(color: Colors.white)),
+                                ),
+                              ],
+                            ),
+                          );
+                          
+                          if (confirm == true) {
+                            await testChapterDeletion(selectedManga!, chapter);
+                          }
+                        },
+                      ),
+                      // Freccia per entrare nel capitolo
+                      const Icon(Icons.chevron_right, color: Colors.deepPurple),
+                    ],
+                  ),
                   onTap: () {
                     Navigator.push(
                       context,
@@ -595,14 +892,14 @@ class _OfflinePageState extends State<OfflinePage> {
       context: context,
       builder: (BuildContext context) {
         return StatefulBuilder(
-          builder: (context, setState) {
+          builder: (context, setDialogState) {
             final profiles = sharedPrefs.isInitialized
                 ? sharedPrefs.getServerProfiles()
-                : {'Remoto': 'http://100.70.187.3:8000'};
+                : {'Remoto': 'http://80.97.160.102:8000'};
             
             // Assicuriamoci che profiles non sia vuoto
             if (profiles.isEmpty) {
-              profiles['Remoto'] = 'http://100.70.187.3:8000';
+              profiles['Remoto'] = 'http://80.97.160.102:8000';
             }
             
             final activeProfile = sharedPrefs.isInitialized
@@ -712,14 +1009,14 @@ class _OfflinePageState extends State<OfflinePage> {
                                     TextButton(
                                       onPressed: () {
                                         _setActiveProfile(entry.key);
-                                        setState(() {});
+                                        setDialogState(() {});
                                       },
                                       child: Text('Usa', style: TextStyle(fontSize: 12)),
                                     ),
                                   IconButton(
                                     icon: Icon(Icons.edit, color: Colors.blue, size: 20),
                                     onPressed: () {
-                                      _showEditProfileDialog(entry.key, entry.value);
+                                      _showEditProfileDialog(entry.key, entry.value, setDialogState);
                                     },
                                     tooltip: 'Modifica profilo',
                                   ),
@@ -728,7 +1025,7 @@ class _OfflinePageState extends State<OfflinePage> {
                                       icon: Icon(Icons.delete, color: Colors.red, size: 20),
                                       onPressed: () {
                                         _removeProfile(entry.key);
-                                        setState(() {});
+                                        setDialogState(() {});
                                       },
                                       tooltip: 'Elimina profilo',
                                     ),
@@ -737,7 +1034,7 @@ class _OfflinePageState extends State<OfflinePage> {
                               onTap: () {
                                 if (!isActive) {
                                   _setActiveProfile(entry.key);
-                                  setState(() {});
+                                  setDialogState(() {});
                                 }
                               },
                             ),
@@ -754,7 +1051,7 @@ class _OfflinePageState extends State<OfflinePage> {
                   child: Text('Chiudi'),
                 ),
                 ElevatedButton(
-                  onPressed: () => _showAddProfileDialog(),
+                  onPressed: () => _showAddProfileDialog(setDialogState),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.deepPurple,
                     foregroundColor: Colors.white,
@@ -769,7 +1066,7 @@ class _OfflinePageState extends State<OfflinePage> {
     );
   }
 
-  void _showAddProfileDialog() {
+  void _showAddProfileDialog([Function? updateParentDialog]) {
     final TextEditingController nameController = TextEditingController();
     final TextEditingController urlController = TextEditingController();
     
@@ -821,7 +1118,7 @@ class _OfflinePageState extends State<OfflinePage> {
                     SizedBox(width: 6),
                     Expanded(
                       child: Text(
-                        'Esempi:\n• Locale: http://192.168.1.100:8000\n• Remoto: http://100.70.187.3:8000',
+                        'Esempi:\n• Locale: http://192.168.1.100:8000\n• Remoto: http://80.97.160.102:8000',
                         style: TextStyle(fontSize: 11, color: Colors.blue[700]),
                       ),
                     ),
@@ -837,7 +1134,7 @@ class _OfflinePageState extends State<OfflinePage> {
             ),
             ElevatedButton(
               onPressed: () {
-                _addNewProfile(nameController.text.trim(), urlController.text.trim());
+                _addNewProfile(nameController.text.trim(), urlController.text.trim(), updateParentDialog);
                 Navigator.pop(context);
               },
               style: ElevatedButton.styleFrom(
@@ -852,7 +1149,7 @@ class _OfflinePageState extends State<OfflinePage> {
     );
   }
 
-  void _showEditProfileDialog(String currentName, String currentUrl) {
+  void _showEditProfileDialog(String currentName, String currentUrl, [Function? updateParentDialog]) {
     final TextEditingController nameController = TextEditingController(text: currentName);
     final TextEditingController urlController = TextEditingController(text: currentUrl);
     
@@ -920,7 +1217,7 @@ class _OfflinePageState extends State<OfflinePage> {
             ),
             ElevatedButton(
               onPressed: () {
-                _updateProfile(currentName, nameController.text.trim(), urlController.text.trim());
+                _updateProfile(currentName, nameController.text.trim(), urlController.text.trim(), updateParentDialog);
                 Navigator.pop(context);
               },
               style: ElevatedButton.styleFrom(
@@ -939,6 +1236,7 @@ class _OfflinePageState extends State<OfflinePage> {
     if (sharedPrefs.isInitialized) {
       sharedPrefs.setActiveServerProfile(profileName);
       final url = sharedPrefs.getServerUrl();
+      print('DEBUG: Profilo cambiato a $profileName con URL: $url');
       _showSnackBar('Profilo attivo: $profileName ($url)');
       setState(() {}); // Aggiorna l'UI
     } else {
@@ -946,7 +1244,7 @@ class _OfflinePageState extends State<OfflinePage> {
     }
   }
 
-  void _addNewProfile(String name, String url) {
+  void _addNewProfile(String name, String url, [Function? updateParentDialog]) {
     if (name.isEmpty || url.isEmpty) {
       _showSnackBar('Nome e URL sono obbligatori');
       return;
@@ -960,6 +1258,11 @@ class _OfflinePageState extends State<OfflinePage> {
     if (sharedPrefs.isInitialized) {
       sharedPrefs.addServerProfile(name, url);
       _showSnackBar('Profilo "$name" aggiunto con successo');
+      
+      // Aggiorna il dialog padre se disponibile
+      if (updateParentDialog != null) {
+        updateParentDialog(() {});
+      }
     } else {
       _showSnackBar('Errore: SharedPreferences non inizializzato');
     }
@@ -974,7 +1277,7 @@ class _OfflinePageState extends State<OfflinePage> {
     }
   }
 
-  void _updateProfile(String oldName, String newName, String newUrl) {
+  void _updateProfile(String oldName, String newName, String newUrl, [Function? updateParentDialog]) {
     if (newName.isEmpty || newUrl.isEmpty) {
       _showSnackBar('Nome e URL sono obbligatori');
       return;
@@ -988,10 +1291,64 @@ class _OfflinePageState extends State<OfflinePage> {
     if (sharedPrefs.isInitialized) {
       sharedPrefs.updateServerProfile(oldName, newName, newUrl);
       _showSnackBar('Profilo aggiornato: "$newName"');
-      setState(() {}); // Aggiorna l'UI
+      
+      // Aggiorna il dialog padre se disponibile
+      if (updateParentDialog != null) {
+        updateParentDialog(() {});
+      }
+      
+      setState(() {}); // Aggiorna l'UI principale
     } else {
       _showSnackBar('Errore: SharedPreferences non inizializzato');
     }
+  }
+
+  void _debugProfiles() {
+    if (!sharedPrefs.isInitialized) {
+      _showSnackBar('SharedPrefs non inizializzato');
+      return;
+    }
+    
+    final profiles = sharedPrefs.getServerProfiles();
+    final activeProfile = sharedPrefs.getActiveServerProfile();
+    final currentUrl = sharedPrefs.getServerUrl();
+    
+    print('=== DEBUG PROFILI ===');
+    print('Profilo attivo: $activeProfile');
+    print('URL corrente: $currentUrl');
+    print('Tutti i profili:');
+    profiles.forEach((name, url) {
+      print('  $name: $url ${name == activeProfile ? "(ATTIVO)" : ""}');
+    });
+    print('==================');
+    
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Debug Profili'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Profilo attivo: $activeProfile', style: TextStyle(fontWeight: FontWeight.bold)),
+            SizedBox(height: 8),
+            Text('URL corrente: $currentUrl'),
+            SizedBox(height: 16),
+            Text('Tutti i profili:', style: TextStyle(fontWeight: FontWeight.bold)),
+            ...profiles.entries.map((entry) => Padding(
+              padding: EdgeInsets.only(left: 16, top: 4),
+              child: Text('${entry.key}: ${entry.value}'),
+            )),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Chiudi'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -1006,6 +1363,82 @@ class _OfflinePageState extends State<OfflinePage> {
         foregroundColor: Colors.white,
         elevation: 0,
         actions: [
+          // Storage info button quando si è in un manga specifico
+          if (selectedManga != null)
+            IconButton(
+              icon: const Icon(Icons.storage, color: Colors.orange),
+              onPressed: () async {
+                final storageInfo = await getOfflineStorageInfo(selectedManga!);
+                
+                if (!mounted) return;
+                
+                showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    backgroundColor: const Color(0xFF2A2A2A),
+                    title: const Text('📊 Info Storage Manga', style: TextStyle(color: Colors.white)),
+                    content: SingleChildScrollView(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Manga: $selectedManga',
+                            style: const TextStyle(color: Colors.orange, fontWeight: FontWeight.bold),
+                          ),
+                          const SizedBox(height: 16),
+                          if (storageInfo['exists']) ...[
+                            Text(
+                              '💾 Spazio totale: ${storageInfo['totalSizeMB'].toStringAsFixed(2)} MB',
+                              style: const TextStyle(color: Colors.green),
+                            ),
+                            Text(
+                              '📄 File totali: ${storageInfo['totalFiles']}',
+                              style: const TextStyle(color: Colors.blue),
+                            ),
+                            Text(
+                              '📖 Capitoli: ${storageInfo['chapters'].length}',
+                              style: const TextStyle(color: Colors.cyan),
+                            ),
+                            const SizedBox(height: 16),
+                            const Text('Dettaglio capitoli:', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                            const SizedBox(height: 8),
+                            ...storageInfo['chapters'].map<Widget>((chapter) => Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 2),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      chapter['name'],
+                                      style: TextStyle(color: Colors.grey[300], fontSize: 12),
+                                    ),
+                                  ),
+                                  Text(
+                                    '${chapter['sizeMB'].toStringAsFixed(1)} MB',
+                                    style: const TextStyle(color: Colors.orange, fontSize: 12),
+                                  ),
+                                ],
+                              ),
+                            )).toList(),
+                          ] else ...[
+                            const Text(
+                              'Nessun capitolo offline trovato',
+                              style: TextStyle(color: Colors.grey),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        child: const Text('Chiudi', style: TextStyle(color: Colors.grey)),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
           PopupMenuButton<String>(
             icon: Container(
               padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -1039,11 +1472,11 @@ class _OfflinePageState extends State<OfflinePage> {
             itemBuilder: (BuildContext context) {
               final profiles = sharedPrefs.isInitialized 
                   ? sharedPrefs.getServerProfiles()
-                  : {'Remoto': 'http://100.70.187.3:8000'};
+                  : {'Remoto': 'http://80.97.160.102:8000'};
               
               // Assicuriamoci che profiles non sia vuoto
               if (profiles.isEmpty) {
-                profiles['Remoto'] = 'http://100.70.187.3:8000';
+                profiles['Remoto'] = 'http://80.97.160.102:8000';
               }
               
               final activeProfile = sharedPrefs.isInitialized 
@@ -1144,6 +1577,13 @@ class _OfflinePageState extends State<OfflinePage> {
             icon: Icon(Icons.settings, size: 28),
             tooltip: 'Gestisci profili',
             onPressed: _showSettingsDialog,
+          ),
+          IconButton(
+            icon: Icon(Icons.bug_report, size: 24),
+            tooltip: 'Debug profili',
+            onPressed: () {
+              _debugProfiles();
+            },
           ),
           IconButton(
             icon: Icon(Icons.cloud, size: 28),
